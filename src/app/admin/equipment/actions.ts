@@ -29,9 +29,25 @@ export async function saveEquipment(formData: FormData) {
     default_par_level: parsed.defaultParLevel,
   };
 
-  const { error } = parsed.id
-    ? await supabase.from("equipment_catalog").update(payload).eq("id", parsed.id)
-    : await supabase.from("equipment_catalog").insert(payload);
+  let error;
+
+  if (parsed.id) {
+    ({ error } = await supabase.from("equipment_catalog").update(payload).eq("id", parsed.id));
+  } else {
+    const { data: existing, error: findError } = await supabase
+      .from("equipment_catalog")
+      .select("id")
+      .eq("name", parsed.name)
+      .limit(1);
+
+    if (findError) {
+      throw new Error(findError.message);
+    }
+
+    ({ error } = existing?.[0]
+      ? await supabase.from("equipment_catalog").update(payload).eq("id", existing[0].id)
+      : await supabase.from("equipment_catalog").insert(payload));
+  }
 
   if (error) {
     throw new Error(error.message);

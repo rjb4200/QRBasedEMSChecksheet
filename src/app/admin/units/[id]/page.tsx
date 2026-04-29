@@ -1,11 +1,11 @@
 import { addUnitCompartment, addUnitItem, deleteUnitCompartment, toggleUnitStatus, uploadCompartmentPhoto } from "../actions";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server-admin";
 
 const inputTypes = ["quantity", "checkbox", "condition"] as const;
 
 export default async function UnitDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const [{ data: unit }, { data: equipment }] = await Promise.all([
     supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, photo_url, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))").eq("id", id).single(),
     supabase.from("equipment_catalog").select("id, name, default_par_level, input_type").order("name"),

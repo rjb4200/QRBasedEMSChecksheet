@@ -1,11 +1,11 @@
 import { addTemplateCompartment, addTemplateItem, deleteTemplateCompartment } from "../actions";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server-admin";
 
 const inputTypes = ["quantity", "checkbox", "condition"] as const;
 
 export default async function TemplateDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const [{ data: template }, { data: equipment }] = await Promise.all([
     supabase.from("templates").select("id, name, description, template_compartments(id, name, sort_order, template_compartment_items(id, par_level, input_type, equipment_catalog(name)))").eq("id", id).single(),
     supabase.from("equipment_catalog").select("id, name, default_par_level, input_type").order("name"),

@@ -1,11 +1,11 @@
 import { deleteEquipment, saveEquipment } from "./actions";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server-admin";
 
 const inputTypes = ["quantity", "checkbox", "condition"] as const;
 
 export default async function EquipmentPage({ searchParams }: { searchParams: Promise<{ q?: string; category?: string }> }) {
   const params = await searchParams;
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   let query = supabase.from("equipment_catalog").select("*").order("category").order("name");
 
   if (params.q) {
