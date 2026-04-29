@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server-admin";
 
 const roleSchema = z.object({
   userId: z.string().uuid(),
@@ -15,7 +15,7 @@ export async function updateUserRole(formData: FormData) {
     role: formData.get("role"),
   });
 
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase
     .from("user_roles")
     .upsert({ user_id: parsed.userId, role: parsed.role }, { onConflict: "user_id" });

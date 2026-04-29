@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server-admin";
 
 export async function createUnit(formData: FormData) {
   const parsed = z.object({ name: z.string().min(1), unitKind: z.string().min(1), templateId: z.string().uuid().optional() }).parse({
@@ -11,7 +11,7 @@ export async function createUnit(formData: FormData) {
     unitKind: formData.get("unitKind") || "EC",
     templateId: formData.get("templateId") || undefined,
   });
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { data: unit, error } = await supabase.from("units").insert({ name: parsed.name, unit_kind: parsed.unitKind }).select("id").single();
   if (error) throw new Error(error.message);
 
@@ -55,7 +55,7 @@ export async function toggleUnitStatus(formData: FormData) {
     id: formData.get("id"),
     status: formData.get("status"),
   });
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase.from("units").update({ status: parsed.status }).eq("id", parsed.id);
   if (error) throw new Error(error.message);
   revalidatePath("/admin/units");
@@ -64,7 +64,7 @@ export async function toggleUnitStatus(formData: FormData) {
 
 export async function deleteUnit(formData: FormData) {
   const id = z.string().uuid().parse(formData.get("id"));
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase.from("units").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/admin/units");
@@ -76,7 +76,7 @@ export async function addUnitCompartment(formData: FormData) {
     name: formData.get("name"),
     sortOrder: formData.get("sortOrder") || 0,
   });
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase.from("unit_compartments").insert({ unit_id: parsed.unitId, name: parsed.name, sort_order: parsed.sortOrder });
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/units/${parsed.unitId}`);
@@ -84,7 +84,7 @@ export async function addUnitCompartment(formData: FormData) {
 
 export async function deleteUnitCompartment(formData: FormData) {
   const parsed = z.object({ unitId: z.string().uuid(), id: z.string().uuid() }).parse({ unitId: formData.get("unitId"), id: formData.get("id") });
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase.from("unit_compartments").delete().eq("id", parsed.id);
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/units/${parsed.unitId}`);
@@ -104,7 +104,7 @@ export async function addUnitItem(formData: FormData) {
     inputType: formData.get("inputType"),
     parLevel: formData.get("parLevel") || null,
   });
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase.from("unit_compartment_items").insert({
     compartment_id: parsed.compartmentId,
     equipment_id: parsed.equipmentId,
@@ -123,7 +123,7 @@ export async function uploadCompartmentPhoto(formData: FormData) {
   const file = formData.get("photo");
   if (!(file instanceof File) || file.size === 0) throw new Error("Photo is required");
 
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const extension = file.name.split(".").pop() ?? "jpg";
   const path = `${parsed.unitId}/${parsed.compartmentId}-${Date.now()}.${extension}`;
   const { error: uploadError } = await supabase.storage.from("compartment-photos").upload(path, file, { upsert: true });

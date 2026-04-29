@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server-admin";
 
 const equipmentSchema = z.object({
   id: z.string().uuid().optional(),
@@ -21,7 +21,7 @@ export async function saveEquipment(formData: FormData) {
     defaultParLevel: formData.get("defaultParLevel") || null,
   });
 
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const payload = {
     name: parsed.name,
     category: parsed.category,
@@ -42,7 +42,7 @@ export async function saveEquipment(formData: FormData) {
 
 export async function deleteEquipment(formData: FormData) {
   const id = z.string().uuid().parse(formData.get("id"));
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase.from("equipment_catalog").delete().eq("id", id);
 
   if (error) {

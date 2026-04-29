@@ -3,14 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server-admin";
 
 export async function createTemplate(formData: FormData) {
   const parsed = z.object({ name: z.string().min(1), description: z.string().optional() }).parse({
     name: formData.get("name"),
     description: formData.get("description") || undefined,
   });
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { data, error } = await supabase.from("templates").insert(parsed).select("id").single();
 
   if (error) throw new Error(error.message);
@@ -19,7 +19,7 @@ export async function createTemplate(formData: FormData) {
 
 export async function deleteTemplate(formData: FormData) {
   const id = z.string().uuid().parse(formData.get("id"));
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase.from("templates").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/admin/templates");
@@ -31,7 +31,7 @@ export async function addTemplateCompartment(formData: FormData) {
     name: formData.get("name"),
     sortOrder: formData.get("sortOrder") || 0,
   });
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase.from("template_compartments").insert({
     template_id: parsed.templateId,
     name: parsed.name,
@@ -46,7 +46,7 @@ export async function deleteTemplateCompartment(formData: FormData) {
     templateId: formData.get("templateId"),
     id: formData.get("id"),
   });
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase.from("template_compartments").delete().eq("id", parsed.id);
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/templates/${parsed.templateId}`);
@@ -66,7 +66,7 @@ export async function addTemplateItem(formData: FormData) {
     inputType: formData.get("inputType"),
     parLevel: formData.get("parLevel") || null,
   });
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase.from("template_compartment_items").insert({
     compartment_id: parsed.compartmentId,
     equipment_id: parsed.equipmentId,
@@ -83,7 +83,7 @@ export async function createTemplateFromUnit(formData: FormData) {
     name: formData.get("name"),
     description: formData.get("description") || undefined,
   });
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
   const { data: template, error: templateError } = await supabase.from("templates").insert({
     name: parsed.name,
     description: parsed.description,
