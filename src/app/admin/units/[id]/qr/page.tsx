@@ -1,5 +1,5 @@
 import QRCode from "qrcode";
-import { PrintButton, PrintSingleQrButton } from "./print-button";
+import { QrCodeGrid } from "./print-button";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
 export default async function UnitQrPage({ params }: { params: Promise<{ id: string }> }) {
@@ -29,20 +29,9 @@ export default async function UnitQrPage({ params }: { params: Promise<{ id: str
             <h1 className="mt-2 text-4xl font-black">{unit?.name}</h1>
             <p className="mt-2 text-slate-600">Print these labels and place each QR code on the matching physical compartment.</p>
           </div>
-          <PrintButton />
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 print:grid-cols-3 print:gap-3">
-          {codes.map((code) => (
-            <article id={`qr-${code.id}`} key={code.id} className="qr-card break-inside-avoid rounded-3xl border border-slate-300 p-5 text-center print:rounded-xl print:p-3">
-              <img alt={`${unit?.name} ${code.name} QR code`} className="mx-auto h-56 w-56 print:h-40 print:w-40" src={code.dataUrl} />
-              <h2 className="mt-4 text-xl font-black print:text-base">{unit?.name}</h2>
-              <p className="font-semibold text-slate-700 print:text-sm">{code.name}</p>
-              <p className="mt-2 break-all text-xs text-slate-500 print:hidden">{code.url}</p>
-              <PrintSingleQrButton targetId={`qr-${code.id}`} />
-            </article>
-          ))}
-        </div>
+        <QrCodeGrid codes={codes} unitName={unit?.name ?? "Unit"} />
       </section>
     </main>
   );
