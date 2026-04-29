@@ -32,10 +32,12 @@ export async function addTemplateCompartment(formData: FormData) {
     sortOrder: formData.get("sortOrder") || 0,
   });
   const supabase = await createAdminClient();
-  const { error } = await supabase.from("template_compartments").insert({
+  const { error } = await supabase.from("template_compartments").upsert({
     template_id: parsed.templateId,
     name: parsed.name,
     sort_order: parsed.sortOrder,
+  }, {
+    onConflict: "template_id,name",
   });
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/templates/${parsed.templateId}`);
@@ -67,11 +69,13 @@ export async function addTemplateItem(formData: FormData) {
     parLevel: formData.get("parLevel") || null,
   });
   const supabase = await createAdminClient();
-  const { error } = await supabase.from("template_compartment_items").insert({
+  const { error } = await supabase.from("template_compartment_items").upsert({
     compartment_id: parsed.compartmentId,
     equipment_id: parsed.equipmentId,
     input_type: parsed.inputType,
     par_level: parsed.parLevel,
+  }, {
+    onConflict: "compartment_id,equipment_id",
   });
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/templates/${parsed.templateId}`);
