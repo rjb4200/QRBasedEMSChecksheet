@@ -11,12 +11,16 @@ The system SHALL use Supabase email magic-link login for authentication.
 - **WHEN** user opens the Supabase sign-in link
 - **THEN** the system creates an authenticated session and redirects the user into the app
 
-### Requirement: User-side login accepts any email address
-The system SHALL allow standard user login from any valid email address.
+### Requirement: Crew checkoff access is public
+The system SHALL allow crew members to open `/units`, unit dashboards, QR scanner routes, and compartment checkoff forms without logging in.
 
-#### Scenario: Non-department email logs in as user
-- **WHEN** a user signs in with a valid non-department email address
-- **THEN** the system allows login with standard User access
+#### Scenario: Crew opens unit list without login
+- **WHEN** an unauthenticated crew member opens `/units`
+- **THEN** the unit list loads without redirecting to login
+
+#### Scenario: Crew submits checkoff without login
+- **WHEN** an unauthenticated crew member opens a QR checkoff URL and submits a compartment
+- **THEN** the compartment data is saved and marked complete without requiring a Supabase session
 
 ### Requirement: Sessions persist in cookies
 The system SHALL store authenticated Supabase sessions in browser cookies so users remain logged in across browser restarts until the session expires or they sign out.
@@ -30,7 +34,7 @@ The system SHALL enforce three access levels: User, Supervisor, and Admin.
 
 #### Scenario: User role access
 - **WHEN** a user with "User" role logs in
-- **THEN** they can select a unit and perform checkoffs but cannot access admin features
+- **THEN** they can sign personnel acknowledgements but cannot access admin features
 
 #### Scenario: Supervisor role access
 - **WHEN** a user with "Supervisor" role logs in
@@ -51,16 +55,28 @@ The system SHALL limit admin and supervisor access to users explicitly approved 
 - **WHEN** an authenticated user with Admin role opens an admin route
 - **THEN** the system allows access to the admin panel
 
+#### Scenario: Unauthenticated user attempts admin access
+- **WHEN** a user without a valid session opens an admin route
+- **THEN** the system redirects the user to the login page before rendering admin data
+
 ### Requirement: User roles are managed by admins
-The admin interface SHALL allow assigning and changing user roles in a `user_roles` table.
+The admin interface SHALL allow creating users, editing full names, and assigning or changing user roles in a `user_roles` table.
+
+#### Scenario: Admin creates user
+- **WHEN** admin enters an email address and optional full name
+- **THEN** the system creates or updates the Supabase Auth user, confirms the email, creates or updates the profile row, and assigns the `user` role by default
+
+#### Scenario: Admin edits user name
+- **WHEN** admin updates a user's full name on the Users page
+- **THEN** the profile name is saved and shown in admin user lists and authenticated signatures
 
 #### Scenario: Admin assigns role to user
 - **WHEN** admin assigns the "Supervisor" role to a user
 - **THEN** the user gains supervisor-level access on next request
 
-### Requirement: Authenticated identity is used for accountability
-All checkoff actions SHALL be attributed to the authenticated user's email identity.
+### Requirement: Authenticated identity is used for signatures and privileged access
+The system SHALL use authenticated identity for admin/supervisor access and personnel sign-off, while routine compartment checkoff completion remains public.
 
-#### Scenario: Checkoff attributed to user
-- **WHEN** user completes a compartment checkoff
-- **THEN** the submission is recorded with the user's authenticated email identity
+#### Scenario: Signature attributed to user
+- **WHEN** an authenticated user signs off after a completed unit checkoff
+- **THEN** the signature is recorded with the user's authenticated email identity

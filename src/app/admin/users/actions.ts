@@ -7,19 +7,18 @@ import { createAdminClient } from "@/lib/supabase/server-admin";
 const roleSchema = z.object({
   userId: z.string().uuid(),
   role: z.enum(["user", "supervisor", "admin"]),
+  fullName: z.string().optional(),
 });
 
 const userSchema = z.object({
   email: z.string().email(),
   fullName: z.string().optional(),
-  role: z.enum(["user", "supervisor", "admin"]),
 });
 
 export async function createUser(formData: FormData) {
   const parsed = userSchema.parse({
     email: formData.get("email"),
     fullName: formData.get("fullName") || undefined,
-    role: formData.get("role") || "user",
   });
 
   const supabase = createAdminClient();
@@ -67,7 +66,7 @@ export async function createUser(formData: FormData) {
 
   const { error: roleError } = await supabase
     .from("user_roles")
-    .upsert({ user_id: userId, role: parsed.role }, { onConflict: "user_id" });
+    .upsert({ user_id: userId, role: "user" }, { onConflict: "user_id", ignoreDuplicates: true });
 
   if (roleError) {
     throw new Error(roleError.message);
@@ -80,9 +79,19 @@ export async function updateUserRole(formData: FormData) {
   const parsed = roleSchema.parse({
     userId: formData.get("userId"),
     role: formData.get("role"),
+    fullName: formData.get("fullName") || undefined,
   });
 
   const supabase = createAdminClient();
+  const { error: userError } = await supabase
+    .from("users")
+    .update({ full_name: parsed.fullName })
+    .eq("id", parsed.userId);
+
+  if (userError) {
+    throw new Error(userError.message);
+  }
+
   const { error } = await supabase
     .from("user_roles")
     .upsert({ user_id: parsed.userId, role: parsed.role }, { onConflict: "user_id" });

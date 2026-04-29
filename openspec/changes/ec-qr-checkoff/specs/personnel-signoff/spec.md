@@ -8,7 +8,7 @@ At the end of a full unit checkoff, each crew member SHALL sign off using their 
 - **THEN** their authenticated identity is recorded as a signature for that shift
 
 ### Requirement: Sign-off requires authentication
-Only authenticated users can sign off on a checkoff. Sign-off SHALL use the user's authenticated email identity, not free-text entry.
+Only authenticated users can sign off on a completed unit checkoff. Routine compartment checkoffs SHALL remain public, but sign-off SHALL use the user's authenticated email identity, not free-text entry.
 
 #### Scenario: Sign-off uses authenticated identity
 - **WHEN** user signs off on a checkoff

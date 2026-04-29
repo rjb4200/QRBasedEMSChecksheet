@@ -6,34 +6,38 @@ import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
 export async function createUnit(formData: FormData) {
-  const parsed = z.object({ name: z.string().min(1), unitKind: z.string().min(1), templateId: z.string().uuid().optional() }).parse({
+  const parsed = z.object({ name: z.string().min(1), unitKind: z.string().min(1), sourceUnitId: z.string().uuid().optional() }).parse({
     name: formData.get("name"),
     unitKind: formData.get("unitKind") || "EC",
-    templateId: formData.get("templateId") || undefined,
+    sourceUnitId: formData.get("sourceUnitId") || undefined,
   });
-  const supabase = await createAdminClient();
-  const { data: unit, error } = await supabase.from("units").insert({ name: parsed.name, unit_kind: parsed.unitKind }).select("id").single();
+  const supabase = createAdminClient();
+  const { data: unit, error } = await supabase
+    .from("units")
+    .upsert({ name: parsed.name, unit_kind: parsed.unitKind }, { onConflict: "name" })
+    .select("id")
+    .single();
   if (error) throw new Error(error.message);
 
-  if (parsed.templateId) {
+  if (parsed.sourceUnitId && parsed.sourceUnitId !== unit.id) {
     const { data: compartments, error: compError } = await supabase
-      .from("template_compartments")
-      .select("*, template_compartment_items(*)")
-      .eq("template_id", parsed.templateId)
+      .from("unit_compartments")
+      .select("*, unit_compartment_items(*)")
+      .eq("unit_id", parsed.sourceUnitId)
       .order("sort_order");
     if (compError) throw new Error(compError.message);
 
     for (const compartment of compartments ?? []) {
-      const { data: newCompartment, error: newCompError } = await supabase.from("unit_compartments").insert({
+      const { data: newCompartment, error: newCompError } = await supabase.from("unit_compartments").upsert({
         unit_id: unit.id,
         name: compartment.name,
         sort_order: compartment.sort_order,
         grid_position: compartment.grid_position,
         photo_url: compartment.photo_url,
-      }).select("id").single();
+      }, { onConflict: "unit_id,name" }).select("id").single();
       if (newCompError) throw new Error(newCompError.message);
 
-      const items = (compartment.template_compartment_items ?? []).map((item: any) => ({
+      const items = (compartment.unit_compartment_items ?? []).map((item: any) => ({
         compartment_id: newCompartment.id,
         equipment_id: item.equipment_id,
         sort_order: item.sort_order,
@@ -41,7 +45,7 @@ export async function createUnit(formData: FormData) {
         input_type: item.input_type,
       }));
       if (items.length > 0) {
-        const { error: itemError } = await supabase.from("unit_compartment_items").insert(items);
+        const { error: itemError } = await supabase.from("unit_compartment_items").upsert(items, { onConflict: "compartment_id,equipment_id" });
         if (itemError) throw new Error(itemError.message);
       }
     }
@@ -55,7 +59,7 @@ export async function toggleUnitStatus(formData: FormData) {
     id: formData.get("id"),
     status: formData.get("status"),
   });
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("units").update({ status: parsed.status }).eq("id", parsed.id);
   if (error) throw new Error(error.message);
   revalidatePath("/admin/units");
@@ -64,7 +68,7 @@ export async function toggleUnitStatus(formData: FormData) {
 
 export async function deleteUnit(formData: FormData) {
   const id = z.string().uuid().parse(formData.get("id"));
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("units").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/admin/units");
@@ -76,15 +80,15 @@ export async function addUnitCompartment(formData: FormData) {
     name: formData.get("name"),
     sortOrder: formData.get("sortOrder") || 0,
   });
-  const supabase = await createAdminClient();
-  const { error } = await supabase.from("unit_compartments").insert({ unit_id: parsed.unitId, name: parsed.name, sort_order: parsed.sortOrder });
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("unit_compartments").upsert({ unit_id: parsed.unitId, name: parsed.name, sort_order: parsed.sortOrder }, { onConflict: "unit_id,name" });
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
 export async function deleteUnitCompartment(formData: FormData) {
   const parsed = z.object({ unitId: z.string().uuid(), id: z.string().uuid() }).parse({ unitId: formData.get("unitId"), id: formData.get("id") });
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("unit_compartments").delete().eq("id", parsed.id);
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/units/${parsed.unitId}`);
@@ -104,12 +108,14 @@ export async function addUnitItem(formData: FormData) {
     inputType: formData.get("inputType"),
     parLevel: formData.get("parLevel") || null,
   });
-  const supabase = await createAdminClient();
-  const { error } = await supabase.from("unit_compartment_items").insert({
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("unit_compartment_items").upsert({
     compartment_id: parsed.compartmentId,
     equipment_id: parsed.equipmentId,
     input_type: parsed.inputType,
     par_level: parsed.parLevel,
+  }, {
+    onConflict: "compartment_id,equipment_id",
   });
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/units/${parsed.unitId}`);
@@ -123,7 +129,7 @@ export async function uploadCompartmentPhoto(formData: FormData) {
   const file = formData.get("photo");
   if (!(file instanceof File) || file.size === 0) throw new Error("Photo is required");
 
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const extension = file.name.split(".").pop() ?? "jpg";
   const path = `${parsed.unitId}/${parsed.compartmentId}-${Date.now()}.${extension}`;
   const { error: uploadError } = await supabase.storage.from("compartment-photos").upload(path, file, { upsert: true });

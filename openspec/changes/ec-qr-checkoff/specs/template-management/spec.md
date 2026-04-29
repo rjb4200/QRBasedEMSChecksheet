@@ -1,50 +1,29 @@
 ## ADDED Requirements
 
-### Requirement: Templates store reusable compartment layouts
-The system SHALL support creating and managing templates that contain a set of compartments with items, par levels, and grid positions.
+### Requirement: Existing units serve as layout templates
+The system SHALL use existing units as copy sources for new unit creation instead of maintaining a separate template management section.
 
-#### Scenario: View templates list
-- **WHEN** admin opens the template management page
-- **THEN** all templates are displayed with their name and compartment count
+#### Scenario: Create unit from existing unit
+- **WHEN** admin creates a new unit and selects an existing unit as the source
+- **THEN** the new unit is created with copied compartments, equipment assignments, par levels, input types, grid positions, and compartment photos
 
-### Requirement: Admin can create a new template from scratch
-The admin interface SHALL allow creating a new template with compartments and items defined manually.
+### Requirement: Unit copies are independent
+Copied units SHALL remain independent after creation.
 
-#### Scenario: Create template from scratch
-- **WHEN** admin creates a new template and adds compartments and items
-- **THEN** the template is saved and available for unit creation
+#### Scenario: Source unit changes after copy
+- **WHEN** admin modifies the source unit after another unit was copied from it
+- **THEN** the copied unit retains its own compartment and item configuration
 
-### Requirement: Admin can create a template by copying an existing unit
-The admin interface SHALL allow creating a new template by copying the compartment layout from an existing unit.
+### Requirement: Separate template section is not exposed
+The admin interface SHALL not expose a separate Templates section for normal configuration work.
 
-#### Scenario: Create template from unit
-- **WHEN** admin creates a template from an existing unit
-- **THEN** a new template is created with all compartments and items copied from the unit
+#### Scenario: Admin configures reusable layout
+- **WHEN** admin wants to create a reusable starting layout
+- **THEN** admin configures a real unit and uses that unit as the source for future copies
 
-### Requirement: Admin can edit templates
-The admin interface SHALL allow editing template compartments, items, par levels, and grid positions.
+### Requirement: Duplicate unit-copy operations are idempotent
+Creating or updating a unit from an existing unit SHALL avoid duplicate-name failures by updating existing matching records where appropriate.
 
-#### Scenario: Edit template compartment
-- **WHEN** admin modifies a compartment in a template
-- **THEN** the changes are saved to the template
-
-### Requirement: Admin can delete templates
-The admin interface SHALL allow deleting templates that are not referenced by any active process.
-
-#### Scenario: Delete template
-- **WHEN** admin deletes a template
-- **THEN** the template is removed from the system
-
-### Requirement: Templates do not affect existing units after copy
-When a unit is created from a template, subsequent changes to the template SHALL NOT affect the unit.
-
-#### Scenario: Template change after unit creation
-- **WHEN** admin modifies a template after units were created from it
-- **THEN** existing units retain their original compartment configurations
-
-### Requirement: Templates display compartment count and item count
-Each template SHALL display the total number of compartments and items it contains.
-
-#### Scenario: Template summary displayed
-- **WHEN** admin views the templates list
-- **THEN** each template shows its name, compartment count, and total item count
+#### Scenario: Admin reuses an existing unit name
+- **WHEN** admin creates a unit with a name that already exists
+- **THEN** the existing unit record is reused and updated instead of failing with a duplicate key error

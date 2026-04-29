@@ -3,6 +3,7 @@ import { signOffUnit } from "./actions";
 import { ShiftResetWarning } from "./shift-reset-warning";
 import { getCurrentShift, getPreviousShift, getShiftLabel } from "@/lib/shifts";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server-admin";
 
 const statusStyles = {
   grey: "border-slate-300 bg-slate-200 text-slate-800",
@@ -12,7 +13,9 @@ const statusStyles = {
 
 export default async function UnitDashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createClient();
+  const supabase = createAdminClient();
+  const authClient = await createClient();
+  const { data: auth } = await authClient.auth.getUser();
   const currentShift = getCurrentShift();
   const previousShift = getPreviousShift();
   const [{ data: unit }, { data: checks }, { data: previousArchive }, { data: signatures }] = await Promise.all([
@@ -68,10 +71,12 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
                 <p className="text-sm font-semibold text-slate-600">Personnel Sign-off</p>
                 <p className="mt-1 text-lg font-black">{signatures?.length ?? 0} crew signatures recorded</p>
               </div>
-              <form action={signOffUnit}>
-                <input name="unitId" type="hidden" value={id} />
-                <button className="rounded-2xl bg-green-700 px-5 py-3 font-bold text-white" type="submit">Sign Off</button>
-              </form>
+              {auth.user ? (
+                <form action={signOffUnit}>
+                  <input name="unitId" type="hidden" value={id} />
+                  <button className="rounded-2xl bg-green-700 px-5 py-3 font-bold text-white" type="submit">Sign Off</button>
+                </form>
+              ) : <p className="text-sm font-semibold text-slate-600">Login is required only for personnel signatures.</p>}
             </div>
             <ul className="mt-4 grid gap-2">
               {(signatures ?? []).map((signature) => {

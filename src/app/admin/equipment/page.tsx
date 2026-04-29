@@ -29,7 +29,7 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Admin</p>
           <h1 className="mt-2 text-4xl font-black">Equipment Catalog</h1>
-          <p className="mt-2 text-slate-600">Reusable equipment definitions for unit compartments and templates.</p>
+          <p className="mt-2 text-slate-600">Reusable equipment definitions for unit compartments.</p>
         </div>
 
         <form className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm sm:grid-cols-[1fr_220px_auto]">

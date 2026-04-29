@@ -30,22 +30,23 @@
 - [x] 3.2 Remove OAuth provider login dependency
 - [x] 3.3 Create role-based access middleware (User/Supervisor/Admin)
 - [x] 3.4 Create user role management UI for admins
-- [x] 3.5 Allow standard user login from any email address
+- [x] 3.5 Allow public crew checkoffs without login while keeping admin/supervisor routes protected
 - [x] 3.6 Create login page and auth redirect logic
+- [x] 3.7 Allow admins to create confirmed users with default User role and edit full names
 
-## 4. Equipment Catalog & Template Management
+## 4. Equipment Catalog & Unit Copy Management
 
 - [x] 4.1 Build equipment catalog list view with search and category filtering
 - [x] 4.2 Build equipment catalog CRUD forms (create, edit, delete)
-- [x] 4.3 Build template list view showing compartment and item counts
-- [x] 4.4 Build template builder UI (add/remove compartments, add items from catalog)
-- [x] 4.5 Implement "Create Template from Unit" copy functionality
-- [x] 4.6 Implement template delete functionality with validation
+- [x] 4.3 Use existing units as copy sources for new unit creation
+- [x] 4.4 Hide the separate Templates admin section from normal workflow
+- [x] 4.5 Make duplicate equipment and unit-copy saves idempotent
+- [x] 4.6 Use service-role admin reads for admin management pages
 
 ## 5. Unit Configuration
 
 - [x] 5.1 Build unit list view for admin dashboard
-- [x] 5.2 Build "Create Unit" flow with choice: from template or from scratch
+- [x] 5.2 Build "Create Unit" flow with choice: from existing unit or from scratch
 - [x] 5.3 Build unit compartment builder (add/remove compartments, reorder)
 - [x] 5.4 Build compartment item assignment UI (search catalog, set par levels)
 - [x] 5.5 Build compartment photo upload functionality
@@ -59,6 +60,7 @@
 - [x] 6.3 Build QR code print preview page with compartment labels and unit identification
 - [x] 6.4 Implement PDF export functionality for QR code pages
 - [x] 6.5 Add QR code generation trigger to unit management page
+- [x] 6.6 Add individual QR code print action for each compartment QR card
 
 ## 7. Crew PWA - Unit Dashboard
 
@@ -68,6 +70,7 @@
 - [x] 7.4 Implement completion progress bar (X of Y compartments)
 - [x] 7.5 Build global "Scan" button for QR scanner
 - [x] 7.6 Ensure compartment grid indicators are non-clickable (no navigation links)
+- [x] 7.7 Make `/units` the app entry point and show Admin Dashboard button only for approved admins
 
 ## 8. QR Scanner & Checkoff Forms
 

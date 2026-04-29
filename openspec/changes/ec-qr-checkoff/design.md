@@ -8,8 +8,9 @@ The system will be built as a Next.js PWA with Supabase as the backend (PostgreS
 
 **Goals:**
 - Mobile-first PWA for crew checkoffs with QR-based compartment navigation
+- Public crew checkoffs without login friction
 - Real-time fleet readiness dashboard for supervisors and admins
-- Flexible unit configuration system — each unit is independent, templates are starting points only
+- Flexible unit configuration system — each unit is independent and can be copied as a starting point for another unit
 - Equipment catalog for reusable item definitions across units
 - Daily reset at 06:00 with partial data preservation
 - Collision prevention per compartment via database row checks (no WebSockets)
@@ -34,15 +35,14 @@ The system will be built as a Next.js PWA with Supabase as the backend (PostgreS
 - Supabase Realtime subscriptions: Overkill for this use case, adds complexity and cost
 - Polling every N seconds: Unnecessary — status only needs to be checked on page load
 
-### 2. Unit Configuration Model — Independent Units, Templates as Starting Points
+### 2. Unit Configuration Model — Independent Units, Units as Starting Points
 
-**Decision:** Each unit has its own independent configuration of compartments and items. Templates are separate entities that can be copied into a new unit but don't maintain a parent-child relationship afterward.
+**Decision:** Each unit has its own independent configuration of compartments and items. Existing units can be copied into a new unit but don't maintain a parent-child relationship afterward. The admin UI does not expose a separate template management section.
 
-**Rationale:** Units diverge over time (equipment changes, layout modifications). A rigid template-to-unit relationship would create complexity for managing exceptions. Copy-once is simpler and matches how physical units actually evolve.
+**Rationale:** Units diverge over time (equipment changes, layout modifications). Using real units as copy sources avoids maintaining a duplicate template workflow. Copy-once is simpler and matches how physical units actually evolve.
 
 **Data model:**
 ```
-templates → template_compartments → template_compartment_items
 units → unit_compartments → unit_compartment_items
 equipment_catalog (shared across all)
 ```
@@ -77,11 +77,17 @@ equipment_catalog (shared across all)
 
 **Rationale:** The checksheet has a mix of item types. A single input model doesn't fit all cases. Three types cover the observed patterns.
 
-### 7. Authentication via Supabase Email Login
+### 7. Authentication via Supabase Email Login for Privileged Access
 
-**Decision:** Authentication uses Supabase email magic-link login. Any email address can sign in as a standard user. Admin and supervisor access is limited by the `user_roles` table, which acts as the pre-approved access list for privileged areas.
+**Decision:** Routine crew checkoffs do not require authentication. Authentication uses Supabase email magic-link login for admin/supervisor access and personnel sign-off. Admin and supervisor access is limited by the `user_roles` table, which acts as the pre-approved access list for privileged areas. Users created by admins are email-confirmed and default to the `user` role.
 
-**Rationale:** Email magic-link login removes OAuth setup complexity and supports part-time staff without requiring Google, Microsoft, or Apple provider configuration. Supabase SSR stores the authenticated session in secure cookies so users do not need to log in each time. Privileged admin access remains controlled by explicit approval in `user_roles`.
+**Rationale:** Removing login from the checkoff path keeps QR scanning fast for crews. Email magic-link login remains useful for role-protected administration and named sign-off accountability. Supabase SSR stores authenticated sessions in secure cookies so approved admins do not need to log in each time. Privileged admin access remains controlled by explicit approval in `user_roles`.
+
+### 10. Public Entry Point
+
+**Decision:** The app root redirects to `/units`. Approved admins see an Admin Dashboard button on the public unit selector after signing in.
+
+**Rationale:** Crew checkoff is the primary workflow, so the app should open directly to unit selection. Admin access remains available without exposing admin controls to unauthenticated users.
 
 ### 8. Equipment Catalog with Categories
 

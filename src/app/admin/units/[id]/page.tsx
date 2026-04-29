@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { addUnitCompartment, addUnitItem, deleteUnitCompartment, toggleUnitStatus, uploadCompartmentPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
@@ -21,11 +22,14 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
             <p className="mt-2 capitalize text-slate-600">{unit?.status?.replace("_", " ")}</p>
           </div>
           {unit ? (
-            <form action={toggleUnitStatus}>
-              <input name="id" type="hidden" value={unit.id} />
-              <input name="status" type="hidden" value={unit.status === "in_service" ? "out_of_service" : "in_service"} />
-              <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" type="submit">Toggle Status</button>
-            </form>
+            <div className="flex flex-wrap gap-2">
+              <Link className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" href={`/admin/units/${unit.id}/qr`}>View / Print QR Codes</Link>
+              <form action={toggleUnitStatus}>
+                <input name="id" type="hidden" value={unit.id} />
+                <input name="status" type="hidden" value={unit.status === "in_service" ? "out_of_service" : "in_service"} />
+                <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" type="submit">Toggle Status</button>
+              </form>
+            </div>
           ) : null}
         </div>
 

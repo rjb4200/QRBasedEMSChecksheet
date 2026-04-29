@@ -7,12 +7,12 @@ The admin interface SHALL allow creating a new unit with no pre-filled compartme
 - **WHEN** admin selects "Create Unit" and chooses "From Scratch"
 - **THEN** an empty unit is created with no compartments
 
-### Requirement: Admin can create a new unit from a template
-The admin interface SHALL allow creating a new unit by copying an existing template's compartments and items.
+### Requirement: Admin can create a new unit from an existing unit
+The admin interface SHALL allow creating a new unit by copying an existing unit's compartments and items.
 
-#### Scenario: Create unit from template
-- **WHEN** admin selects "Create Unit" and chooses a template
-- **THEN** a new unit is created with all compartments and items copied from the template
+#### Scenario: Create unit from existing unit
+- **WHEN** admin selects "Create Unit" and chooses an existing unit as the source
+- **THEN** a new unit is created with all compartments and items copied from the source unit
 
 ### Requirement: Admin can add compartments to a unit
 The unit builder SHALL allow adding new compartments with a name, grid position, and optional photo.
@@ -61,8 +61,8 @@ The unit builder SHALL allow setting a unit's operational status to "In-Service"
 - **THEN** the unit is marked as in-service or out-of-service accordingly
 
 ### Requirement: Unit configurations are independent after creation
-Once a unit is created (from template or scratch), changes to the source template SHALL NOT affect the unit.
+Once a unit is created (from another unit or scratch), changes to the source unit SHALL NOT affect the copied unit.
 
-#### Scenario: Template change doesn't affect existing unit
-- **WHEN** admin modifies a template after a unit was created from it
-- **THEN** the unit's compartments and items remain unchanged
+#### Scenario: Source unit change doesn't affect copied unit
+- **WHEN** admin modifies a source unit after another unit was created from it
+- **THEN** the copied unit's compartments and items remain unchanged

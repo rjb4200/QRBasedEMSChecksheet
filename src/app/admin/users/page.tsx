@@ -21,15 +21,10 @@ export default async function AdminUsersPage() {
           <p className="mt-2 text-slate-600">Assign User, Supervisor, or Admin access to authenticated personnel.</p>
         </div>
 
-        <form action={createUser} className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-[1fr_1fr_160px_auto]">
+        <form action={createUser} className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-[1fr_1fr_auto]">
           <input className="rounded-2xl border border-slate-300 px-4 py-3" name="email" placeholder="Email address" required type="email" />
           <input className="rounded-2xl border border-slate-300 px-4 py-3" name="fullName" placeholder="Full name" />
-          <select className="rounded-2xl border border-slate-300 px-4 py-3" name="role" defaultValue="user">
-            {roles.map((role) => (
-              <option key={role} value={role}>{role}</option>
-            ))}
-          </select>
-          <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Add User</button>
+          <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Add User as User</button>
         </form>
 
         <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
@@ -53,8 +48,9 @@ export default async function AdminUsersPage() {
                     <td className="p-4 text-slate-600">{user.email}</td>
                     <td className="p-4 capitalize">{currentRole ?? "user"}</td>
                     <td className="p-4">
-                      <form action={updateUserRole} className="flex gap-2">
+                      <form action={updateUserRole} className="grid gap-2 lg:grid-cols-[1fr_150px_auto]">
                         <input name="userId" type="hidden" value={user.id} />
+                        <input className="rounded-xl border border-slate-300 px-3 py-2" name="fullName" defaultValue={user.full_name ?? ""} placeholder="Full name" />
                         <select className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={currentRole ?? "user"} name="role">
                           {roles.map((role) => (
                             <option key={role} value={role}>{role}</option>

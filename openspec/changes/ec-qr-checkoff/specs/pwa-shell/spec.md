@@ -1,5 +1,23 @@
 ## ADDED Requirements
 
+### Requirement: Unit list is the main entry point
+The app root SHALL redirect to `/units` so the crew unit selector is the primary page.
+
+#### Scenario: User opens app root
+- **WHEN** any user opens `/`
+- **THEN** the app redirects to `/units`
+
+### Requirement: Admin dashboard is linked for approved admins
+The public unit list SHALL show an Admin Dashboard button only to signed-in users with Admin role.
+
+#### Scenario: Approved admin opens unit list
+- **WHEN** an authenticated admin opens `/units`
+- **THEN** an Admin Dashboard button is displayed
+
+#### Scenario: Unauthenticated crew opens unit list
+- **WHEN** an unauthenticated crew member opens `/units`
+- **THEN** no Admin Dashboard button is displayed
+
 ### Requirement: App supports Add to Home Screen
 The PWA SHALL support installation to the device home screen with an app icon and splash screen.
 

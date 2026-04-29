@@ -4,8 +4,19 @@
 Each compartment checkoff form SHALL display all items assigned to that compartment with their par levels and the previous shift's entered values for reference.
 
 #### Scenario: Form loads with item list
-- **WHEN** user opens a compartment checkoff form
+- **WHEN** a crew member opens a compartment checkoff form
 - **THEN** all items for that compartment are displayed with name, par level, and previous shift count
+
+### Requirement: Checkoff forms do not require login
+Routine compartment checkoff forms SHALL be accessible and submittable without a Supabase authentication session.
+
+#### Scenario: Public QR checkoff opens
+- **WHEN** an unauthenticated crew member scans a valid compartment QR code
+- **THEN** the form opens without requiring email login
+
+#### Scenario: Public QR checkoff submits
+- **WHEN** an unauthenticated crew member completes and submits the form
+- **THEN** the compartment is marked completed and data is saved without a user identity
 
 #### Scenario: Previous shift data shown alongside par level
 - **WHEN** user views an item with quantity input

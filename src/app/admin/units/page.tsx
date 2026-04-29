@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { createUnit, deleteUnit, toggleUnitStatus } from "./actions";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server-admin";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminUnitsPage() {
-  const supabase = await createClient();
-  const [{ data: units }, { data: templates }] = await Promise.all([
-    supabase.from("units").select("id, name, unit_kind, status, unit_compartments(id)").order("name"),
-    supabase.from("templates").select("id, name").order("name"),
-  ]);
+  const supabase = createAdminClient();
+  const { data: units } = await supabase.from("units").select("id, name, unit_kind, status, unit_compartments(id)").order("name");
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
@@ -15,15 +14,15 @@ export default async function AdminUnitsPage() {
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Admin</p>
           <h1 className="mt-2 text-4xl font-black">Units</h1>
-          <p className="mt-2 text-slate-600">Build each unit independently from scratch or a reusable template.</p>
+          <p className="mt-2 text-slate-600">Build each unit independently from scratch or by copying an existing unit.</p>
         </div>
 
         <form action={createUnit} className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-[1fr_120px_240px_auto]">
           <input className="rounded-2xl border border-slate-300 px-4 py-3" name="name" placeholder="Unit name (EC1, Medic 1)" required />
           <input className="rounded-2xl border border-slate-300 px-4 py-3" name="unitKind" placeholder="Type" defaultValue="EC" />
-          <select className="rounded-2xl border border-slate-300 px-4 py-3" name="templateId">
+          <select className="rounded-2xl border border-slate-300 px-4 py-3" name="sourceUnitId">
             <option value="">From scratch</option>
-            {(templates ?? []).map((template) => <option key={template.id} value={template.id}>From {template.name}</option>)}
+            {(units ?? []).map((unit) => <option key={unit.id} value={unit.id}>Copy {unit.name}</option>)}
           </select>
           <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Create</button>
         </form>

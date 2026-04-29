@@ -36,6 +36,10 @@ The admin interface SHALL allow creating new equipment items with name, default 
 - **WHEN** admin creates a new equipment item
 - **THEN** the item is added to the catalog and available for assignment to compartments
 
+#### Scenario: Duplicate equipment name is reused
+- **WHEN** admin creates equipment with a name that already exists
+- **THEN** the existing catalog item is updated instead of failing with a duplicate-name error
+
 ### Requirement: Admin can edit existing equipment items
 The admin interface SHALL allow editing name, default par level, input type, and category for existing equipment items.
 

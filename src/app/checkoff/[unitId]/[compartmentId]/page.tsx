@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { takeOverCheckoff } from "./actions";
 import { CheckoffForm } from "./checkoff-form";
 import { getCurrentShift, getPreviousShift } from "@/lib/shifts";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server-admin";
 
 function isStale(lastActivityAt?: string | null) {
   if (!lastActivityAt) return false;
@@ -13,9 +13,7 @@ function isStale(lastActivityAt?: string | null) {
 export default async function CheckoffPage({ params, searchParams }: { params: Promise<{ unitId: string; compartmentId: string }>; searchParams: Promise<{ mode?: string }> }) {
   const { unitId, compartmentId } = await params;
   const { mode } = await searchParams;
-  const supabase = await createClient();
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) redirect("/login");
+  const supabase = createAdminClient();
 
   const currentShift = getCurrentShift();
   const previousShift = getPreviousShift();
@@ -32,7 +30,7 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
   }
 
   const stale = isStale(check?.last_activity_at);
-  const ownedByOther = check?.status === "in_progress" && check.checked_by !== auth.user.id && !stale;
+  const ownedByOther = check?.status === "in_progress" && Boolean(check.checked_by) && !stale;
   const readOnly = mode === "view";
 
   if (!ownedByOther && !readOnly && check?.status !== "completed") {
@@ -42,7 +40,7 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
       shift_date: currentShift.shiftDate,
       shift_period: currentShift.shiftPeriod,
       status: "in_progress",
-      checked_by: auth.user.id,
+      checked_by: null,
       item_data: check?.item_data ?? {},
       last_activity_at: new Date().toISOString(),
     }, { onConflict: "unit_id,compartment_id,shift_date,shift_period" });

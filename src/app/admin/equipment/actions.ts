@@ -59,6 +59,19 @@ export async function saveEquipment(formData: FormData) {
 export async function deleteEquipment(formData: FormData) {
   const id = z.string().uuid().parse(formData.get("id"));
   const supabase = await createAdminClient();
+
+  const { error: unitItemError } = await supabase.from("unit_compartment_items").delete().eq("equipment_id", id);
+
+  if (unitItemError) {
+    throw new Error(unitItemError.message);
+  }
+
+  const { error: templateItemError } = await supabase.from("template_compartment_items").delete().eq("equipment_id", id);
+
+  if (templateItemError) {
+    throw new Error(templateItemError.message);
+  }
+
   const { error } = await supabase.from("equipment_catalog").delete().eq("id", id);
 
   if (error) {
@@ -66,4 +79,5 @@ export async function deleteEquipment(formData: FormData) {
   }
 
   revalidatePath("/admin/equipment");
+  revalidatePath("/admin/units");
 }

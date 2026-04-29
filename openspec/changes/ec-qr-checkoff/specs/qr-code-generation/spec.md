@@ -14,6 +14,13 @@ The generated QR codes SHALL be displayed in a printable layout with compartment
 - **WHEN** admin clicks "Print QR Codes" for a unit
 - **THEN** a formatted page opens with all compartment QR codes, labels, and unit name, ready for printing
 
+### Requirement: Individual QR codes are printable
+The QR code page SHALL allow printing a single compartment QR code independently from the full unit sheet.
+
+#### Scenario: Print individual QR code
+- **WHEN** admin clicks "Print This QR" on one compartment QR card
+- **THEN** only that QR code label is sent to the print dialog
+
 ### Requirement: QR codes can be exported as PDF
 The QR code page SHALL support saving as a PDF file.
 

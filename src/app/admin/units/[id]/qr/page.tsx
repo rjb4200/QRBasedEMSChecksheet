@@ -1,10 +1,10 @@
 import QRCode from "qrcode";
-import { PrintButton } from "./print-button";
-import { createClient } from "@/lib/supabase/server";
+import { PrintButton, PrintSingleQrButton } from "./print-button";
+import { createAdminClient } from "@/lib/supabase/server-admin";
 
 export default async function UnitQrPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: unit } = await supabase
     .from("units")
     .select("id, name, unit_compartments(id, name, sort_order)")
@@ -34,11 +34,12 @@ export default async function UnitQrPage({ params }: { params: Promise<{ id: str
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 print:grid-cols-3 print:gap-3">
           {codes.map((code) => (
-            <article key={code.id} className="break-inside-avoid rounded-3xl border border-slate-300 p-5 text-center print:rounded-xl print:p-3">
+            <article id={`qr-${code.id}`} key={code.id} className="qr-card break-inside-avoid rounded-3xl border border-slate-300 p-5 text-center print:rounded-xl print:p-3">
               <img alt={`${unit?.name} ${code.name} QR code`} className="mx-auto h-56 w-56 print:h-40 print:w-40" src={code.dataUrl} />
               <h2 className="mt-4 text-xl font-black print:text-base">{unit?.name}</h2>
               <p className="font-semibold text-slate-700 print:text-sm">{code.name}</p>
               <p className="mt-2 break-all text-xs text-slate-500 print:hidden">{code.url}</p>
+              <PrintSingleQrButton targetId={`qr-${code.id}`} />
             </article>
           ))}
         </div>

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { AutoRefresh } from "@/components/auto-refresh";
 import { FleetMatrix } from "@/components/fleet-matrix";
 import { getFleetStatus } from "@/lib/fleet";
@@ -13,18 +12,12 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
       <AutoRefresh />
       <section className="mx-auto max-w-7xl space-y-6">
-        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+        <div>
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Admin Dashboard</p>
             <h1 className="mt-2 text-4xl font-black">Fleet Matrix</h1>
             <p className="mt-2 text-slate-600">Auto-refreshes every 30 seconds.</p>
           </div>
-          <nav className="flex flex-wrap gap-2">
-            <Link className="rounded-2xl bg-red-700 px-4 py-3 font-bold text-white shadow-sm" href="/admin/units">Units</Link>
-            <Link className="rounded-2xl border border-slate-300 bg-white px-4 py-3 font-bold text-slate-950 shadow-sm" href="/admin/equipment">Equipment</Link>
-            <Link className="rounded-2xl border border-slate-300 bg-white px-4 py-3 font-bold text-slate-950 shadow-sm" href="/admin/templates">Templates</Link>
-            <Link className="rounded-2xl border border-slate-300 bg-white px-4 py-3 font-bold text-slate-950 shadow-sm" href="/admin/users">Users</Link>
-          </nav>
         </div>
 
         <form className="flex gap-3 rounded-3xl bg-white p-4 shadow-sm">
