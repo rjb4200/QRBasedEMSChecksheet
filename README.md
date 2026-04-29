@@ -34,17 +34,23 @@ npm install
 
 ### Environment Variables
 
-Create `.env.local` in the project root:
+Copy `.env.example` to `.env.local` in the project root and fill in the values:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
-SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-N8N_BASE_URL="https://your-n8n-instance.example.com"
+cp .env.example .env.local
 ```
 
 Do not commit `.env`, `.env.local`, service role keys, or generated credentials.
+
+Required variables:
+
+| Name | Cloudflare Type | Notes |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Variable | Public Supabase project URL. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Variable | Public anon or publishable Supabase key. |
+| `NEXT_PUBLIC_APP_URL` | Variable | Deployed app URL; QR codes use this value. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Secret | Server-only key for admin actions and public checkoff writes. |
+| `N8N_BASE_URL` | Variable or Secret | Optional n8n endpoint if alerts are enabled. |
 
 ### Run Development Server
 
@@ -107,6 +113,23 @@ The QR page supports:
 - Configure the same environment variables in your hosting provider.
 - `NEXT_PUBLIC_APP_URL` should match the deployed application URL so QR codes point to the correct host.
 - Keep Supabase service role keys out of client code and public repositories.
+
+### Cloudflare Deployment
+
+Set these in Cloudflare Pages or Workers before deploying:
+
+- Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_APP_URL`, `N8N_BASE_URL`
+- Secrets: `SUPABASE_SERVICE_ROLE_KEY`
+
+For Cloudflare Pages, use **Settings > Environment variables** and add values for both **Production** and **Preview** as needed.
+
+If using Wrangler, set the service role key as a secret:
+
+```bash
+wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+```
+
+Then configure the public variables in your Cloudflare project settings. Do not put `SUPABASE_SERVICE_ROLE_KEY` in `NEXT_PUBLIC_*` variables.
 
 ## License
 
