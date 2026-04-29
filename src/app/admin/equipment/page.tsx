@@ -38,7 +38,7 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
             <option value="">All categories</option>
             {uniqueCategories.map((category) => <option key={category} value={category}>{category}</option>)}
           </select>
-          <button className="rounded-2xl bg-slate-950 px-5 py-3 font-bold text-white" type="submit">Filter</button>
+          <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Filter</button>
         </form>
 
         <form action={saveEquipment} className="grid gap-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[1fr_180px_160px_140px_auto]">
@@ -62,7 +62,7 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
                   {inputTypes.map((type) => <option key={type} value={type}>{type}</option>)}
                 </select>
                 <input className="rounded-2xl border border-slate-300 px-4 py-3" name="defaultParLevel" defaultValue={item.default_par_level ?? ""} min="0" step="1" type="number" />
-                <button className="rounded-2xl bg-slate-950 px-5 py-3 font-bold text-white" type="submit">Save</button>
+                <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" type="submit">Save</button>
               </form>
               <form action={deleteEquipment} className="lg:col-start-5">
                 <input name="id" type="hidden" value={item.id} />

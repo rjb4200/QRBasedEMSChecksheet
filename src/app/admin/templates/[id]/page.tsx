@@ -59,7 +59,7 @@ export default async function TemplateDetailPage({ params }: { params: Promise<{
                   {inputTypes.map((type) => <option key={type} value={type}>{type}</option>)}
                 </select>
                 <input className="rounded-2xl border border-slate-300 px-4 py-3" name="parLevel" placeholder="Par" type="number" />
-                <button className="rounded-2xl bg-slate-950 px-5 py-3 font-bold text-white" type="submit">Add Item</button>
+                <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" type="submit">Add Item</button>
               </form>
             </section>
           ))}

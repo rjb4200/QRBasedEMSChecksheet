@@ -24,7 +24,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
             <form action={toggleUnitStatus}>
               <input name="id" type="hidden" value={unit.id} />
               <input name="status" type="hidden" value={unit.status === "in_service" ? "out_of_service" : "in_service"} />
-              <button className="rounded-2xl bg-slate-950 px-5 py-3 font-bold text-white" type="submit">Toggle Status</button>
+              <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" type="submit">Toggle Status</button>
             </form>
           ) : null}
         </div>
@@ -55,7 +55,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                 <input name="unitId" type="hidden" value={id} />
                 <input name="compartmentId" type="hidden" value={compartment.id} />
                 <input accept="image/png,image/jpeg,image/webp" className="flex-1 rounded-xl bg-white px-3 py-2" name="photo" type="file" />
-                <button className="rounded-xl bg-slate-950 px-4 py-2 font-bold text-white" type="submit">Upload Photo</button>
+                <button className="rounded-xl bg-red-700 px-4 py-2 font-bold text-white" type="submit">Upload Photo</button>
               </form>
 
               <ul className="mt-4 grid gap-2">
@@ -78,7 +78,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                   {inputTypes.map((type) => <option key={type} value={type}>{type}</option>)}
                 </select>
                 <input className="rounded-2xl border border-slate-300 px-4 py-3" name="parLevel" placeholder="Par" type="number" />
-                <button className="rounded-2xl bg-slate-950 px-5 py-3 font-bold text-white" type="submit">Add Item</button>
+                <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" type="submit">Add Item</button>
               </form>
             </section>
           ))}

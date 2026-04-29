@@ -34,7 +34,7 @@ export default async function TemplatesPage() {
               {(units ?? []).map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
             </select>
             <textarea className="mt-3 w-full rounded-2xl border border-slate-300 px-4 py-3" name="description" placeholder="Description" />
-            <button className="mt-3 rounded-2xl bg-slate-950 px-5 py-3 font-bold text-white" type="submit">Copy Unit</button>
+            <button className="mt-3 rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" type="submit">Copy Unit</button>
           </form>
         </div>
 
@@ -50,7 +50,7 @@ export default async function TemplatesPage() {
                   <p className="mt-2 text-sm font-semibold text-slate-700">{compartmentCount} compartments | {itemCount} items</p>
                 </div>
                 <div className="flex gap-2">
-                  <Link className="rounded-2xl bg-slate-950 px-5 py-3 font-bold text-white" href={`/admin/templates/${template.id}`}>Edit</Link>
+                  <Link className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" href={`/admin/templates/${template.id}`}>Edit</Link>
                   <form action={deleteTemplate}>
                     <input name="id" type="hidden" value={template.id} />
                     <button className="rounded-2xl border border-red-200 px-5 py-3 font-bold text-red-700" type="submit">Delete</button>

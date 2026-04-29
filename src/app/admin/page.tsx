@@ -20,10 +20,10 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
             <p className="mt-2 text-slate-600">Auto-refreshes every 30 seconds.</p>
           </div>
           <nav className="flex flex-wrap gap-2">
-            <Link className="rounded-2xl bg-slate-950 px-4 py-3 font-bold text-white" href="/admin/units">Units</Link>
-            <Link className="rounded-2xl bg-slate-950 px-4 py-3 font-bold text-white" href="/admin/equipment">Equipment</Link>
-            <Link className="rounded-2xl bg-slate-950 px-4 py-3 font-bold text-white" href="/admin/templates">Templates</Link>
-            <Link className="rounded-2xl bg-slate-950 px-4 py-3 font-bold text-white" href="/admin/users">Users</Link>
+            <Link className="rounded-2xl bg-red-700 px-4 py-3 font-bold text-white shadow-sm" href="/admin/units">Units</Link>
+            <Link className="rounded-2xl border border-slate-300 bg-white px-4 py-3 font-bold text-slate-950 shadow-sm" href="/admin/equipment">Equipment</Link>
+            <Link className="rounded-2xl border border-slate-300 bg-white px-4 py-3 font-bold text-slate-950 shadow-sm" href="/admin/templates">Templates</Link>
+            <Link className="rounded-2xl border border-slate-300 bg-white px-4 py-3 font-bold text-slate-950 shadow-sm" href="/admin/users">Users</Link>
           </nav>
         </div>
 

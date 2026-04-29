@@ -36,7 +36,7 @@ export default async function AdminUnitsPage() {
                 <p className="text-sm text-slate-600">{unit.unit_kind} | {unit.unit_compartments?.length ?? 0} compartments | {unit.status.replace("_", " ")}</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Link className="rounded-2xl bg-slate-950 px-5 py-3 font-bold text-white" href={`/admin/units/${unit.id}`}>Edit</Link>
+                <Link className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" href={`/admin/units/${unit.id}`}>Edit</Link>
                 <Link className="rounded-2xl border border-slate-300 px-5 py-3 font-bold" href={`/admin/units/${unit.id}/qr`}>QR Codes</Link>
                 <form action={toggleUnitStatus}>
                   <input name="id" type="hidden" value={unit.id} />
