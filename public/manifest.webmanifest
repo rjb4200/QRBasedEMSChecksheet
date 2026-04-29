@@ -1,0 +1,19 @@
+{
+  "name": "Winchester EMS Checkoff",
+  "short_name": "EMS Checkoff",
+  "description": "QR-driven EMS asset and compliance tracker for Winchester Fire-EMS.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#b91c1c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
