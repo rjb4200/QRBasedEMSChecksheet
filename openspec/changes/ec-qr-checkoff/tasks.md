@@ -3,7 +3,7 @@
 - [x] 1.1 Initialize Next.js 15+ project with App Router and TypeScript
 - [x] 1.2 Configure Tailwind CSS and shadcn/ui component library
 - [x] 1.3 Set up Supabase project and configure PostgreSQL database
-- [x] 1.4 Configure Supabase Auth with Google OAuth and domain restriction (@winchesterky.com)
+- [x] 1.4 Configure Supabase Auth with email magic-link login and cookie sessions
 - [x] 1.5 Configure Supabase Storage bucket for compartment photos
 - [x] 1.6 Set up Supabase Edge Functions for scheduled jobs
 - [ ] 1.7 Configure n8n instance with SMTP email integration
@@ -11,7 +11,7 @@
 
 ## 2. Database Schema
 
-- [x] 2.1 Create `users` table with Google OAuth linkage
+- [x] 2.1 Create `users` table with Supabase Auth linkage
 - [x] 2.2 Create `user_roles` table (user_id, role: user/supervisor/admin)
 - [x] 2.3 Create `equipment_catalog` table (id, name, default_par_level, input_type, category)
 - [x] 2.4 Create `templates` table (id, name, description)
@@ -26,11 +26,11 @@
 
 ## 3. Authentication & Authorization
 
-- [x] 3.1 Implement Google OAuth login flow via Supabase Auth
-- [x] 3.2 Implement secondary OAuth (Microsoft) login flow
+- [x] 3.1 Implement Supabase email magic-link login flow
+- [x] 3.2 Remove OAuth provider login dependency
 - [x] 3.3 Create role-based access middleware (User/Supervisor/Admin)
 - [x] 3.4 Create user role management UI for admins
-- [x] 3.5 Implement domain restriction to @winchesterky.com
+- [x] 3.5 Allow standard user login from any email address
 - [x] 3.6 Create login page and auth redirect logic
 
 ## 4. Equipment Catalog & Template Management

@@ -13,11 +13,3 @@ export function hasRole(currentRole: AppRole | null | undefined, requiredRole: A
 
   return roleRank[currentRole] >= roleRank[requiredRole];
 }
-
-export function isWinchesterGoogleUser(provider: string | undefined, email: string | undefined) {
-  if (provider !== "google") {
-    return true;
-  }
-
-  return email?.toLowerCase().endsWith("@winchesterky.com") ?? false;
-}

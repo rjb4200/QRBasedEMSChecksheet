@@ -2,22 +2,22 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import type { Provider } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 
-const supportedProviders: Provider[] = ["google", "azure"];
-
-export async function signInWithProvider(provider: Provider) {
-  if (!supportedProviders.includes(provider)) {
-    throw new Error("Unsupported authentication provider");
+export async function signInWithEmail(formData: FormData) {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const next = String(formData.get("next") ?? "/units");
+  if (!email) {
+    redirect("/login?error=Email%20is%20required");
   }
 
   const origin = (await headers()).get("origin") ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider,
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
     options: {
-      redirectTo: `${origin}/auth/callback`,
+      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      shouldCreateUser: true,
     },
   });
 
@@ -25,9 +25,7 @@ export async function signInWithProvider(provider: Provider) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
   }
 
-  if (data.url) {
-    redirect(data.url);
-  }
+  redirect(`/login?sent=${encodeURIComponent(email)}`);
 }
 
 export async function signOut() {

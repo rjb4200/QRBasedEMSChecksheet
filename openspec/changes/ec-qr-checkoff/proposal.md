@@ -27,7 +27,7 @@ Winchester Fire-EMS currently relies on paper check-sheets for 12-hour vehicle i
 - `qr-code-generation`: Generate printable QR codes for each unit's compartments. Print/save as PDF option in admin panel. QR codes encode checkoff URLs.
 - `email-alerts`: Automated email notifications at 09:00 for any in-service unit that is not 100% complete. Sent to admin users.
 - `pwa-shell`: Progressive Web App with add-to-home-screen support. Mobile-first responsive design. Camera integration for QR scanning.
-- `user-authentication`: Google Workspace OAuth (@winchesterky.com) with role-based access (User, Supervisor, Admin). Secondary OAuth support for Apple/Microsoft.
+- `user-authentication`: Supabase email magic-link login with cookie-backed sessions. User-side login allows any email address; supervisor/admin access is limited by pre-approved roles.
 - `archive-history`: Historical storage of completed and partial shift data. Queryable by date range, unit, and user. Archive viewer in admin panel.
 - `provider-analytics`: Time-to-complete metrics per employee and compartment. Discrepancy rate tracking. Available in admin dashboard.
 - `personnel-signoff`: End-of-checkoff signature capture. Each crew member signs via their authenticated identity.

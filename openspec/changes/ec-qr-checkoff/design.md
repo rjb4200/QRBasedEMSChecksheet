@@ -77,11 +77,11 @@ equipment_catalog (shared across all)
 
 **Rationale:** The checksheet has a mix of item types. A single input model doesn't fit all cases. Three types cover the observed patterns.
 
-### 7. Authentication via Google Workspace OAuth
+### 7. Authentication via Supabase Email Login
 
-**Decision:** Primary auth through Google Workspace with domain restriction (@winchesterky.com). Role assignment (User/Supervisor/Admin) stored in a `user_roles` table, managed by admins.
+**Decision:** Authentication uses Supabase email magic-link login. Any email address can sign in as a standard user. Admin and supervisor access is limited by the `user_roles` table, which acts as the pre-approved access list for privileged areas.
 
-**Rationale:** Supabase Auth supports Google OAuth out of the box. Domain restriction ensures only department members can access. Role table allows flexible permission management.
+**Rationale:** Email magic-link login removes OAuth setup complexity and supports part-time staff without requiring Google, Microsoft, or Apple provider configuration. Supabase SSR stores the authenticated session in secure cookies so users do not need to log in each time. Privileged admin access remains controlled by explicit approval in `user_roles`.
 
 ### 8. Equipment Catalog with Categories
 
