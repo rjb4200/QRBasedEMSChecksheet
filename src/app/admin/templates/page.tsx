@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { createTemplate, createTemplateFromUnit, deleteTemplate } from "./actions";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/server-admin";
+
+export const dynamic = "force-dynamic";
 
 export default async function TemplatesPage() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const [{ data: templates }, { data: units }] = await Promise.all([
     supabase.from("templates").select("id, name, description, template_compartments(id, template_compartment_items(id))").order("name"),
     supabase.from("units").select("id, name").order("name"),

@@ -10,8 +10,12 @@ export async function createTemplate(formData: FormData) {
     name: formData.get("name"),
     description: formData.get("description") || undefined,
   });
-  const supabase = await createAdminClient();
-  const { data, error } = await supabase.from("templates").insert(parsed).select("id").single();
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("templates")
+    .upsert(parsed, { onConflict: "name" })
+    .select("id")
+    .single();
 
   if (error) throw new Error(error.message);
   redirect(`/admin/templates/${data.id}`);
@@ -19,7 +23,7 @@ export async function createTemplate(formData: FormData) {
 
 export async function deleteTemplate(formData: FormData) {
   const id = z.string().uuid().parse(formData.get("id"));
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("templates").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/admin/templates");
@@ -31,7 +35,7 @@ export async function addTemplateCompartment(formData: FormData) {
     name: formData.get("name"),
     sortOrder: formData.get("sortOrder") || 0,
   });
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("template_compartments").upsert({
     template_id: parsed.templateId,
     name: parsed.name,
@@ -48,7 +52,7 @@ export async function deleteTemplateCompartment(formData: FormData) {
     templateId: formData.get("templateId"),
     id: formData.get("id"),
   });
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("template_compartments").delete().eq("id", parsed.id);
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/templates/${parsed.templateId}`);
@@ -68,7 +72,7 @@ export async function addTemplateItem(formData: FormData) {
     inputType: formData.get("inputType"),
     parLevel: formData.get("parLevel") || null,
   });
-  const supabase = await createAdminClient();
+  const supabase = createAdminClient();
   const { error } = await supabase.from("template_compartment_items").upsert({
     compartment_id: parsed.compartmentId,
     equipment_id: parsed.equipmentId,
@@ -87,11 +91,11 @@ export async function createTemplateFromUnit(formData: FormData) {
     name: formData.get("name"),
     description: formData.get("description") || undefined,
   });
-  const supabase = await createAdminClient();
-  const { data: template, error: templateError } = await supabase.from("templates").insert({
+  const supabase = createAdminClient();
+  const { data: template, error: templateError } = await supabase.from("templates").upsert({
     name: parsed.name,
     description: parsed.description,
-  }).select("id").single();
+  }, { onConflict: "name" }).select("id").single();
   if (templateError) throw new Error(templateError.message);
 
   const { data: compartments, error: compartmentsError } = await supabase
@@ -102,13 +106,13 @@ export async function createTemplateFromUnit(formData: FormData) {
   if (compartmentsError) throw new Error(compartmentsError.message);
 
   for (const compartment of compartments ?? []) {
-    const { data: newCompartment, error: compartmentError } = await supabase.from("template_compartments").insert({
+    const { data: newCompartment, error: compartmentError } = await supabase.from("template_compartments").upsert({
       template_id: template.id,
       name: compartment.name,
       sort_order: compartment.sort_order,
       grid_position: compartment.grid_position,
       photo_url: compartment.photo_url,
-    }).select("id").single();
+    }, { onConflict: "template_id,name" }).select("id").single();
     if (compartmentError) throw new Error(compartmentError.message);
 
     const items = (compartment.unit_compartment_items ?? []).map((item: any) => ({
@@ -120,7 +124,7 @@ export async function createTemplateFromUnit(formData: FormData) {
     }));
 
     if (items.length > 0) {
-      const { error: itemError } = await supabase.from("template_compartment_items").insert(items);
+      const { error: itemError } = await supabase.from("template_compartment_items").upsert(items, { onConflict: "compartment_id,equipment_id" });
       if (itemError) throw new Error(itemError.message);
     }
   }

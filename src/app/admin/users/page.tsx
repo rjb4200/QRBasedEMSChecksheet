@@ -1,10 +1,12 @@
-import { updateUserRole } from "./actions";
-import { createClient } from "@/lib/supabase/server";
+import { createUser, updateUserRole } from "./actions";
+import { createAdminClient } from "@/lib/supabase/server-admin";
+
+export const dynamic = "force-dynamic";
 
 const roles = ["user", "supervisor", "admin"] as const;
 
 export default async function AdminUsersPage() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: users } = await supabase
     .from("users")
     .select("id, email, full_name, user_roles(role)")
@@ -18,6 +20,17 @@ export default async function AdminUsersPage() {
           <h1 className="mt-2 text-4xl font-black">User Roles</h1>
           <p className="mt-2 text-slate-600">Assign User, Supervisor, or Admin access to authenticated personnel.</p>
         </div>
+
+        <form action={createUser} className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-[1fr_1fr_160px_auto]">
+          <input className="rounded-2xl border border-slate-300 px-4 py-3" name="email" placeholder="Email address" required type="email" />
+          <input className="rounded-2xl border border-slate-300 px-4 py-3" name="fullName" placeholder="Full name" />
+          <select className="rounded-2xl border border-slate-300 px-4 py-3" name="role" defaultValue="user">
+            {roles.map((role) => (
+              <option key={role} value={role}>{role}</option>
+            ))}
+          </select>
+          <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Add User</button>
+        </form>
 
         <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
           <table className="w-full border-collapse text-left text-sm">
