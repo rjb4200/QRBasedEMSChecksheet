@@ -11,7 +11,7 @@ The system will be built as a Next.js PWA with Supabase as the backend (PostgreS
 - Real-time fleet readiness dashboard for supervisors and admins
 - Flexible unit configuration system — each unit is independent, templates are starting points only
 - Equipment catalog for reusable item definitions across units
-- Shift-based reset at 06:00/18:00 with partial data preservation
+- Daily reset at 06:00 with partial data preservation
 - Collision prevention per compartment via database row checks (no WebSockets)
 - Automated email alerts for missed checkoffs
 
@@ -49,9 +49,9 @@ equipment_catalog (shared across all)
 
 ### 3. Shift Reset — Archive Partials, Don't Discard
 
-**Decision:** At 06:00/18:00, completed checks are archived to history. In-progress checks are saved as "partially complete" with all entered data preserved. The new shift starts fresh but can see what the previous shift completed.
+**Decision:** At 06:00, completed checks are archived to history. In-progress checks are saved as "partially complete" with all entered data preserved. The new daily checkoff starts fresh but can see what the previous checkoff completed.
 
-**Rationale:** Partial data has value — if 18 of 25 compartments were done, supervisors should know. The new shift can choose to continue from where the previous left off or start fresh.
+**Rationale:** Partial data has value — if 18 of 25 compartments were done, supervisors should know. The next daily checkoff starts fresh while retaining visibility into the prior checkoff.
 
 **Alternatives considered (from original PRD):**
 - Discard all in-progress: Loses potentially valuable data about fleet readiness

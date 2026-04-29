@@ -5,10 +5,10 @@ At each shift reset, all compartment checkoff data (completed and partial) SHALL
 
 #### Scenario: Completed data archived at shift reset
 - **WHEN** the 06:00 shift reset occurs
-- **THEN** all Green compartments from the night shift are saved to the archive with their data
+- **THEN** all Green compartments from the previous daily checkoff are saved to the archive with their data
 
 #### Scenario: Partial data archived at shift reset
-- **WHEN** the 18:00 shift reset occurs
+- **WHEN** the 06:00 shift reset occurs
 - **THEN** all Yellow compartments are saved to the archive with status "partially complete"
 
 ### Requirement: Archive is queryable by date range, unit, and user

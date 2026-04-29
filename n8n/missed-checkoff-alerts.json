@@ -7,12 +7,12 @@
           "interval": [
             {
               "field": "cronExpression",
-              "expression": "0 9,21 * * *"
+              "expression": "0 9 * * *"
             }
           ]
         }
       },
-      "name": "09:00 / 21:00 Schedule",
+      "name": "09:00 Schedule",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [0, 0]
@@ -57,7 +57,7 @@
     }
   ],
   "connections": {
-    "09:00 / 21:00 Schedule": {
+    "09:00 Schedule": {
       "main": [[{"node": "Fetch Incomplete Units", "type": "main", "index": 0}]]
     },
     "Fetch Incomplete Units": {

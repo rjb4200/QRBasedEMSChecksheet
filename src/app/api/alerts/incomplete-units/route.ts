@@ -4,15 +4,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 function getAlertShift(now = new Date()) {
   const local = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
-  const hour = local.getHours();
-  const shiftDate = new Date(local);
-
-  if (hour < 18) {
-    shiftDate.setDate(shiftDate.getDate() - 1);
-    return { shiftDate: shiftDate.toISOString().slice(0, 10), shiftPeriod: "night" };
+  if (local.getHours() < 6) {
+    local.setDate(local.getDate() - 1);
   }
 
-  return { shiftDate: shiftDate.toISOString().slice(0, 10), shiftPeriod: "day" };
+  return { shiftDate: local.toISOString().slice(0, 10), shiftPeriod: "daily" };
 }
 
 export async function GET() {

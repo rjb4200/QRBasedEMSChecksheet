@@ -3,7 +3,7 @@ create extension if not exists "pgcrypto";
 create type public.app_role as enum ('user', 'supervisor', 'admin');
 create type public.unit_status as enum ('in_service', 'out_of_service');
 create type public.item_input_type as enum ('quantity', 'checkbox', 'condition');
-create type public.shift_period as enum ('day', 'night');
+create type public.shift_period as enum ('daily');
 create type public.check_status as enum ('in_progress', 'completed', 'partially_complete');
 
 create table public.users (

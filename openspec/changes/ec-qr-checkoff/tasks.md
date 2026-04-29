@@ -20,7 +20,7 @@
 - [x] 2.7 Create `units` table (id, name, status: in_service/out_of_service)
 - [x] 2.8 Create `unit_compartments` table (id, unit_id, name, grid_position, photo_url)
 - [x] 2.9 Create `unit_compartment_items` table (id, compartment_id, equipment_id, par_level, input_type)
-- [x] 2.10 Create `compartment_checks` table (id, unit_id, compartment_id, shift_date, shift_period: day/night, status, checked_by, item_data: JSON, time_on_page, completed_at, created_at, updated_at)
+- [x] 2.10 Create `compartment_checks` table (id, unit_id, compartment_id, shift_date, shift_period: daily, status, checked_by, item_data: JSON, time_on_page, completed_at, created_at, updated_at)
 - [x] 2.11 Create `shift_archives` table (id, shift_date, shift_period, unit_id, status, completion_percentage, signatures: JSON, created_at)
 - [x] 2.12 Create row-level security policies for role-based access
 
@@ -102,16 +102,16 @@
 
 ## 11. Shift Reset Logic
 
-- [x] 11.1 Implement shift reset scheduled job (runs at 06:00 and 18:00)
+- [x] 11.1 Implement shift reset scheduled job (runs at 06:00)
 - [x] 11.2 Archive completed (Green) compartments to shift_archives table
 - [x] 11.3 Save in-progress (Yellow) compartments as "partially complete" with all data
 - [x] 11.4 Reset all compartments to Grey status for new shift
 - [x] 11.5 Implement previous shift completion summary display (X of Y done, Z%)
-- [x] 11.6 Add 5-minute buffer warning before shift reset (05:55 / 17:55)
+- [x] 11.6 Add 5-minute buffer warning before shift reset (05:55)
 
 ## 12. Email Alerts
 
-- [x] 12.1 Configure n8n scheduled workflow for 09:00 and 21:00 triggers
+- [x] 12.1 Configure n8n scheduled workflow for 09:00 trigger
 - [x] 12.2 Build API endpoint for n8n to query incomplete in-service units
 - [x] 12.3 Build email alert template with unit name, completion count, and percentage
 - [x] 12.4 Implement conditional alert sending (no email if all units complete)

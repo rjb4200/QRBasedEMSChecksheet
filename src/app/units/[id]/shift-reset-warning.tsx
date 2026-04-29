@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 function isWarningWindow(date = new Date()) {
   const hour = date.getHours();
   const minute = date.getMinutes();
-  return (hour === 5 && minute >= 55) || (hour === 17 && minute >= 55);
+  return hour === 5 && minute >= 55;
 }
 
 export function ShiftResetWarning() {

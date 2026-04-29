@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const statusCards = [
   { label: "Physical QR", value: "Required", detail: "Compartment forms open from truck-mounted QR codes." },
-  { label: "Shift Reset", value: "06:00 / 18:00", detail: "Completed and partial work is archived every shift." },
+  { label: "Daily Reset", value: "06:00", detail: "Completed and partial work is archived once per day." },
   { label: "Fleet", value: "EC1-7 + Medic 1", detail: "Each unit can be configured independently." },
 ];
 

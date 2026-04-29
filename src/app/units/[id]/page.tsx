@@ -33,7 +33,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
         <div className="sticky top-0 z-10 -mx-5 border-b border-slate-200 bg-white/95 px-5 py-4 shadow-sm backdrop-blur">
           <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">{getShiftLabel(currentShift.shiftPeriod)}</p>
+              <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">{getShiftLabel()}</p>
               <h1 className="text-3xl font-black">{unit?.name}</h1>
             </div>
             <Link className="rounded-2xl bg-red-700 px-5 py-3 text-center font-bold text-white" href="/scan">Scan</Link>

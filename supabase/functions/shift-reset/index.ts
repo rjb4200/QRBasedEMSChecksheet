@@ -1,18 +1,12 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-type ShiftPeriod = "day" | "night";
+type ShiftPeriod = "daily";
 
 function getPreviousShift(now = new Date()): { shiftDate: string; shiftPeriod: ShiftPeriod } {
   const local = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
-  const hour = local.getHours();
-  const shiftDate = new Date(local);
+  local.setDate(local.getDate() - 1);
 
-  if (hour >= 6 && hour < 18) {
-    shiftDate.setDate(shiftDate.getDate() - 1);
-    return { shiftDate: shiftDate.toISOString().slice(0, 10), shiftPeriod: "night" };
-  }
-
-  return { shiftDate: shiftDate.toISOString().slice(0, 10), shiftPeriod: "day" };
+  return { shiftDate: local.toISOString().slice(0, 10), shiftPeriod: "daily" };
 }
 
 Deno.serve(async () => {
