@@ -32,8 +32,16 @@ The fleet matrix SHALL update unit statuses periodically via page refresh or aut
 - **WHEN** the polling interval elapses (every 30 seconds)
 - **THEN** the fleet matrix refreshes with current completion data
 
-### Requirement: Fleet page displays submitted item exceptions
-The admin Fleet page SHALL display submitted checkoff items that are missing or below their configured par count for the current checkoff day.
+### Requirement: Fleet page displays submitted item exceptions by date
+The admin Fleet page SHALL display submitted checkoff items that are missing or below their configured par count for the last 14 days, grouped by date.
+
+#### Scenario: Exceptions grouped by date
+- **WHEN** admin opens the Fleet page
+- **THEN** the exceptions panel shows date sections for submitted missing or below-par items from the last 14 days
+
+#### Scenario: Last three days expanded
+- **WHEN** the exceptions panel renders
+- **THEN** the most recent three date sections with exceptions are expanded by default
 
 #### Scenario: Checkbox submitted missing
 - **WHEN** a completed compartment checkoff includes a checkbox item saved as missing

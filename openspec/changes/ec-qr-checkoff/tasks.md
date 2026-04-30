@@ -129,7 +129,7 @@
 - [x] 13.3 Implement auto-refresh polling every 30 seconds
 - [x] 13.4 Remove fleet filters because fleet size is limited and all units should be visible
 - [x] 13.5 Build supervisor dashboard (view-only fleet matrix and provider stats)
-- [x] 13.6 Display current-day submitted missing and below-par item exceptions on Fleet page
+- [x] 13.6 Display last-14-day submitted missing and below-par item exceptions by date on Fleet page
 
 ## 14. Archive History
 

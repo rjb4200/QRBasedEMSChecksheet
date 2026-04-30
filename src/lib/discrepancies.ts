@@ -2,6 +2,7 @@ import { getCurrentShift } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
 export type CheckoffDiscrepancy = {
+  shiftDate: string;
   unitId: string;
   unitName: string;
   compartmentId: string;
@@ -14,6 +15,7 @@ export type CheckoffDiscrepancy = {
 };
 
 type CheckRow = {
+  shift_date: string;
   unit_id: string;
   compartment_id: string;
   item_data: Record<string, unknown> | null;
@@ -33,14 +35,36 @@ function single<T>(value: T | T[] | null | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
+function toDateInputValue(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function addDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setUTCDate(next.getUTCDate() + days);
+  return next;
+}
+
+export function getDefaultDiscrepancyRange() {
+  const { shiftDate } = getCurrentShift();
+  const to = new Date(`${shiftDate}T00:00:00.000Z`);
+  const from = addDays(to, -13);
+  return { from: toDateInputValue(from), to: shiftDate };
+}
+
 export async function getCheckoffDiscrepancies(shift = getCurrentShift()) {
+  return getCheckoffDiscrepanciesForRange(shift.shiftDate, shift.shiftDate, shift.shiftPeriod);
+}
+
+export async function getCheckoffDiscrepanciesForRange(from: string, to: string, shiftPeriod = "daily" as const) {
   const supabase = createAdminClient();
   const [{ data: checks, error: checksError }, { data: items, error: itemsError }] = await Promise.all([
     supabase
       .from("compartment_checks")
-      .select("unit_id, compartment_id, item_data, units(name), unit_compartments(name)")
-      .eq("shift_date", shift.shiftDate)
-      .eq("shift_period", shift.shiftPeriod)
+      .select("shift_date, unit_id, compartment_id, item_data, units(name), unit_compartments(name)")
+      .gte("shift_date", from)
+      .lte("shift_date", to)
+      .eq("shift_period", shiftPeriod)
       .eq("status", "completed"),
     supabase
       .from("unit_compartment_items")
@@ -63,6 +87,7 @@ export async function getCheckoffDiscrepancies(shift = getCurrentShift()) {
 
       const equipment = single(item.equipment_catalog);
       const base = {
+        shiftDate: check.shift_date,
         unitId: check.unit_id,
         unitName: unit?.name ?? "Unknown unit",
         compartmentId: check.compartment_id,
@@ -81,5 +106,13 @@ export async function getCheckoffDiscrepancies(shift = getCurrentShift()) {
     }
   }
 
-  return discrepancies.sort((a, b) => `${a.unitName}${a.compartmentName}${a.itemName}`.localeCompare(`${b.unitName}${b.compartmentName}${b.itemName}`));
+  return discrepancies.sort((a, b) => `${b.shiftDate}${a.unitName}${a.compartmentName}${a.itemName}`.localeCompare(`${a.shiftDate}${b.unitName}${b.compartmentName}${b.itemName}`));
+}
+
+export function groupDiscrepanciesByDate(discrepancies: CheckoffDiscrepancy[]) {
+  const groups = new Map<string, CheckoffDiscrepancy[]>();
+  for (const discrepancy of discrepancies) {
+    groups.set(discrepancy.shiftDate, [...(groups.get(discrepancy.shiftDate) ?? []), discrepancy]);
+  }
+  return Array.from(groups.entries()).map(([date, items]) => ({ date, items }));
 }
