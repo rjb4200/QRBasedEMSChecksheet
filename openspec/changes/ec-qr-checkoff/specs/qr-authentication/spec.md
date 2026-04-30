@@ -29,6 +29,10 @@ The QR scanner SHALL use the device camera to read QR codes and navigate to the 
 - **WHEN** user opens the scan page
 - **THEN** scanner instructions, camera controls, and navigation actions are visually distinct
 
+#### Scenario: Scan page stays compact
+- **WHEN** user opens the scan page on a mobile device
+- **THEN** the camera scanner appears without an extra introductory header so scanning can start without scrolling
+
 #### Scenario: Camera opens on scan button tap
 - **WHEN** user taps the global "Scan" button
 - **THEN** the device camera opens with a QR code scanning overlay
