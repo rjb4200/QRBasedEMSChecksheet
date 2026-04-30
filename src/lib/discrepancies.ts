@@ -52,6 +52,32 @@ export function getDefaultDiscrepancyRange() {
   return { from: toDateInputValue(from), to: shiftDate };
 }
 
+function parseDateInput(value: string | undefined, fallback: string) {
+  if (!value) return fallback;
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  return Number.isNaN(parsed.getTime()) ? fallback : toDateInputValue(parsed);
+}
+
+export function getDiscrepancyRange(params: { from?: string; to?: string }) {
+  const defaults = getDefaultDiscrepancyRange();
+  let from = parseDateInput(params.from, defaults.from);
+  let to = parseDateInput(params.to, defaults.to);
+
+  if (from > to) {
+    [from, to] = [to, from];
+  }
+
+  return { from, to };
+}
+
+function eachDate(from: string, to: string) {
+  const dates: string[] = [];
+  for (let current = new Date(`${from}T00:00:00.000Z`); current <= new Date(`${to}T00:00:00.000Z`); current = addDays(current, 1)) {
+    dates.push(toDateInputValue(current));
+  }
+  return dates.reverse();
+}
+
 export async function getCheckoffDiscrepancies(shift = getCurrentShift()) {
   return getCheckoffDiscrepanciesForRange(shift.shiftDate, shift.shiftDate, shift.shiftPeriod);
 }
@@ -109,10 +135,34 @@ export async function getCheckoffDiscrepanciesForRange(from: string, to: string,
   return discrepancies.sort((a, b) => `${b.shiftDate}${a.unitName}${a.compartmentName}${a.itemName}`.localeCompare(`${a.shiftDate}${b.unitName}${b.compartmentName}${b.itemName}`));
 }
 
-export function groupDiscrepanciesByDate(discrepancies: CheckoffDiscrepancy[]) {
+export function groupDiscrepanciesByDate(discrepancies: CheckoffDiscrepancy[], range?: { from: string; to: string }) {
   const groups = new Map<string, CheckoffDiscrepancy[]>();
+  for (const date of range ? eachDate(range.from, range.to) : []) {
+    groups.set(date, []);
+  }
   for (const discrepancy of discrepancies) {
     groups.set(discrepancy.shiftDate, [...(groups.get(discrepancy.shiftDate) ?? []), discrepancy]);
   }
   return Array.from(groups.entries()).map(([date, items]) => ({ date, items }));
+}
+
+export function discrepancyRecordsToCsv(discrepancies: CheckoffDiscrepancy[]) {
+  const headers = ["Date", "Unit", "Compartment", "Item", "Issue", "Actual", "Expected"];
+  const escapeCell = (value: string | number | boolean) => {
+    const text = String(value);
+    return /[",\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+  };
+
+  return [
+    headers.join(","),
+    ...discrepancies.map((item) => [
+      item.shiftDate,
+      item.unitName,
+      item.compartmentName,
+      item.itemName,
+      item.inputType === "checkbox" ? "Missing" : "Below par",
+      item.actual,
+      item.expected,
+    ].map(escapeCell).join(",")),
+  ].join("\n");
 }

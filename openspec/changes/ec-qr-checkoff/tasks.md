@@ -130,6 +130,7 @@
 - [x] 13.4 Remove fleet filters because fleet size is limited and all units should be visible
 - [x] 13.5 Build supervisor dashboard (view-only fleet matrix and provider stats)
 - [x] 13.6 Display last-14-day submitted missing and below-par item exceptions by date on Fleet page
+- [x] 13.7 Add date filtering and CSV export for Fleet exceptions
 
 ## 14. Archive History
 

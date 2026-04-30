@@ -37,11 +37,19 @@ The admin Fleet page SHALL display submitted checkoff items that are missing or 
 
 #### Scenario: Exceptions grouped by date
 - **WHEN** admin opens the Fleet page
-- **THEN** the exceptions panel shows date sections for submitted missing or below-par items from the last 14 days
+- **THEN** the exceptions panel shows daily date sections for the last 14 days
 
 #### Scenario: Last three days expanded
 - **WHEN** the exceptions panel renders
-- **THEN** the most recent three date sections with exceptions are expanded by default
+- **THEN** the most recent three date sections are expanded by default and older date sections are closed
+
+#### Scenario: Exceptions filtered by date
+- **WHEN** admin selects a from/to date range
+- **THEN** the exceptions panel shows daily sections only for the selected date range
+
+#### Scenario: Export exceptions CSV
+- **WHEN** admin clicks "Export CSV" in the exceptions panel
+- **THEN** a CSV downloads with the selected range's date, unit, compartment, item, issue, actual value, and expected value
 
 #### Scenario: Checkbox submitted missing
 - **WHEN** a completed compartment checkoff includes a checkbox item saved as missing
