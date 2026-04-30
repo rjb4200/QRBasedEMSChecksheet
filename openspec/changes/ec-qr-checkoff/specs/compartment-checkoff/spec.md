@@ -41,6 +41,10 @@ The unit checkoff page SHALL allow providers checking the unit to enter crew nam
 - **WHEN** provider names are locked for the current daily unit checkoff
 - **THEN** the crew entry counts as one completed check toward the unit's current progress
 
+#### Scenario: Crew lock updates progress immediately
+- **WHEN** a crew member locks or unlocks provider names
+- **THEN** the current progress count and percentage update immediately on the page
+
 #### Scenario: Checkbox items omit par label
 - **WHEN** a crew member views a checkbox yes/no item on a compartment checkoff form
 - **THEN** the item does not display a par level label

@@ -28,29 +28,26 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
         </div>
       </div>
 
-      <article className="mx-auto max-w-5xl bg-white p-6 shadow-sm print:max-w-none print:p-0 print:shadow-none">
-        <header className="mb-3 border-b-2 border-slate-950 pb-2 print:mb-1 print:pb-1">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 print:text-[7pt]">EMS Daily Check Sheets</p>
-              <h1 className="text-3xl font-black print:text-[15pt]">{document.date}</h1>
-            </div>
-            <p className="text-sm font-bold print:text-[7pt]">Generated {new Date(document.generatedAt).toLocaleString()}</p>
-          </div>
-        </header>
-
-        <div className="columns-1 gap-4 md:columns-2 print:columns-3 print:gap-3">
-          {document.units.map((unit) => (
-            <section key={unit.id} className="mb-3 break-inside-avoid rounded-2xl border border-slate-950 p-2 print:mb-1 print:rounded-md print:border-slate-700 print:p-1.5">
-              <div className="mb-1 flex items-start justify-between gap-2 border-b border-slate-300 pb-1">
+      <div className="mx-auto max-w-5xl space-y-4 print:max-w-none print:space-y-0">
+        {document.units.map((unit) => (
+          <article key={unit.id} className="unit-print-page bg-white p-6 shadow-sm print:p-0 print:shadow-none">
+            <header className="mb-3 border-b-2 border-slate-950 pb-2 print:mb-1 print:pb-1">
+              <div className="flex items-end justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-black print:text-[10pt]">{unit.name}</h2>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 print:text-[7pt]">EMS Daily Check Sheets</p>
+                  <h1 className="text-3xl font-black print:text-[15pt]">{unit.name} | {document.date}</h1>
                   <p className="text-xs font-bold uppercase text-slate-600 print:text-[6pt]">{unit.status.replace("_", " ")} | {unit.archiveStatus.replace("_", " ")}</p>
                   {unit.providerNames ? <p className="mt-0.5 text-xs font-bold print:text-[6pt]">Crew: {unit.providerNames}</p> : null}
                 </div>
-                <p className="text-lg font-black print:text-[9pt]">{unit.completedCompartments}/{unit.totalCompartments}</p>
+                <div className="text-right">
+                  <p className="text-sm font-bold print:text-[7pt]">Generated {new Date(document.generatedAt).toLocaleString()}</p>
+                  <p className="text-lg font-black print:text-[9pt]">{unit.completedCompartments}/{unit.totalCompartments}</p>
+                </div>
               </div>
-              <div className="space-y-1">
+            </header>
+
+            <section className="rounded-2xl border border-slate-950 p-2 print:rounded-md print:border-slate-700 print:p-1.5">
+              <div className="columns-1 gap-4 md:columns-2 print:columns-3 print:gap-3">
                 {unit.compartments.map((compartment) => (
                   <div key={compartment.id} className="break-inside-avoid border-b border-slate-200 pb-1 last:border-b-0">
                     <div className="flex items-center justify-between gap-2">
@@ -73,9 +70,9 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
                 ))}
               </div>
             </section>
-          ))}
-        </div>
-      </article>
+          </article>
+        ))}
+      </div>
       <style>{`
         @page { size: letter; margin: 0.25in; }
         @media print {
@@ -85,6 +82,16 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
             -webkit-box-decoration-break: clone;
             break-inside: auto;
             border-radius: 0.35rem;
+          }
+
+          .unit-print-page {
+            break-after: page;
+            page-break-after: always;
+          }
+
+          .unit-print-page:last-child {
+            break-after: auto;
+            page-break-after: auto;
           }
 
           .exception-row td {

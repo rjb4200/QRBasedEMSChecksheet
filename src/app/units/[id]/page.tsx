@@ -52,9 +52,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   const checkMap = new Map((checks ?? []).map((check) => [check.compartment_id, check.status]));
   const crewComplete = Boolean(crew?.locked && crew.provider_names?.trim());
   const completedCompartments = checks?.filter((check) => check.status === "completed").length ?? 0;
-  const completed = completedCompartments + (crewComplete ? 1 : 0);
   const total = compartments.length + 1;
-  const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
   const previousExceptions = findPreviousExceptions(compartments, previousArchive?.check_data);
 
   return (
@@ -76,22 +74,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
 
         <ShiftResetWarning />
 
-        <div className="rounded-3xl bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-slate-600">Current progress</p>
-              <p className="text-2xl font-black">{completed} of {total} checks ({percentage}%)</p>
-            </div>
-            <div className="h-16 w-16 rounded-full bg-slate-950 p-2 text-center text-sm font-black text-white">
-              <span className="flex h-full items-center justify-center">{percentage}%</span>
-            </div>
-          </div>
-          <div className="mt-4 h-4 overflow-hidden rounded-full bg-slate-200">
-            <div className="h-full rounded-full bg-red-700" style={{ width: `${percentage}%` }} />
-          </div>
-        </div>
-
-        <CrewNameLock initialLocked={crewComplete} initialProviderNames={crew?.provider_names ?? ""} unitId={id} />
+        <CrewNameLock completedCompartments={completedCompartments} initialLocked={crewComplete} initialProviderNames={crew?.provider_names ?? ""} totalChecks={total} unitId={id} />
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {compartments.map((compartment) => {

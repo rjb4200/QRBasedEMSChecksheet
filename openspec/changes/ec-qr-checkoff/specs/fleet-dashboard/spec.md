@@ -43,6 +43,10 @@ The admin Fleet page SHALL provide a print action for the current daily check sh
 - **WHEN** the print-ready daily check sheets render
 - **THEN** the document uses a three-column layout with print CSS for letter paper, compact typography, reduced margins, rounded box fragments across page breaks, and crew names when available
 
+#### Scenario: Printed units start on separate pages
+- **WHEN** the print-ready daily check sheets render multiple units
+- **THEN** each unit starts on its own printed page and does not share that page with another unit
+
 #### Scenario: Printed exceptions are emphasized
 - **WHEN** the print-ready daily check sheets include missing or below-par item exceptions
 - **THEN** those exception rows display in red text with a red outline box

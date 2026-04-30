@@ -97,6 +97,7 @@
 - [x] 8.14 Add current-day unit crew names and previous-check exceptions to unit checkoff page
 - [x] 8.15 Add lock/unlock feedback for saving current-day unit crew names
 - [x] 8.16 Count locked crew names toward completion and hide checkbox par labels
+- [x] 8.17 Update current progress immediately when crew names are locked or unlocked
 
 ## 9. Collision Prevention
 
@@ -141,6 +142,7 @@
 - [x] 13.9 Add Fleet page daily check sheet print action
 - [x] 13.10 Compact daily check sheet print layout and include crew names
 - [x] 13.11 Use three-column check sheet print layout and omit checkbox par values
+- [x] 13.12 Print each unit on its own page
 
 ## 14. Archive History
 
