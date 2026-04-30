@@ -21,7 +21,6 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Admin Dashboard</p>
             <h1 className="mt-2 text-4xl font-black">Fleet Matrix</h1>
-            <p className="mt-2 text-slate-600">Shows all units for the current checkoff day. Auto-refreshes every 30 seconds.</p>
           </div>
         </div>
 
@@ -30,9 +29,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         <section className="rounded-3xl bg-white p-5 shadow-sm">
           <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Exceptions</p>
-              <h2 className="mt-2 text-3xl font-black">Missing or Below-Par Items</h2>
-              <p className="mt-2 text-slate-600">Items submitted missing or below par from {discrepancyRange.from} to {discrepancyRange.to}. The most recent 3 days are expanded.</p>
+              <h2 className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Exceptions</h2>
             </div>
             <p className="text-3xl font-black text-slate-950">{discrepancies.length}</p>
           </div>

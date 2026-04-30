@@ -33,11 +33,15 @@ The fleet matrix SHALL update unit statuses periodically via page refresh or aut
 - **THEN** the fleet matrix refreshes with current completion data
 
 ### Requirement: Fleet page displays submitted item exceptions by date
-The admin Fleet page SHALL display submitted checkoff items that are missing or below their configured par count for the last 14 days, grouped by date.
+The admin Fleet page SHALL display submitted checkoff items that are missing or below their configured par count for the last 7 days by default, grouped by date.
 
 #### Scenario: Exceptions grouped by date
 - **WHEN** admin opens the Fleet page
-- **THEN** the exceptions panel shows daily date sections for the last 14 days
+- **THEN** the exceptions panel shows daily date sections for the last 7 days
+
+#### Scenario: Compact exceptions panel header
+- **WHEN** admin views the Fleet page
+- **THEN** the exceptions panel uses a compact "Exceptions" heading without additional explanatory header text
 
 #### Scenario: Last three days expanded
 - **WHEN** the exceptions panel renders

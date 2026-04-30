@@ -25,6 +25,10 @@ The crew UI SHALL NOT provide any clickable links, buttons, or navigation paths 
 ### Requirement: QR scanner uses device camera
 The QR scanner SHALL use the device camera to read QR codes and navigate to the encoded URL.
 
+#### Scenario: Scan page controls are clear
+- **WHEN** user opens the scan page
+- **THEN** scanner instructions, camera controls, and navigation actions are visually distinct
+
 #### Scenario: Camera opens on scan button tap
 - **WHEN** user taps the global "Scan" button
 - **THEN** the device camera opens with a QR code scanning overlay

@@ -92,6 +92,7 @@
 - [x] 8.10 Build form submission handler that sets status to Green and saves data
 - [x] 8.11 Handle out-of-service unit QR scan with error message
 - [x] 8.12 Handle invalid QR code scan with error message
+- [x] 8.13 Improve scan page visual hierarchy for scanner controls
 
 ## 9. Collision Prevention
 
@@ -131,6 +132,7 @@
 - [x] 13.5 Build supervisor dashboard (view-only fleet matrix and provider stats)
 - [x] 13.6 Display last-14-day submitted missing and below-par item exceptions by date on Fleet page
 - [x] 13.7 Add date filtering and CSV export for Fleet exceptions
+- [x] 13.8 Compact Fleet page header copy and default exceptions to 7 days
 
 ## 14. Archive History
 
