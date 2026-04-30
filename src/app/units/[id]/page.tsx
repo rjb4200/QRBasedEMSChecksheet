@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { signOffUnit } from "./actions";
 import { ShiftResetWarning } from "./shift-reset-warning";
 import { getCurrentShift, getPreviousShift, getShiftLabel } from "@/lib/shifts";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
 const statusStyles = {
@@ -14,15 +12,12 @@ const statusStyles = {
 export default async function UnitDashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = createAdminClient();
-  const authClient = await createClient();
-  const { data: auth } = await authClient.auth.getUser();
   const currentShift = getCurrentShift();
   const previousShift = getPreviousShift();
-  const [{ data: unit }, { data: checks }, { data: previousArchive }, { data: signatures }] = await Promise.all([
+  const [{ data: unit }, { data: checks }, { data: previousArchive }] = await Promise.all([
     supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order)").eq("id", id).single(),
     supabase.from("compartment_checks").select("compartment_id, status").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
     supabase.from("shift_archives").select("completed_compartments, total_compartments, completion_percentage").eq("unit_id", id).eq("shift_date", previousShift.shiftDate).eq("shift_period", previousShift.shiftPeriod).maybeSingle(),
-    supabase.from("personnel_signatures").select("id, signed_at, users(full_name, email)").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).order("signed_at"),
   ]);
   const compartments = (unit?.unit_compartments ?? []).sort((a, b) => a.sort_order - b.sort_order);
   const checkMap = new Map((checks ?? []).map((check) => [check.compartment_id, check.status]));
@@ -63,29 +58,6 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
             <div className="h-full rounded-full bg-red-700" style={{ width: `${percentage}%` }} />
           </div>
         </div>
-
-        {total > 0 && completed === total ? (
-          <div className="rounded-3xl bg-white p-5 shadow-sm">
-            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-              <div>
-                <p className="text-sm font-semibold text-slate-600">Personnel Sign-off</p>
-                <p className="mt-1 text-lg font-black">{signatures?.length ?? 0} crew signatures recorded</p>
-              </div>
-              {auth.user ? (
-                <form action={signOffUnit}>
-                  <input name="unitId" type="hidden" value={id} />
-                  <button className="rounded-2xl bg-green-700 px-5 py-3 font-bold text-white" type="submit">Sign Off</button>
-                </form>
-              ) : <p className="text-sm font-semibold text-slate-600">Login is required only for personnel signatures.</p>}
-            </div>
-            <ul className="mt-4 grid gap-2">
-              {(signatures ?? []).map((signature) => {
-                const user = Array.isArray(signature.users) ? signature.users[0] : signature.users;
-                return <li key={signature.id} className="rounded-2xl bg-slate-100 px-4 py-3 text-sm font-semibold">{user?.full_name ?? user?.email} | {new Date(signature.signed_at).toLocaleString()}</li>;
-              })}
-            </ul>
-          </div>
-        ) : null}
 
         <div className="rounded-3xl bg-white p-5 shadow-sm">
           <p className="text-sm font-semibold text-slate-600">Previous shift</p>

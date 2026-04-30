@@ -46,6 +46,20 @@ The unit builder SHALL allow overriding the par level for each item in each comp
 - **WHEN** admin changes the par level for an item in a compartment
 - **THEN** the new par level is saved for that specific compartment-item combination
 
+### Requirement: Admin can import a single compartment
+The unit builder SHALL allow importing one compartment from an existing unit into the current unit.
+
+#### Scenario: Import compartment
+- **WHEN** admin selects a source compartment to import
+- **THEN** the current unit receives a new compartment with the source compartment's items, par levels, input types, photo, and link group
+
+### Requirement: Admin can link compartments for shared item values
+The unit builder SHALL allow assigning the same link group to multiple compartments on a unit so item changes apply to all linked compartments.
+
+#### Scenario: Add item to linked compartments
+- **WHEN** admin adds a catalog item to a compartment with a link group
+- **THEN** the item is added to every compartment in that unit with the same link group using the catalog input type and default par level
+
 ### Requirement: Admin can upload compartment photos
 The unit builder SHALL allow uploading photos for each compartment.
 

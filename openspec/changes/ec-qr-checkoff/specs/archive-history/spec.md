@@ -69,7 +69,7 @@ The admin interface SHALL provide an archive viewer that displays historical com
 
 #### Scenario: View historical shift details
 - **WHEN** admin selects an archived shift
-- **THEN** all compartment data, user signatures, and timestamps for that shift are displayed
+- **THEN** all compartment data and timestamps for that shift are displayed
 
 ### Requirement: Partial completions are marked in archive
 Archived shifts that were not fully completed SHALL be marked as "Partially Complete" with the completion percentage.

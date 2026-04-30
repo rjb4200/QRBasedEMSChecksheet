@@ -21,17 +21,16 @@ Winchester Fire-EMS currently relies on paper check-sheets for 12-hour vehicle i
 - `compartment-checkoff`: Public digital checkoff forms with quantity steppers, checkbox items, and condition inputs. Auto-save persistence. Previous shift data displayed as reference. Time-on-page logging for analytics.
 - `collision-prevention`: Single-user edit locking per compartment. Status propagation (Grey → Yellow → Green) via database row checks on page load. Silent takeover without notification.
 - `shift-reset`: Hard reset at 06:00. Completed data archived to history. In-progress data saved as partially complete for reference. The new daily checkoff starts fresh with visibility into prior checkoff progress.
-- `fleet-dashboard`: Real-time grid-of-grids showing all units and their compartment completion status. In-service/out-of-service toggle. Filter by unit type and shift.
-- `unit-configuration`: Admin interface for building unit layouts from scratch or by copying an existing unit. Add/remove compartments, assign items from equipment catalog, set par levels, upload compartment photos.
-- `equipment-catalog`: Global catalog of equipment items with name, default par level, input type (quantity/checkbox/condition), and category. Reusable across all units.
+- `fleet-dashboard`: Top-level admin fleet view showing all units and their current-day compartment completion status. In-service/out-of-service toggle remains on unit management.
+- `unit-configuration`: Admin interface for building unit layouts from scratch, copying an existing unit, importing one compartment, linking compartments, assigning items from equipment catalog, and uploading compartment photos.
+- `equipment-catalog`: EC5-based catalog of equipment items with name, default par level, input type (quantity/checkbox/condition), and category. Catalog defaults carry into compartment assignments.
 - `template-management`: Existing units act as copy sources for future units; no separate Templates admin section is exposed.
 - `qr-code-generation`: Generate printable QR codes for each unit's compartments. Print all codes for a unit or print one individual compartment code. Save as PDF through browser print. QR codes encode absolute checkoff URLs derived from `NEXT_PUBLIC_APP_URL` or the request host.
 - `email-alerts`: Automated email notifications at 09:00 for any in-service unit that is not 100% complete. Sent to admin users.
 - `pwa-shell`: Progressive Web App with add-to-home-screen support. `/units` is the primary entry point. Mobile-first responsive design. Camera integration for QR scanning.
-- `user-authentication`: Admin username/password login with a signed cookie for admin pages, plus Supabase authenticated identity for supervisor access and personnel signatures. Crew checkoffs are public.
-- `archive-history`: Historical storage of completed and partial shift data. Queryable by date range, unit, and user. Archive viewer in admin panel.
+- `user-authentication`: Admin username/password login with a signed cookie for admin pages, plus Supabase authenticated identity for supervisor access. Crew checkoffs are public.
+- `archive-history`: Historical storage of completed and partial shift data. Queryable by date range and unit. Archive viewer in admin panel.
 - `provider-analytics`: Time-to-complete metrics per employee and compartment. Discrepancy rate tracking. Available in admin dashboard.
-- `personnel-signoff`: End-of-checkoff signature capture. Each crew member signs via their authenticated identity.
 
 ### Modified Capabilities
 

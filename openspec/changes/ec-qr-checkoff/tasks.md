@@ -3,7 +3,7 @@
 - [x] 1.1 Initialize Next.js 15+ project with App Router and TypeScript
 - [x] 1.2 Configure Tailwind CSS and shadcn/ui component library
 - [x] 1.3 Set up Supabase project and configure PostgreSQL database
-- [x] 1.4 Configure Supabase Auth for personnel/supervisor identity and signed cookie sessions for admin access
+- [x] 1.4 Configure Supabase Auth for supervisor identity and signed cookie sessions for admin access
 - [x] 1.5 Configure Supabase Storage bucket for compartment photos
 - [x] 1.6 Set up Supabase Edge Functions for scheduled jobs
 - [ ] 1.7 Configure n8n instance with SMTP email integration
@@ -21,7 +21,7 @@
 - [x] 2.8 Create `unit_compartments` table (id, unit_id, name, grid_position, photo_url)
 - [x] 2.9 Create `unit_compartment_items` table (id, compartment_id, equipment_id, par_level, input_type)
 - [x] 2.10 Create `compartment_checks` table (id, unit_id, compartment_id, shift_date, shift_period: daily, status, checked_by, item_data: JSON, time_on_page, completed_at, created_at, updated_at)
-- [x] 2.11 Create `shift_archives` table (id, shift_date, shift_period, unit_id, status, completion_percentage, signatures: JSON, created_at)
+- [x] 2.11 Create `shift_archives` table (id, shift_date, shift_period, unit_id, status, completion_percentage, created_at)
 - [x] 2.12 Create row-level security policies for role-based access
 
 ## 3. Authentication & Authorization
@@ -32,7 +32,7 @@
 - [x] 3.4 Remove admin user management UI because admin access uses configured username/password login
 - [x] 3.5 Allow public crew checkoffs without login while keeping admin/supervisor routes protected
 - [x] 3.6 Create login page and auth redirect logic
-- [x] 3.7 Keep Supabase user records for signatures without exposing an admin Users page
+- [x] 3.7 Keep Supabase user records for supervisor access without exposing an admin Users page
 - [x] 3.8 Store admin password as a hash and allow production overrides through server-only environment variables
 
 ## 4. Equipment Catalog & Unit Copy Management
@@ -43,6 +43,7 @@
 - [x] 4.4 Hide the separate Templates admin section from normal workflow
 - [x] 4.5 Make duplicate equipment and unit-copy saves idempotent
 - [x] 4.6 Use service-role admin reads for admin management pages
+- [x] 4.7 Trim equipment catalog to EC5 checksheet items
 
 ## 5. Unit Configuration
 
@@ -53,6 +54,9 @@
 - [x] 5.5 Build compartment photo upload functionality
 - [x] 5.6 Implement unit in-service/out-of-service toggle
 - [x] 5.7 Implement unit edit and delete functionality
+- [x] 5.8 Carry equipment catalog defaults into compartment item assignments
+- [x] 5.9 Add single-compartment import
+- [x] 5.10 Add linked compartment groups for shared item changes
 
 ## 6. QR Code Generation
 
@@ -98,13 +102,6 @@
 - [x] 9.5 Implement stale lock timeout (30 minutes without save activity releases lock)
 - [x] 9.6 Handle lock release on form submission or navigation away
 
-## 10. Personnel Sign-off
-
-- [x] 10.1 Build sign-off flow after all compartments are completed
-- [x] 10.2 Implement signature capture using authenticated user identity
-- [x] 10.3 Allow multiple crew members to sign off on same shift
-- [x] 10.4 Display signatures on unit dashboard when checkoff is complete
-
 ## 11. Shift Reset Logic
 
 - [x] 11.1 Implement shift reset scheduled job (runs at 06:00)
@@ -129,7 +126,7 @@
 - [x] 13.1 Build fleet matrix grid showing all units with status
 - [x] 13.2 Display completion percentage per unit (X of Y compartments, Z%)
 - [x] 13.3 Implement auto-refresh polling every 30 seconds
-- [x] 13.4 Add filter controls for unit type (EC/Medic) and shift
+- [x] 13.4 Remove fleet filters because fleet size is limited and all units should be visible
 - [x] 13.5 Build supervisor dashboard (view-only fleet matrix and provider stats)
 
 ## 14. Archive History
@@ -137,7 +134,6 @@
 - [x] 14.1 Build archive list view with date range and unit filters
 - [x] 14.2 Build archive detail view showing all compartment data for a shift
 - [x] 14.3 Display partially complete markers with completion percentage
-- [x] 14.4 Display personnel signatures for archived shifts
 - [x] 14.5 Use saved daily unit ledgers so OOS/deleted/added units do not rewrite history
 
 ## 15. Provider Analytics

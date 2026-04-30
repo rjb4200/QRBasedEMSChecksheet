@@ -6,12 +6,12 @@ Mobile-first EMS vehicle checkoff application for QR-based compartment inspectio
 
 - Public crew checkoff workflow at `/units` with no login required.
 - QR codes route directly to compartment checkoff forms.
-- Admin dashboard for fleet status, units, equipment, users, and QR printing.
+- Admin dashboard for fleet status, records, units, equipment, and QR printing.
 - Unit layouts can be created from scratch or copied from existing units.
 - Equipment catalog with reusable items, input types, categories, and par levels.
 - Full-sheet and individual QR code printing.
 - Supabase-backed PostgreSQL database, Auth, Storage, and Row Level Security.
-- Email magic-link login for admin/supervisor access and personnel signatures.
+- Username/password admin login with supervisor access support through Supabase Auth roles.
 - Daily checkoff state, shift archive support, and completion status tracking.
 
 ## Tech Stack
@@ -81,7 +81,6 @@ Key tables include:
 - `unit_compartment_items`
 - `equipment_catalog`
 - `compartment_checks`
-- `personnel_signatures`
 - `users`
 - `user_roles`
 
@@ -90,9 +89,8 @@ Admin server actions use `SUPABASE_SERVICE_ROLE_KEY`, so keep that key server-on
 ## Access Model
 
 - Crew unit selection and compartment checkoffs are public.
-- Admin routes require Supabase authentication and `admin` role in `user_roles`.
-- Personnel sign-off requires authentication so signatures can be tied to a known user.
-- Admin-created users are email-confirmed and default to `user` role.
+- Admin routes require the configured username/password admin session.
+- Supervisor routes use Supabase authentication and `supervisor` role in `user_roles`.
 
 ## QR Codes
 

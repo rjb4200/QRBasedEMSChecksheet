@@ -79,9 +79,9 @@ equipment_catalog (shared across all)
 
 ### 7. Authentication for Privileged Access
 
-**Decision:** Routine crew checkoffs do not require authentication. Admin access uses a dedicated username/password login that creates a signed, HTTP-only admin session cookie. Supervisor access and personnel sign-off continue to use Supabase authenticated identity and role data. Users created by admins are email-confirmed and default to the `user` role.
+**Decision:** Routine crew checkoffs do not require authentication. Admin access uses a dedicated username/password login that creates a signed, HTTP-only admin session cookie. Supervisor access continues to use Supabase authenticated identity and role data.
 
-**Rationale:** Removing login from the checkoff path keeps QR scanning fast for crews. A direct admin username/password gate avoids email validation dependency for admin pages while still storing the admin session in a secure cookie. Supabase authenticated identity remains useful for named sign-off accountability and supervisor role access.
+**Rationale:** Removing login from the checkoff path keeps QR scanning fast for crews. A direct admin username/password gate avoids email validation dependency for admin pages while still storing the admin session in a secure cookie. Supabase authenticated identity remains useful for supervisor role access.
 
 ### 10. Public Entry Point
 

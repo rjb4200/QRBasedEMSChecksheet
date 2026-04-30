@@ -34,11 +34,11 @@ The system SHALL store admin sessions in signed HTTP-only browser cookies so adm
 - **THEN** the system allows access to admin routes without requiring a new login
 
 ### Requirement: Supervisor role-based access control is enforced
-The system SHALL enforce Supabase role-based access for Supervisor routes and personnel identity while admin routes use the dedicated admin session cookie.
+The system SHALL enforce Supabase role-based access for Supervisor routes while admin routes use the dedicated admin session cookie.
 
 #### Scenario: User role access
 - **WHEN** a user with "User" role logs in
-- **THEN** they can sign personnel acknowledgements but cannot access admin features
+- **THEN** they cannot access supervisor or admin features
 
 #### Scenario: Supervisor role access
 - **WHEN** a user with "Supervisor" role logs in
@@ -65,10 +65,3 @@ The admin interface SHALL NOT expose a Users management page because admin acces
 #### Scenario: Admin navigation excludes users page
 - **WHEN** admin views the admin dashboard navigation
 - **THEN** no Users link is displayed
-
-### Requirement: Authenticated identity is used for signatures and supervisor access
-The system SHALL use Supabase authenticated identity for supervisor access and personnel sign-off, while routine compartment checkoff completion remains public and admin access uses the admin session cookie.
-
-#### Scenario: Signature attributed to user
-- **WHEN** an authenticated user signs off after a completed unit checkoff
-- **THEN** the signature is recorded with the user's authenticated email identity

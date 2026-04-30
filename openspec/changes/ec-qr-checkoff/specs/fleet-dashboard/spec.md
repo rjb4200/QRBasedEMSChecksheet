@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Fleet matrix displays all units in a grid
-The admin dashboard SHALL display a grid showing all units with their real-time compartment completion status.
+The admin dashboard SHALL display a top-level Fleet page showing all units with their real-time compartment completion status for the current checkoff day.
 
 #### Scenario: All units visible in fleet matrix
 - **WHEN** admin opens the fleet dashboard
@@ -24,17 +24,6 @@ The admin dashboard SHALL provide a toggle to set each unit's status to "In-Serv
 #### Scenario: Admin toggles unit to In-Service
 - **WHEN** admin sets a unit to "In-Service"
 - **THEN** the unit is included in shift reset and email alert checks
-
-### Requirement: Fleet matrix filters by unit type and shift
-The fleet dashboard SHALL allow filtering units by type (EC, Medic) and current/past shifts.
-
-#### Scenario: Filter by unit type
-- **WHEN** admin selects "Medic" filter
-- **THEN** only medic units are displayed
-
-#### Scenario: Filter by shift
-- **WHEN** admin selects a past shift
-- **THEN** the fleet matrix shows completion status for that shift
 
 ### Requirement: Real-time status via page refresh or polling
 The fleet matrix SHALL update unit statuses periodically via page refresh or automatic polling.

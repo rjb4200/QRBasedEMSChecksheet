@@ -1,22 +1,34 @@
 import { getCurrentShift } from "@/lib/shifts";
-import type { createClient } from "@/lib/supabase/server";
+type SupabaseClient = any;
 
-type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
+type UnitRow = {
+  id: string;
+  name: string;
+  unit_kind: string;
+  status: string;
+  unit_compartments?: { id: string }[] | null;
+};
 
-export async function getFleetStatus(supabase: SupabaseClient, unitKind?: string) {
+type CheckRow = {
+  unit_id: string;
+  status: string;
+};
+
+export async function getFleetStatus(supabase: SupabaseClient) {
   const shift = getCurrentShift();
-  let unitQuery = supabase.from("units").select("id, name, unit_kind, status, unit_compartments(id)").order("name");
-  if (unitKind) unitQuery = unitQuery.eq("unit_kind", unitKind);
 
   const [{ data: units }, { data: checks }] = await Promise.all([
-    unitQuery,
+    supabase.from("units").select("id, name, unit_kind, status, unit_compartments(id)").order("name"),
     supabase.from("compartment_checks").select("unit_id, status").eq("shift_date", shift.shiftDate).eq("shift_period", shift.shiftPeriod),
   ]);
 
-  return (units ?? []).map((unit) => {
+  const unitRows = (units ?? []) as UnitRow[];
+  const checkRows = (checks ?? []) as CheckRow[];
+
+  return unitRows.map((unit) => {
     const total = unit.unit_compartments?.length ?? 0;
-    const completed = (checks ?? []).filter((check) => check.unit_id === unit.id && check.status === "completed").length;
-    const inProgress = (checks ?? []).filter((check) => check.unit_id === unit.id && check.status === "in_progress").length;
+    const completed = checkRows.filter((check) => check.unit_id === unit.id && check.status === "completed").length;
+    const inProgress = checkRows.filter((check) => check.unit_id === unit.id && check.status === "in_progress").length;
     return {
       ...unit,
       total,
