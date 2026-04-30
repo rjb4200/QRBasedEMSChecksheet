@@ -2,7 +2,7 @@ import tseslint from "typescript-eslint";
 
 export default [
   {
-    ignores: [".next/**", "node_modules/**", "supabase/functions/**"],
+    ignores: [".next/**", ".open-next/**", "node_modules/**", "supabase/functions/**"],
   },
   ...tseslint.configs.recommended,
   {

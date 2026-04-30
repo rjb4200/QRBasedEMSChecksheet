@@ -1,22 +1,18 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
+import { ADMIN_COOKIE_NAME, verifyAdminSession } from "@/lib/auth/admin-session";
 import { createAdminClient } from "@/lib/supabase/server-admin";
-import { hasRole, type AppRole } from "@/lib/auth/roles";
 
 export default async function UnitsPage() {
   const supabase = createAdminClient();
-  const authClient = await createClient();
-  const { data: auth } = await authClient.auth.getUser();
-  const [{ data: units }, { data: roleRow }] = await Promise.all([
+  const [{ data: units }, canAccessAdmin] = await Promise.all([
     supabase
     .from("units")
     .select("id, name, unit_kind, unit_compartments(id)")
     .eq("status", "in_service")
       .order("name"),
-    auth.user ? supabase.from("user_roles").select("role").eq("user_id", auth.user.id).maybeSingle() : Promise.resolve({ data: null }),
+    verifyAdminSession((await cookies()).get(ADMIN_COOKIE_NAME)?.value),
   ]);
-  const role = roleRow?.role as AppRole | undefined;
-  const canAccessAdmin = hasRole(role, "admin");
 
   return (
     <main className="min-h-screen bg-slate-950 px-5 py-8 text-white">

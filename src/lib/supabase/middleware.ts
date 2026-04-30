@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import { ADMIN_COOKIE_NAME, verifyAdminSession } from "@/lib/auth/admin-session";
 import { hasRole, type AppRole } from "@/lib/auth/roles";
 
 export async function updateSession(request: NextRequest) {
@@ -28,7 +29,24 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/auth/callback");
-  const protectedRoute = pathname.startsWith("/admin") || pathname.startsWith("/supervisor");
+  const adminSession = await verifyAdminSession(request.cookies.get(ADMIN_COOKIE_NAME)?.value);
+
+  if (pathname.startsWith("/admin")) {
+    if (!adminSession) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/login";
+      redirectUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    return response;
+  }
+
+  if (adminSession && pathname.startsWith("/login")) {
+    return NextResponse.redirect(new URL("/admin", request.url));
+  }
+
+  const protectedRoute = pathname.startsWith("/supervisor");
 
   if (!user && protectedRoute) {
     const redirectUrl = request.nextUrl.clone();
@@ -41,12 +59,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL("/units", request.url));
   }
 
-  if (user && (pathname.startsWith("/admin") || pathname.startsWith("/supervisor"))) {
+  if (user && pathname.startsWith("/supervisor")) {
     const { data: roleRow } = await supabase.from("user_roles").select("role").eq("user_id", user.id).maybeSingle();
     const role = roleRow?.role as AppRole | undefined;
-    const requiredRole: AppRole = pathname.startsWith("/admin") ? "admin" : "supervisor";
 
-    if (!hasRole(role, requiredRole)) {
+    if (!hasRole(role, "supervisor")) {
       return NextResponse.redirect(new URL("/denied", request.url));
     }
   }

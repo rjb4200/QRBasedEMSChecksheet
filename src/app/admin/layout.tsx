@@ -1,23 +1,13 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { hasRole, type AppRole } from "@/lib/auth/roles";
+import { ADMIN_COOKIE_NAME, verifyAdminSession } from "@/lib/auth/admin-session";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const adminSession = await verifyAdminSession((await cookies()).get(ADMIN_COOKIE_NAME)?.value);
 
-  if (!user) {
+  if (!adminSession) {
     redirect("/login?next=/admin");
-  }
-
-  const { data: roleRow } = await supabase.from("user_roles").select("role").eq("user_id", user.id).maybeSingle();
-  const role = roleRow?.role as AppRole | undefined;
-
-  if (!hasRole(role, "admin")) {
-    redirect("/denied");
   }
 
   return (

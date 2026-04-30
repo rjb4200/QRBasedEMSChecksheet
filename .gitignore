@@ -6,6 +6,7 @@ node_modules/
 
 # next.js
 .next/
+.open-next/
 out/
 next-env.d.ts.bak
 
