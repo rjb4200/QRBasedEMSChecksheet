@@ -30,10 +30,10 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
 
       <div className="mx-auto max-w-5xl space-y-4 print:max-w-none print:space-y-0">
         {document.units.map((unit) => (
-          <table key={unit.id} className="unit-print-page w-full border-collapse bg-white p-6 shadow-sm print:p-0 print:shadow-none">
-            <thead>
-              <tr>
-                <td className="p-0">
+          <table key={unit.id} className="unit-print-page block w-full border-collapse bg-white p-6 shadow-sm print:table print:p-0 print:shadow-none">
+            <thead className="block print:table-header-group">
+              <tr className="block print:table-row">
+                <td className="block p-0 print:table-cell">
                   <header className="mb-3 border-b-2 border-slate-950 pb-2 print:mb-1 print:pb-1">
                     <div className="flex items-end justify-between gap-4">
                       <div>
@@ -51,9 +51,9 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
                 </td>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td className="p-0">
+            <tbody className="block print:table-row-group">
+              <tr className="block print:table-row">
+                <td className="block p-0 print:table-cell">
                   <section className="rounded-2xl border border-slate-950 p-2 print:rounded-md print:border-slate-700 print:p-1.5">
                     <div className="columns-1 gap-4 md:columns-2 print:columns-3 print:gap-3">
                       {unit.compartments.map((compartment) => (

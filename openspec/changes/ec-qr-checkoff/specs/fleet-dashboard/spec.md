@@ -39,6 +39,10 @@ The admin Fleet page SHALL provide a print action for the current daily check sh
 - **WHEN** admin clicks "Print Today's Check Sheets" on the Fleet page
 - **THEN** the system opens a print-ready document containing all units, compartments, check statuses, and submitted item values for the current daily checkoff
 
+#### Scenario: Current daily check sheets use records-compatible unit availability
+- **WHEN** daily check sheets are printed for a date
+- **THEN** units created after that date are excluded unless a saved daily unit ledger includes them for that date
+
 #### Scenario: Daily check sheets use compact print layout
 - **WHEN** the print-ready daily check sheets render
 - **THEN** the document uses a three-column layout with print CSS for letter paper, compact typography, reduced margins, rounded box fragments across page breaks, and crew names when available
@@ -50,6 +54,10 @@ The admin Fleet page SHALL provide a print action for the current daily check sh
 #### Scenario: Printed unit header repeats across pages
 - **WHEN** a unit's print-ready daily check sheet extends across multiple printed pages
 - **THEN** each printed page for that unit repeats the unit header with title, unit/date, status, crew, generated timestamp, and completion count
+
+#### Scenario: Print page preview remains readable
+- **WHEN** admin opens the print page in the browser before printing
+- **THEN** the page uses normal card-style formatting instead of exposing print-only table layout artifacts
 
 #### Scenario: Printed exceptions are emphasized
 - **WHEN** the print-ready daily check sheets include missing or below-par item exceptions

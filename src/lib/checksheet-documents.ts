@@ -39,6 +39,7 @@ type UnitRow = {
   id: string;
   name: string;
   status: string;
+  created_at: string;
   unit_compartments?: CompartmentRow[] | null;
 };
 
@@ -102,10 +103,11 @@ function itemExpected(item: UnitItemRow) {
 
 export async function getDailyChecksheetDocument(date = getCurrentShift().shiftDate): Promise<DailyChecksheetDocument> {
   const supabase = createAdminClient();
+  const requestedDate = new Date(`${date}T23:59:59.999Z`);
   const [{ data: units }, { data: ledgers }, { data: archives }, { data: checks }, { data: crews }] = await Promise.all([
     supabase
       .from("units")
-      .select("id, name, status, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))")
+      .select("id, name, status, created_at, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))")
       .order("name"),
     supabase
       .from("daily_unit_ledgers")
@@ -141,9 +143,10 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
     currentCheckMap.set(check.unit_id, [...(currentCheckMap.get(check.unit_id) ?? []), check]);
   }
 
+  const unitsCreatedByDate = unitRows.filter((unit) => new Date(unit.created_at) <= requestedDate);
   const unitSources = ledgerRows.length > 0
     ? ledgerRows.map((ledger) => ({ id: ledger.unit_id, name: ledger.unit_name, status: ledger.unit_status, totalCompartments: ledger.total_compartments }))
-    : unitRows.map((unit) => ({ id: unit.id, name: unit.name, status: unit.status, totalCompartments: unit.unit_compartments?.length ?? 0 }));
+    : unitsCreatedByDate.map((unit) => ({ id: unit.id, name: unit.name, status: unit.status, totalCompartments: unit.unit_compartments?.length ?? 0 }));
 
   return {
     date,

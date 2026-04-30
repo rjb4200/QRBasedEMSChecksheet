@@ -77,7 +77,11 @@ The admin interface SHALL allow printing the same compact daily check sheet docu
 
 #### Scenario: Print historical daily check sheets
 - **WHEN** admin clicks "Print Check Sheets" for a daily record
-- **THEN** the system opens a print-ready two-column daily check sheet document for that historical date
+- **THEN** the system opens a print-ready three-column daily check sheet document for that historical date using the same unit availability rules as Records
+
+#### Scenario: Historical print excludes future units
+- **WHEN** admin prints check sheets for a date before a unit was created and no saved ledger includes that unit for that date
+- **THEN** that unit is excluded from the historical printout
 
 ### Requirement: Archive viewer displays historical shift data
 The admin interface SHALL provide an archive viewer that displays historical compartment checkoff data in a readable format.
