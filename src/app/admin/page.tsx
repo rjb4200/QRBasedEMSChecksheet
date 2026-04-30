@@ -26,8 +26,8 @@ export default async function AdminDashboardPage() {
           <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Exceptions</p>
-              <h2 className="mt-2 text-3xl font-black">Unchecked / Below-Par Items</h2>
-              <p className="mt-2 text-slate-600">Items submitted unchecked or below par for the current checkoff day.</p>
+              <h2 className="mt-2 text-3xl font-black">Missing or Below-Par Items</h2>
+              <p className="mt-2 text-slate-600">Items submitted missing or below par for the current checkoff day.</p>
             </div>
             <p className="text-3xl font-black text-slate-950">{discrepancies.length}</p>
           </div>
@@ -51,7 +51,7 @@ export default async function AdminDashboardPage() {
                       <td className="p-3 font-black">{item.unitName}</td>
                       <td className="p-3 font-semibold">{item.compartmentName}</td>
                       <td className="p-3">{item.itemName}</td>
-                      <td className="p-3 capitalize text-red-700">{item.inputType === "checkbox" ? "Unchecked" : "Below par"}</td>
+                      <td className="p-3 capitalize text-red-700">{item.inputType === "checkbox" ? "Missing" : "Below par"}</td>
                       <td className="p-3 font-semibold">{item.actual} / {item.expected}</td>
                     </tr>
                   ))}

@@ -33,11 +33,11 @@ The fleet matrix SHALL update unit statuses periodically via page refresh or aut
 - **THEN** the fleet matrix refreshes with current completion data
 
 ### Requirement: Fleet page displays submitted item exceptions
-The admin Fleet page SHALL display submitted checkoff items that are unchecked or below their configured par count for the current checkoff day.
+The admin Fleet page SHALL display submitted checkoff items that are missing or below their configured par count for the current checkoff day.
 
-#### Scenario: Checkbox submitted unchecked
-- **WHEN** a completed compartment checkoff includes a checkbox item saved as unchecked
-- **THEN** the Fleet page exceptions panel lists the unit, compartment, item, and unchecked issue
+#### Scenario: Checkbox submitted missing
+- **WHEN** a completed compartment checkoff includes a checkbox item saved as missing
+- **THEN** the Fleet page exceptions panel lists the unit, compartment, item, and missing issue
 
 #### Scenario: Quantity submitted below par
 - **WHEN** a completed compartment checkoff includes a quantity item below its configured par level

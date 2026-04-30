@@ -22,11 +22,11 @@ If all in-service units are 100% complete and no submitted item exceptions exist
 - **THEN** no email alert is sent at 09:00 unless submitted item exceptions exist
 
 ### Requirement: Alert includes submitted item exceptions
-Email alerts SHALL include completed checkoff items that were submitted unchecked or below configured par count.
+Email alerts SHALL include completed checkoff items that were submitted missing or below configured par count.
 
-#### Scenario: Alert includes unchecked checkbox item
-- **WHEN** a checkbox item is submitted unchecked before the alert runs
-- **THEN** the alert includes the unit, compartment, item, and unchecked status
+#### Scenario: Alert includes missing checkbox item
+- **WHEN** a checkbox item is submitted missing before the alert runs
+- **THEN** the alert includes the unit, compartment, item, and missing status
 
 #### Scenario: Alert includes below-par quantity item
 - **WHEN** a quantity item is submitted below par before the alert runs
