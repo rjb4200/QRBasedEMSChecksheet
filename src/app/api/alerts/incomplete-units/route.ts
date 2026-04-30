@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
       .from("units")
       .select("id, name, unit_compartments(id), shift_archives(completed_compartments, total_compartments, completion_percentage)")
       .eq("status", "in_service")
+      .is("deleted_at", null)
       .eq("shift_archives.shift_date", shiftDate)
       .eq("shift_archives.shift_period", shiftPeriod)
       .order("name"),

@@ -115,6 +115,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
   let unitsQuery = supabase
     .from("units")
     .select("id, name, status, unit_compartments(id)")
+    .is("deleted_at", null)
     .order("name");
 
   if (params.unitId) {

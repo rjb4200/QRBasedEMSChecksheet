@@ -9,7 +9,7 @@ export default async function ProviderAnalyticsPage({ searchParams }: { searchPa
   if (params.unitId) query = query.eq("unit_id", params.unitId);
   const [{ data: checks }, { data: units }, { data: configuredItems }] = await Promise.all([
     query,
-    supabase.from("units").select("id, name").order("name"),
+    supabase.from("units").select("id, name").is("deleted_at", null).order("name"),
     supabase.from("unit_compartment_items").select("id, compartment_id, par_level"),
   ]);
   const parMap = new Map((configuredItems ?? []).map((item) => [item.id, { compartmentId: item.compartment_id, parLevel: item.par_level }]));

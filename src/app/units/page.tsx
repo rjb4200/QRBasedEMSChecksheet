@@ -10,6 +10,7 @@ export default async function UnitsPage() {
     .from("units")
     .select("id, name, unit_kind, unit_compartments(id)")
     .eq("status", "in_service")
+    .is("deleted_at", null)
       .order("name"),
     verifyAdminSession((await cookies()).get(ADMIN_COOKIE_NAME)?.value),
   ]);

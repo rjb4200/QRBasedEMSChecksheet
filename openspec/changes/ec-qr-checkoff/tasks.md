@@ -58,6 +58,7 @@
 - [x] 5.9 Add single-compartment import
 - [x] 5.10 Add linked compartment groups for shared item changes
 - [x] 5.11 Delete individual unit compartment items without deleting the compartment
+- [x] 5.12 Soft-delete units so historical records remain available
 
 ## 6. QR Code Generation
 
@@ -117,6 +118,7 @@
 - [x] 11.5 Implement previous shift completion summary display (X of Y done, Z%)
 - [x] 11.6 Add 5-minute buffer warning before shift reset (05:55)
 - [x] 11.7 Save daily unit ledger snapshot at reset for historical fleet counts
+- [x] 11.8 Exclude soft-deleted units from future shift reset ledgers
 
 ## 12. Email Alerts
 
@@ -153,6 +155,7 @@
 - [x] 14.6 Add simple and detailed records CSV export options
 - [x] 14.7 Add historical daily check sheet print action
 - [x] 14.8 Include crew names and crew lock status in records completion/export
+- [x] 14.9 Preserve deleted units in historical records and printouts for dates when present
 
 ## 15. Provider Analytics
 

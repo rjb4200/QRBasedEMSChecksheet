@@ -22,7 +22,8 @@ Deno.serve(async () => {
 
   const { data: units, error: unitsError } = await supabase
     .from("units")
-    .select("id, name, status, unit_compartments(id)");
+    .select("id, name, status, unit_compartments(id)")
+    .is("deleted_at", null);
 
   if (unitsError) {
     return Response.json({ error: unitsError.message }, { status: 500 });

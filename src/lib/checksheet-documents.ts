@@ -40,6 +40,7 @@ type UnitRow = {
   name: string;
   status: string;
   created_at: string;
+  deleted_at: string | null;
   unit_compartments?: CompartmentRow[] | null;
 };
 
@@ -103,11 +104,12 @@ function itemExpected(item: UnitItemRow) {
 
 export async function getDailyChecksheetDocument(date = getCurrentShift().shiftDate): Promise<DailyChecksheetDocument> {
   const supabase = createAdminClient();
-  const requestedDate = new Date(`${date}T23:59:59.999Z`);
+  const requestedStart = new Date(`${date}T00:00:00.000Z`);
+  const requestedEnd = new Date(`${date}T23:59:59.999Z`);
   const [{ data: units }, { data: ledgers }, { data: archives }, { data: checks }, { data: crews }] = await Promise.all([
     supabase
       .from("units")
-      .select("id, name, status, created_at, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))")
+      .select("id, name, status, created_at, deleted_at, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))")
       .order("name"),
     supabase
       .from("daily_unit_ledgers")
@@ -143,10 +145,10 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
     currentCheckMap.set(check.unit_id, [...(currentCheckMap.get(check.unit_id) ?? []), check]);
   }
 
-  const unitsCreatedByDate = unitRows.filter((unit) => new Date(unit.created_at) <= requestedDate);
+  const unitsAvailableOnDate = unitRows.filter((unit) => new Date(unit.created_at) <= requestedEnd && (!unit.deleted_at || new Date(unit.deleted_at) >= requestedStart));
   const unitSources = ledgerRows.length > 0
     ? ledgerRows.map((ledger) => ({ id: ledger.unit_id, name: ledger.unit_name, status: ledger.unit_status, totalCompartments: ledger.total_compartments }))
-    : unitsCreatedByDate.map((unit) => ({ id: unit.id, name: unit.name, status: unit.status, totalCompartments: unit.unit_compartments?.length ?? 0 }));
+    : unitsAvailableOnDate.map((unit) => ({ id: unit.id, name: unit.name, status: unit.status, totalCompartments: unit.unit_compartments?.length ?? 0 }));
 
   return {
     date,

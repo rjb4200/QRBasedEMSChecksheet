@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminUnitsPage() {
   const supabase = createAdminClient();
-  const { data: units } = await supabase.from("units").select("id, name, unit_kind, status, unit_compartments(id)").order("name");
+  const { data: units } = await supabase.from("units").select("id, name, unit_kind, status, unit_compartments(id)").is("deleted_at", null).order("name");
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">

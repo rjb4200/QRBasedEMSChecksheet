@@ -37,6 +37,10 @@ The admin interface SHALL provide a past checkoff records view that defaults to 
 - **WHEN** admin views a historical day
 - **THEN** the in-service unit denominator comes from the saved daily unit ledger for that day, not the current units table
 
+#### Scenario: Deleted unit remains in historical records
+- **WHEN** a unit is deleted after it appeared in saved daily records
+- **THEN** historical records for days when the unit was present still include that unit
+
 #### Scenario: No ledger exists for a historical day
 - **WHEN** a day has no saved unit ledger rows
 - **THEN** the daily row displays "0/0" and indicates that no unit ledger was saved for that day
@@ -82,6 +86,10 @@ The admin interface SHALL allow printing the same compact daily check sheet docu
 #### Scenario: Historical print excludes future units
 - **WHEN** admin prints check sheets for a date before a unit was created and no saved ledger includes that unit for that date
 - **THEN** that unit is excluded from the historical printout
+
+#### Scenario: Historical print preserves deleted units
+- **WHEN** admin prints check sheets for a date when a now-deleted unit was present
+- **THEN** that unit is included in the printout using its preserved unit configuration and records-compatible availability
 
 ### Requirement: Archive viewer displays historical shift data
 The admin interface SHALL provide an archive viewer that displays historical compartment checkoff data in a readable format.

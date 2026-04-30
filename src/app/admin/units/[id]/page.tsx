@@ -6,7 +6,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const supabase = await createAdminClient();
   const [{ data: unit }, { data: equipment }, { data: sourceCompartments }] = await Promise.all([
-    supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, photo_url, linked_group, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))").eq("id", id).single(),
+    supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, photo_url, linked_group, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))").eq("id", id).is("deleted_at", null).single(),
     supabase.from("equipment_catalog").select("id, name, default_par_level, input_type").order("name"),
     supabase.from("unit_compartments").select("id, name, units(name)").order("name"),
   ]);

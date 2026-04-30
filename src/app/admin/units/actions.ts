@@ -14,7 +14,7 @@ export async function createUnit(formData: FormData) {
   const supabase = createAdminClient();
   const { data: unit, error } = await supabase
     .from("units")
-    .upsert({ name: parsed.name, unit_kind: parsed.unitKind }, { onConflict: "name" })
+    .upsert({ name: parsed.name, unit_kind: parsed.unitKind, deleted_at: null }, { onConflict: "name" })
     .select("id")
     .single();
   if (error) throw new Error(error.message);
@@ -69,7 +69,7 @@ export async function toggleUnitStatus(formData: FormData) {
 export async function deleteUnit(formData: FormData) {
   const id = z.string().uuid().parse(formData.get("id"));
   const supabase = createAdminClient();
-  const { error } = await supabase.from("units").delete().eq("id", id);
+  const { error } = await supabase.from("units").update({ deleted_at: new Date().toISOString(), status: "out_of_service" }).eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/admin/units");
 }

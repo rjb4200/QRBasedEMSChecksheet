@@ -9,7 +9,8 @@ export default async function UnitQrPage({ params }: { params: Promise<{ id: str
   const { data: unit } = await supabase
     .from("units")
     .select("id, name, unit_compartments(id, name, sort_order)")
-    .eq("id", id)
+      .eq("id", id)
+      .is("deleted_at", null)
     .single();
   const appUrl = await getAppOrigin();
   const codes = await Promise.all((unit?.unit_compartments ?? []).sort((a, b) => a.sort_order - b.sort_order).map(async (compartment) => {

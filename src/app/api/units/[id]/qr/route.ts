@@ -10,6 +10,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     .from("units")
     .select("id, name, unit_compartments(id, name)")
     .eq("id", id)
+    .is("deleted_at", null)
     .single();
 
   if (error) {

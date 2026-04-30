@@ -33,6 +33,10 @@ At the daily reset time, the system SHALL save a ledger snapshot of every unit f
 - **WHEN** a unit is deleted or a new unit is added after a ledger day is saved
 - **THEN** prior daily records continue to display from the saved ledger snapshot rather than the current units table
 
+#### Scenario: Soft-deleted units excluded from future ledgers
+- **WHEN** a unit has been deleted before the shift reset runs
+- **THEN** future daily ledger snapshots do not include that deleted unit
+
 ### Requirement: In-progress checks are saved as partially complete
 At the daily reset time, all compartments with Yellow (in-progress) status SHALL be saved as "partially complete" with all entered data preserved.
 

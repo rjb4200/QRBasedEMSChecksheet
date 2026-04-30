@@ -24,7 +24,7 @@ export async function getFleetStatus(supabase: SupabaseClient) {
   const shift = getCurrentShift();
 
   const [{ data: units }, { data: checks }, { data: crews }] = await Promise.all([
-    supabase.from("units").select("id, name, unit_kind, status, unit_compartments(id)").order("name"),
+    supabase.from("units").select("id, name, unit_kind, status, unit_compartments(id)").is("deleted_at", null).order("name"),
     supabase.from("compartment_checks").select("unit_id, status").eq("shift_date", shift.shiftDate).eq("shift_period", shift.shiftPeriod),
     supabase.from("daily_unit_crews").select("unit_id, provider_names, locked").eq("shift_date", shift.shiftDate).eq("shift_period", shift.shiftPeriod),
   ]);

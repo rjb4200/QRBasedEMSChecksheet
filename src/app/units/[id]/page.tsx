@@ -43,7 +43,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   const currentShift = getCurrentShift();
   const previousShift = getPreviousShift();
   const [{ data: unit }, { data: checks }, { data: previousArchive }, { data: crew }] = await Promise.all([
-    supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))").eq("id", id).single(),
+    supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))").eq("id", id).is("deleted_at", null).single(),
     supabase.from("compartment_checks").select("compartment_id, status").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
     supabase.from("shift_archives").select("completed_compartments, total_compartments, completion_percentage, check_data").eq("unit_id", id).eq("shift_date", previousShift.shiftDate).eq("shift_period", previousShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_crews").select("provider_names, locked").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),

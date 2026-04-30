@@ -84,3 +84,14 @@ Once a unit is created (from another unit or scratch), changes to the source uni
 #### Scenario: Source unit change doesn't affect copied unit
 - **WHEN** admin modifies a source unit after another unit was created from it
 - **THEN** the copied unit's compartments and items remain unchanged
+
+### Requirement: Deleting a unit preserves historical records
+The unit builder SHALL soft-delete units from current workflows instead of hard-deleting rows that historical records depend on.
+
+#### Scenario: Delete hides unit from current workflows
+- **WHEN** admin deletes a unit
+- **THEN** the unit is hidden from current fleet, crew checkoff, QR, alert, analytics, and unit builder lists
+
+#### Scenario: Delete does not remove history
+- **WHEN** admin deletes a unit that has past daily records
+- **THEN** the unit's historical ledgers, archives, crew names, and printable historical check sheets remain available for dates when the unit was present
