@@ -20,6 +20,13 @@ export type DailyUnitRecord = {
   hasArchive: boolean;
 };
 
+export type DailyRecordGroup = {
+  date: string;
+  completedInServiceUnits: number;
+  totalInServiceUnits: number;
+  records: DailyUnitRecord[];
+};
+
 type UnitRow = {
   id: string;
   name: string;
@@ -68,7 +75,7 @@ function eachDate(from: Date, to: Date) {
 export function getDefaultArchiveRange(params: ArchiveSearchParams) {
   const today = new Date();
   const defaultTo = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
-  const defaultFrom = addDays(defaultTo, -364);
+  const defaultFrom = addDays(defaultTo, -13);
   let from = parseDateInput(params.from, defaultFrom);
   let to = parseDateInput(params.to, defaultTo);
 
@@ -132,7 +139,32 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
     }
   }
 
-  return { range, records, units: unitRows };
+  return { groups: groupDailyUnitRecords(records), range, records, units: unitRows };
+}
+
+export function groupDailyUnitRecords(records: DailyUnitRecord[]) {
+  const groups = new Map<string, DailyRecordGroup>();
+
+  for (const record of records) {
+    const group = groups.get(record.date) ?? {
+      date: record.date,
+      completedInServiceUnits: 0,
+      totalInServiceUnits: 0,
+      records: [],
+    };
+
+    if (record.unitStatus === "in_service") {
+      group.totalInServiceUnits += 1;
+      if (record.archiveStatus === "completed" || record.completionPercentage >= 100) {
+        group.completedInServiceUnits += 1;
+      }
+    }
+
+    group.records.push(record);
+    groups.set(record.date, group);
+  }
+
+  return Array.from(groups.values());
 }
 
 export function archiveRecordToCsv(records: DailyUnitRecord[]) {

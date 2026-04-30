@@ -10,19 +10,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@radix-ui/react-slot": "latest",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
-    "class-variance-authority": "latest",
-    "clsx": "latest",
     "html5-qrcode": "^2.3.8",
-    "lucide-react": "latest",
     "next": "latest",
-    "next-themes": "latest",
     "qrcode": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "tailwind-merge": "latest",
     "zod": "latest"
   },
   "devDependencies": {

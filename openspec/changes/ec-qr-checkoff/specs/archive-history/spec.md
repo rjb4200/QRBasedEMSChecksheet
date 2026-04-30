@@ -11,8 +11,8 @@ At each shift reset, all compartment checkoff data (completed and partial) SHALL
 - **WHEN** the 06:00 shift reset occurs
 - **THEN** all Yellow compartments are saved to the archive with status "partially complete"
 
-### Requirement: Archive is queryable by date range, unit, and user
-The admin interface SHALL allow querying archived shift data by date range, unit, and user.
+### Requirement: Archive is queryable by date range and unit
+The admin interface SHALL allow querying archived shift data by date range and unit.
 
 #### Scenario: Query by date range
 - **WHEN** admin searches for records from 2026-04-01 to 2026-04-15
@@ -22,24 +22,32 @@ The admin interface SHALL allow querying archived shift data by date range, unit
 - **WHEN** admin filters by unit "EC3"
 - **THEN** all archived shifts for EC3 are returned
 
-#### Scenario: Query by user
-- **WHEN** admin filters by user "John Doe"
-- **THEN** all archived shifts where John Doe performed checkoffs are returned
-
-### Requirement: Admin can view last-year daily unit records
-The admin interface SHALL provide a past checkoff records view that defaults to the last 365 days and includes one row for each unit on each day.
+### Requirement: Admin can view daily fleet checkoff records
+The admin interface SHALL provide a past checkoff records view that defaults to the last 14 days and displays one expandable row per day.
 
 #### Scenario: Admin opens past checkoff records
 - **WHEN** admin opens the records page without filters
-- **THEN** the system displays daily records for every unit for the last year
+- **THEN** the system displays daily fleet summary rows for the last 14 days
+
+#### Scenario: Daily row summarizes fleet completion
+- **WHEN** a day has four complete in-service units out of five in-service units
+- **THEN** the daily row displays "4/5" as the completion summary
+
+#### Scenario: Daily row shows unit status bubbles
+- **WHEN** admin views a daily row
+- **THEN** the row displays one status-colored bubble for each unit included in the current filter
+
+#### Scenario: Daily row expands to unit details
+- **WHEN** admin expands a daily row
+- **THEN** the system displays each unit's unit status, compartment count, completed compartments, completion percentage, record status, and archive detail link when available
 
 #### Scenario: Unit-day has no archive
 - **WHEN** a unit has no archive row for a date in the selected range
-- **THEN** the records table still includes that unit/date and marks it as "No record"
+- **THEN** the expanded daily details still include that unit/date and mark it as "No record"
 
 #### Scenario: Admin filters past records
 - **WHEN** admin selects a date range or unit filter
-- **THEN** the records table updates to only include matching unit-day records
+- **THEN** the daily summary rows and expanded details update to only include matching unit-day records
 
 ### Requirement: Admin can export past checkoff records to CSV
 The admin interface SHALL allow exporting the selected past checkoff records to CSV.

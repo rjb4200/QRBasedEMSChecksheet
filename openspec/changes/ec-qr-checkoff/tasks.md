@@ -29,10 +29,10 @@
 - [x] 3.1 Implement admin username/password login flow with signed HTTP-only cookie session
 - [x] 3.2 Remove OAuth provider login dependency
 - [x] 3.3 Create role-based access middleware (User/Supervisor/Admin)
-- [x] 3.4 Create user role management UI for admins
+- [x] 3.4 Remove admin user management UI because admin access uses configured username/password login
 - [x] 3.5 Allow public crew checkoffs without login while keeping admin/supervisor routes protected
 - [x] 3.6 Create login page and auth redirect logic
-- [x] 3.7 Allow admins to create confirmed users with default User role and edit full names
+- [x] 3.7 Keep Supabase user records for signatures without exposing an admin Users page
 - [x] 3.8 Store admin password as a hash and allow production overrides through server-only environment variables
 
 ## 4. Equipment Catalog & Unit Copy Management

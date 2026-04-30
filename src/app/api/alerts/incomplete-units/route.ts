@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildMissedCheckoffEmail } from "@/lib/email/missed-checkoff";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient } from "@/lib/supabase/server-admin";
 
 function getAlertShift(now = new Date()) {
   const local = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));

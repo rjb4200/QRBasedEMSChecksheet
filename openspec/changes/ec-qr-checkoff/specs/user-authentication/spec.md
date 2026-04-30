@@ -59,20 +59,12 @@ The system SHALL protect admin access with the signed admin session cookie and s
 - **WHEN** a user with a valid admin session opens an admin route
 - **THEN** the system allows access to the admin panel
 
-### Requirement: User roles are managed by admins
-The admin interface SHALL allow creating users, editing full names, and assigning or changing user roles in a `user_roles` table.
+### Requirement: Admin user management page is not exposed
+The admin interface SHALL NOT expose a Users management page because admin access is controlled by the configured username/password session.
 
-#### Scenario: Admin creates user
-- **WHEN** admin enters an email address and optional full name
-- **THEN** the system creates or updates the Supabase Auth user, confirms the email, creates or updates the profile row, and assigns the `user` role by default
-
-#### Scenario: Admin edits user name
-- **WHEN** admin updates a user's full name on the Users page
-- **THEN** the profile name is saved and shown in admin user lists and authenticated signatures
-
-#### Scenario: Admin assigns role to user
-- **WHEN** admin assigns the "Supervisor" role to a user
-- **THEN** the user gains supervisor-level access on next request
+#### Scenario: Admin navigation excludes users page
+- **WHEN** admin views the admin dashboard navigation
+- **THEN** no Users link is displayed
 
 ### Requirement: Authenticated identity is used for signatures and supervisor access
 The system SHALL use Supabase authenticated identity for supervisor access and personnel sign-off, while routine compartment checkoff completion remains public and admin access uses the admin session cookie.
