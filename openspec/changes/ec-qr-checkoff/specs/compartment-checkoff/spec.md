@@ -26,8 +26,12 @@ Routine compartment checkoff forms SHALL be accessible and submittable without a
 The unit checkoff page SHALL allow providers checking the unit to enter crew names for the current daily checkoff.
 
 #### Scenario: Provider names saved for current unit checkoff
-- **WHEN** a crew member enters provider names below Current progress and saves
-- **THEN** the names are stored for that unit and daily checkoff date
+- **WHEN** a crew member enters provider names below Current progress and taps the unlocked icon
+- **THEN** the names are stored for that unit and daily checkoff date, the field turns green, and the icon changes to locked
+
+#### Scenario: Provider names unlocked for editing
+- **WHEN** a crew member taps the locked icon
+- **THEN** the provider names field unlocks for editing and can be saved again by tapping the unlocked icon
 
 ### Requirement: Unit checkoff page shows past check exceptions before previous shift summary
 The unit checkoff page SHALL show missing and below-par exceptions from the previous shift near the bottom of the page, followed by the previous shift completion summary.

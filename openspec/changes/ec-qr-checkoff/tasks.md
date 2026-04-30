@@ -95,6 +95,7 @@
 - [x] 8.12 Handle invalid QR code scan with error message
 - [x] 8.13 Improve scan page visual hierarchy for scanner controls
 - [x] 8.14 Add current-day unit crew names and previous-check exceptions to unit checkoff page
+- [x] 8.15 Add lock/unlock feedback for saving current-day unit crew names
 
 ## 9. Collision Prevention
 

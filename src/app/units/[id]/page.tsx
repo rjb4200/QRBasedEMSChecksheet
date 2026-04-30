@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { saveUnitCrew } from "./actions";
+import { CrewNameLock } from "./crew-name-lock";
 import { ShiftResetWarning } from "./shift-reset-warning";
 import { getCurrentShift, getPreviousShift, getShiftLabel } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
@@ -89,12 +89,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
           </div>
         </div>
 
-        <form action={saveUnitCrew} className="rounded-3xl bg-white p-5 shadow-sm">
-          <input name="unitId" type="hidden" value={id} />
-          <label className="text-sm font-semibold text-slate-600" htmlFor="providerNames">Crew / Providers checking this unit</label>
-          <textarea className="mt-2 min-h-24 w-full rounded-2xl border border-slate-300 px-4 py-3 font-semibold" defaultValue={crew?.provider_names ?? ""} id="providerNames" name="providerNames" placeholder="Enter provider names" />
-          <button className="mt-3 rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Save Crew Names</button>
-        </form>
+        <CrewNameLock initialProviderNames={crew?.provider_names ?? ""} unitId={id} />
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {compartments.map((compartment) => {

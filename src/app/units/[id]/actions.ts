@@ -1,14 +1,13 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getCurrentShift } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
-export async function saveUnitCrew(formData: FormData) {
+export async function saveUnitCrew(unitId: string, providerNames: string) {
   const parsed = z.object({ unitId: z.string().uuid(), providerNames: z.string().max(1000) }).parse({
-    unitId: formData.get("unitId"),
-    providerNames: formData.get("providerNames") ?? "",
+    unitId,
+    providerNames,
   });
   const shift = getCurrentShift();
   const supabase = createAdminClient();
@@ -20,5 +19,4 @@ export async function saveUnitCrew(formData: FormData) {
   }, { onConflict: "shift_date,shift_period,unit_id" });
 
   if (error) throw new Error(error.message);
-  revalidatePath(`/units/${parsed.unitId}`);
 }
