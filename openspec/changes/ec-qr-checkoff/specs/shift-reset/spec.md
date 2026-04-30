@@ -18,6 +18,21 @@ At the daily reset time (06:00), all compartments with Green (completed) status 
 - **WHEN** the 06:00 shift reset occurs
 - **THEN** all completed compartments from the previous daily checkoff are saved to archive
 
+### Requirement: Unit ledger is saved at shift reset
+At the daily reset time, the system SHALL save a ledger snapshot of every unit for the day being closed, including unit id, unit name, unit status, and total compartment count.
+
+#### Scenario: Unit status snapshot is saved
+- **WHEN** the 06:00 shift reset occurs
+- **THEN** the system saves one daily ledger row for each unit with that unit's status at reset time
+
+#### Scenario: Out-of-service unit affects history forward only
+- **WHEN** a unit is set out of service before a reset
+- **THEN** future daily ledger rows save that unit as out of service without changing prior daily ledger rows
+
+#### Scenario: Deleted or added units do not break historical records
+- **WHEN** a unit is deleted or a new unit is added after a ledger day is saved
+- **THEN** prior daily records continue to display from the saved ledger snapshot rather than the current units table
+
 ### Requirement: In-progress checks are saved as partially complete
 At the daily reset time, all compartments with Yellow (in-progress) status SHALL be saved as "partially complete" with all entered data preserved.
 

@@ -40,6 +40,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                 </div>
                 <div className="text-3xl font-black text-slate-950">{group.completedInServiceUnits}/{group.totalInServiceUnits}</div>
                 <div className="flex flex-wrap gap-2" aria-label={`Unit statuses for ${group.date}`}>
+                  {group.records.length === 0 ? <span className="rounded-full bg-slate-200 px-3 py-2 text-xs font-black text-slate-600">No units saved</span> : null}
                   {group.records.map((record) => {
                     const bubbleColor = record.unitStatus !== "in_service"
                       ? "bg-slate-300 text-slate-700"
@@ -67,6 +68,11 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                     </tr>
                   </thead>
                   <tbody>
+                    {group.records.length === 0 ? (
+                      <tr className="border-t border-slate-200">
+                        <td className="p-4 text-slate-500" colSpan={7}>No unit ledger was saved for this day.</td>
+                      </tr>
+                    ) : null}
                     {group.records.map((record) => (
                       <tr key={`${record.date}-${record.unitId}`} className="border-t border-slate-200">
                         <td className="p-4 font-black">{record.unitName}</td>

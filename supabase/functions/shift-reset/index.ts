@@ -22,14 +22,32 @@ Deno.serve(async () => {
 
   const { data: units, error: unitsError } = await supabase
     .from("units")
-    .select("id, unit_compartments(id)")
-    .eq("status", "in_service");
+    .select("id, name, status, unit_compartments(id)");
 
   if (unitsError) {
     return Response.json({ error: unitsError.message }, { status: 500 });
   }
 
-  for (const unit of units ?? []) {
+  const ledgerRows = (units ?? []).map((unit) => ({
+    shift_date: shiftDate,
+    shift_period: shiftPeriod,
+    unit_id: unit.id,
+    unit_name: unit.name,
+    unit_status: unit.status,
+    total_compartments: unit.unit_compartments?.length ?? 0,
+  }));
+
+  if (ledgerRows.length > 0) {
+    const { error: ledgerError } = await supabase
+      .from("daily_unit_ledgers")
+      .upsert(ledgerRows, { onConflict: "shift_date,shift_period,unit_id" });
+
+    if (ledgerError) {
+      return Response.json({ error: ledgerError.message }, { status: 500 });
+    }
+  }
+
+  for (const unit of (units ?? []).filter((unit) => unit.status === "in_service")) {
     const totalCompartments = unit.unit_compartments?.length ?? 0;
     const { data: checks, error: checksError } = await supabase
       .from("compartment_checks")

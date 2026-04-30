@@ -33,6 +33,14 @@ The admin interface SHALL provide a past checkoff records view that defaults to 
 - **WHEN** a day has four complete in-service units out of five in-service units
 - **THEN** the daily row displays "4/5" as the completion summary
 
+#### Scenario: Daily row uses saved unit ledger
+- **WHEN** admin views a historical day
+- **THEN** the in-service unit denominator comes from the saved daily unit ledger for that day, not the current units table
+
+#### Scenario: No ledger exists for a historical day
+- **WHEN** a day has no saved unit ledger rows
+- **THEN** the daily row displays "0/0" and indicates that no unit ledger was saved for that day
+
 #### Scenario: Daily row shows unit status bubbles
 - **WHEN** admin views a daily row
 - **THEN** the row displays one status-colored bubble for each unit included in the current filter

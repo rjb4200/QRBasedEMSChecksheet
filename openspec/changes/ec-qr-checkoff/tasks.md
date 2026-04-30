@@ -113,6 +113,7 @@
 - [x] 11.4 Reset all compartments to Grey status for new shift
 - [x] 11.5 Implement previous shift completion summary display (X of Y done, Z%)
 - [x] 11.6 Add 5-minute buffer warning before shift reset (05:55)
+- [x] 11.7 Save daily unit ledger snapshot at reset for historical fleet counts
 
 ## 12. Email Alerts
 
@@ -133,10 +134,11 @@
 
 ## 14. Archive History
 
-- [x] 14.1 Build archive list view with date range, unit, and user filters
+- [x] 14.1 Build archive list view with date range and unit filters
 - [x] 14.2 Build archive detail view showing all compartment data for a shift
 - [x] 14.3 Display partially complete markers with completion percentage
 - [x] 14.4 Display personnel signatures for archived shifts
+- [x] 14.5 Use saved daily unit ledgers so OOS/deleted/added units do not rewrite history
 
 ## 15. Provider Analytics
 

@@ -34,6 +34,16 @@ type UnitRow = {
   unit_compartments?: { id: string }[] | null;
 };
 
+type LedgerRow = {
+  id: string;
+  shift_date: string;
+  shift_period: string;
+  unit_id: string;
+  unit_name: string;
+  unit_status: string;
+  total_compartments: number;
+};
+
 type ArchiveRow = {
   id: string;
   shift_date: string;
@@ -101,8 +111,21 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
     unitsQuery = unitsQuery.eq("id", params.unitId);
   }
 
-  const [{ data: units }, { data: archives }] = await Promise.all([
+  let ledgerQuery = supabase
+    .from("daily_unit_ledgers")
+    .select("id, shift_date, shift_period, unit_id, unit_name, unit_status, total_compartments")
+    .gte("shift_date", range.from)
+    .lte("shift_date", range.to)
+    .order("shift_date", { ascending: false })
+    .order("unit_name");
+
+  if (params.unitId) {
+    ledgerQuery = ledgerQuery.eq("unit_id", params.unitId);
+  }
+
+  const [{ data: units }, { data: ledgers }, { data: archives }] = await Promise.all([
     unitsQuery,
+    ledgerQuery,
     supabase
       .from("shift_archives")
       .select("id, shift_date, shift_period, unit_id, status, completion_percentage, completed_compartments, total_compartments")
@@ -112,24 +135,31 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
   ]);
 
   const unitRows = (units ?? []) as UnitRow[];
+  const ledgerRows = (ledgers ?? []) as LedgerRow[];
   const archiveRows = (archives ?? []) as ArchiveRow[];
   const archiveMap = new Map(archiveRows.map((archive) => [`${archive.unit_id}:${archive.shift_date}:${archive.shift_period}`, archive]));
   const dates = eachDate(new Date(`${range.from}T00:00:00.000Z`), new Date(`${range.to}T00:00:00.000Z`)).reverse();
+  const ledgerMap = new Map<string, LedgerRow[]>();
   const records: DailyUnitRecord[] = [];
 
+  for (const ledger of ledgerRows) {
+    const key = `${ledger.shift_date}:${ledger.shift_period}`;
+    ledgerMap.set(key, [...(ledgerMap.get(key) ?? []), ledger]);
+  }
+
   for (const date of dates) {
-    for (const unit of unitRows) {
-      const archive = archiveMap.get(`${unit.id}:${date}:daily`);
-      const totalCompartments = archive?.total_compartments ?? unit.unit_compartments?.length ?? 0;
+    for (const ledger of ledgerMap.get(`${date}:daily`) ?? []) {
+      const archive = archiveMap.get(`${ledger.unit_id}:${date}:daily`);
+      const totalCompartments = archive?.total_compartments ?? ledger.total_compartments;
       const completedCompartments = archive?.completed_compartments ?? 0;
 
       records.push({
         archiveId: archive?.id ?? null,
         date,
         shiftPeriod: archive?.shift_period ?? "daily",
-        unitId: unit.id,
-        unitName: unit.name,
-        unitStatus: unit.status,
+        unitId: ledger.unit_id,
+        unitName: ledger.unit_name,
+        unitStatus: ledger.unit_status,
         archiveStatus: archive?.status ?? "no_record",
         completedCompartments,
         totalCompartments,
@@ -139,11 +169,20 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
     }
   }
 
-  return { groups: groupDailyUnitRecords(records), range, records, units: unitRows };
+  return { groups: groupDailyUnitRecords(records, dates), range, records, units: unitRows };
 }
 
-export function groupDailyUnitRecords(records: DailyUnitRecord[]) {
+export function groupDailyUnitRecords(records: DailyUnitRecord[], dates?: string[]) {
   const groups = new Map<string, DailyRecordGroup>();
+
+  for (const date of dates ?? []) {
+    groups.set(date, {
+      date,
+      completedInServiceUnits: 0,
+      totalInServiceUnits: 0,
+      records: [],
+    });
+  }
 
   for (const record of records) {
     const group = groups.get(record.date) ?? {
