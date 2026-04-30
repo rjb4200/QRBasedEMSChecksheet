@@ -39,7 +39,7 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
           </div>
         </header>
 
-        <div className="print-column-frame columns-1 gap-4 md:columns-2 print:columns-3 print:gap-3 print:p-1.5">
+        <div className="columns-1 gap-4 md:columns-2 print:columns-3 print:gap-3">
           {document.units.map((unit) => (
             <section key={unit.id} className="mb-3 break-inside-avoid rounded-2xl border border-slate-950 p-2 print:mb-1 print:rounded-md print:border-slate-700 print:p-1.5">
               <div className="mb-1 flex items-start justify-between gap-2 border-b border-slate-300 pb-1">
@@ -80,11 +80,11 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
         @page { size: letter; margin: 0.25in; }
         @media print {
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-          .print-column-frame {
-            min-height: 9.6in;
-            border: 1px solid #0f172a;
+          section {
+            box-decoration-break: clone;
+            -webkit-box-decoration-break: clone;
+            break-inside: auto;
             border-radius: 0.35rem;
-            background-image: linear-gradient(to right, transparent calc(33.333% - 0.5px), #0f172a calc(33.333% - 0.5px), #0f172a calc(33.333% + 0.5px), transparent calc(33.333% + 0.5px)), linear-gradient(to right, transparent calc(66.666% - 0.5px), #0f172a calc(66.666% - 0.5px), #0f172a calc(66.666% + 0.5px), transparent calc(66.666% + 0.5px));
           }
 
           .exception-row td {

@@ -41,7 +41,7 @@ The admin Fleet page SHALL provide a print action for the current daily check sh
 
 #### Scenario: Daily check sheets use compact print layout
 - **WHEN** the print-ready daily check sheets render
-- **THEN** the document uses a three-column layout with print CSS for letter paper, compact typography, reduced margins, framed column boxes, and crew names when available
+- **THEN** the document uses a three-column layout with print CSS for letter paper, compact typography, reduced margins, rounded box fragments across page breaks, and crew names when available
 
 #### Scenario: Printed exceptions are emphasized
 - **WHEN** the print-ready daily check sheets include missing or below-par item exceptions
