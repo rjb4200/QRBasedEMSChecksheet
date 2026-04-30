@@ -26,6 +26,28 @@ The admin interface SHALL allow querying archived shift data by date range, unit
 - **WHEN** admin filters by user "John Doe"
 - **THEN** all archived shifts where John Doe performed checkoffs are returned
 
+### Requirement: Admin can view last-year daily unit records
+The admin interface SHALL provide a past checkoff records view that defaults to the last 365 days and includes one row for each unit on each day.
+
+#### Scenario: Admin opens past checkoff records
+- **WHEN** admin opens the records page without filters
+- **THEN** the system displays daily records for every unit for the last year
+
+#### Scenario: Unit-day has no archive
+- **WHEN** a unit has no archive row for a date in the selected range
+- **THEN** the records table still includes that unit/date and marks it as "No record"
+
+#### Scenario: Admin filters past records
+- **WHEN** admin selects a date range or unit filter
+- **THEN** the records table updates to only include matching unit-day records
+
+### Requirement: Admin can export past checkoff records to CSV
+The admin interface SHALL allow exporting the selected past checkoff records to CSV.
+
+#### Scenario: Export filtered records
+- **WHEN** admin clicks "Export CSV" on the records page
+- **THEN** the system downloads a CSV containing each visible unit-day record with date, unit, status, compartment counts, completion percentage, and archive ID when available
+
 ### Requirement: Archive viewer displays historical shift data
 The admin interface SHALL provide an archive viewer that displays historical compartment checkoff data in a readable format.
 

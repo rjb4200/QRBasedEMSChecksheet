@@ -3,7 +3,7 @@
 - [x] 1.1 Initialize Next.js 15+ project with App Router and TypeScript
 - [x] 1.2 Configure Tailwind CSS and shadcn/ui component library
 - [x] 1.3 Set up Supabase project and configure PostgreSQL database
-- [x] 1.4 Configure Supabase Auth with email magic-link login and cookie sessions
+- [x] 1.4 Configure Supabase Auth for personnel/supervisor identity and signed cookie sessions for admin access
 - [x] 1.5 Configure Supabase Storage bucket for compartment photos
 - [x] 1.6 Set up Supabase Edge Functions for scheduled jobs
 - [ ] 1.7 Configure n8n instance with SMTP email integration
@@ -26,13 +26,14 @@
 
 ## 3. Authentication & Authorization
 
-- [x] 3.1 Implement Supabase email magic-link login flow
+- [x] 3.1 Implement admin username/password login flow with signed HTTP-only cookie session
 - [x] 3.2 Remove OAuth provider login dependency
 - [x] 3.3 Create role-based access middleware (User/Supervisor/Admin)
 - [x] 3.4 Create user role management UI for admins
 - [x] 3.5 Allow public crew checkoffs without login while keeping admin/supervisor routes protected
 - [x] 3.6 Create login page and auth redirect logic
 - [x] 3.7 Allow admins to create confirmed users with default User role and edit full names
+- [x] 3.8 Store admin password as a hash and allow production overrides through server-only environment variables
 
 ## 4. Equipment Catalog & Unit Copy Management
 
@@ -56,11 +57,12 @@
 ## 6. QR Code Generation
 
 - [x] 6.1 Install and configure QR code generation library
-- [x] 6.2 Build QR code generation endpoint that encodes `/checkoff/{unit-id}/{compartment-id}`
+- [x] 6.2 Build QR code generation endpoint that encodes an absolute `/checkoff/{unit-id}/{compartment-id}` web link
 - [x] 6.3 Build QR code print preview page with compartment labels and unit identification
 - [x] 6.4 Implement PDF export functionality for QR code pages
 - [x] 6.5 Add QR code generation trigger to unit management page
 - [x] 6.6 Add individual QR code print action for each compartment QR card
+- [x] 6.7 Resolve QR code host from `NEXT_PUBLIC_APP_URL` with request-host fallback
 
 ## 7. Crew PWA - Unit Dashboard
 

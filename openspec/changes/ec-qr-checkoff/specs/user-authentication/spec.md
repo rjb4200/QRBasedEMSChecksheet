@@ -1,15 +1,19 @@
 ## ADDED Requirements
 
-### Requirement: Users authenticate via Supabase email login
-The system SHALL use Supabase email magic-link login for authentication.
+### Requirement: Admins authenticate via username and password
+The system SHALL use a dedicated admin username/password login for admin page access and SHALL store the admin session in a signed HTTP-only cookie.
 
-#### Scenario: User requests sign-in link
-- **WHEN** user enters an email address on the login page
-- **THEN** the system sends a Supabase sign-in link to that email address
+#### Scenario: Admin submits valid credentials
+- **WHEN** admin enters the configured username and password on the login page
+- **THEN** the system creates a signed admin session cookie and redirects to the requested admin page
 
-#### Scenario: User completes email login
-- **WHEN** user opens the Supabase sign-in link
-- **THEN** the system creates an authenticated session and redirects the user into the app
+#### Scenario: Admin submits invalid credentials
+- **WHEN** admin enters an invalid username or password
+- **THEN** the system denies login and does not create an admin session cookie
+
+#### Scenario: Admin password is not stored as plaintext
+- **WHEN** the system validates admin credentials
+- **THEN** it compares the entered password to a stored hash or server-only environment override, not to a plaintext password value
 
 ### Requirement: Crew checkoff access is public
 The system SHALL allow crew members to open `/units`, unit dashboards, QR scanner routes, and compartment checkoff forms without logging in.
@@ -22,15 +26,15 @@ The system SHALL allow crew members to open `/units`, unit dashboards, QR scanne
 - **WHEN** an unauthenticated crew member opens a QR checkoff URL and submits a compartment
 - **THEN** the compartment data is saved and marked complete without requiring a Supabase session
 
-### Requirement: Sessions persist in cookies
-The system SHALL store authenticated Supabase sessions in browser cookies so users remain logged in across browser restarts until the session expires or they sign out.
+### Requirement: Admin sessions persist in cookies
+The system SHALL store admin sessions in signed HTTP-only browser cookies so admins remain logged in until the session expires or they sign out.
 
-#### Scenario: User returns after prior login
-- **WHEN** user returns to the app with a valid Supabase session cookie
-- **THEN** the system treats the user as authenticated without requiring a new login
+#### Scenario: Admin returns after prior login
+- **WHEN** admin returns to the app with a valid admin session cookie
+- **THEN** the system allows access to admin routes without requiring a new login
 
-### Requirement: Role-based access control is enforced
-The system SHALL enforce three access levels: User, Supervisor, and Admin.
+### Requirement: Supervisor role-based access control is enforced
+The system SHALL enforce Supabase role-based access for Supervisor routes and personnel identity while admin routes use the dedicated admin session cookie.
 
 #### Scenario: User role access
 - **WHEN** a user with "User" role logs in
@@ -40,24 +44,20 @@ The system SHALL enforce three access levels: User, Supervisor, and Admin.
 - **WHEN** a user with "Supervisor" role logs in
 - **THEN** they can view all units and provider statistics but cannot edit unit configurations
 
-#### Scenario: Admin role access
-- **WHEN** a user with "Admin" role logs in
-- **THEN** they can manage units, toggle in-service status, edit master layouts, and access all features
+#### Scenario: Admin session access
+- **WHEN** a user has a valid admin session cookie
+- **THEN** they can manage units, toggle in-service status, edit master layouts, and access admin features
 
-### Requirement: Admin access is limited to a pre-approved list
-The system SHALL limit admin and supervisor access to users explicitly approved in the `user_roles` table.
+### Requirement: Privileged access is protected
+The system SHALL protect admin access with the signed admin session cookie and supervisor access with Supabase role approval in the `user_roles` table.
 
-#### Scenario: Unapproved user attempts admin access
-- **WHEN** an authenticated user without Admin role opens an admin route
-- **THEN** the system denies access and shows an access denied message
+#### Scenario: User without admin session attempts admin access
+- **WHEN** a user without a valid admin session opens an admin route
+- **THEN** the system redirects the user to the login page before rendering admin data
 
 #### Scenario: Approved admin accesses admin panel
-- **WHEN** an authenticated user with Admin role opens an admin route
+- **WHEN** a user with a valid admin session opens an admin route
 - **THEN** the system allows access to the admin panel
-
-#### Scenario: Unauthenticated user attempts admin access
-- **WHEN** a user without a valid session opens an admin route
-- **THEN** the system redirects the user to the login page before rendering admin data
 
 ### Requirement: User roles are managed by admins
 The admin interface SHALL allow creating users, editing full names, and assigning or changing user roles in a `user_roles` table.
@@ -74,8 +74,8 @@ The admin interface SHALL allow creating users, editing full names, and assignin
 - **WHEN** admin assigns the "Supervisor" role to a user
 - **THEN** the user gains supervisor-level access on next request
 
-### Requirement: Authenticated identity is used for signatures and privileged access
-The system SHALL use authenticated identity for admin/supervisor access and personnel sign-off, while routine compartment checkoff completion remains public.
+### Requirement: Authenticated identity is used for signatures and supervisor access
+The system SHALL use Supabase authenticated identity for supervisor access and personnel sign-off, while routine compartment checkoff completion remains public and admin access uses the admin session cookie.
 
 #### Scenario: Signature attributed to user
 - **WHEN** an authenticated user signs off after a completed unit checkoff

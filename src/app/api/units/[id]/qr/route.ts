@@ -1,5 +1,6 @@
 import QRCode from "qrcode";
 import { NextResponse, type NextRequest } from "next/server";
+import { getRequestOrigin } from "@/lib/app-url";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: error.message }, { status: 404 });
   }
 
-  const origin = process.env.NEXT_PUBLIC_APP_URL ?? request.nextUrl.origin;
+  const origin = getRequestOrigin(request);
   const codes = await Promise.all((unit.unit_compartments ?? []).map(async (compartment) => {
     const url = `${origin}/checkoff/${unit.id}/${compartment.id}`;
     return {

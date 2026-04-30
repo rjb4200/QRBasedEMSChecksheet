@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: QR codes encode compartment checkoff URLs
-Each physical QR code SHALL encode a URL in the format `/checkoff/{unit-id}/{compartment-id}` that navigates directly to the checkoff form for that specific compartment.
+Each physical QR code SHALL encode a complete absolute web URL in the format `https://app-host/checkoff/{unit-id}/{compartment-id}` that navigates directly to the checkoff form for that specific compartment.
 
 #### Scenario: User scans QR for a valid compartment
 - **WHEN** user scans a QR code on a unit
@@ -9,7 +9,7 @@ Each physical QR code SHALL encode a URL in the format `/checkoff/{unit-id}/{com
 
 #### Scenario: QR code encodes correct URL format
 - **WHEN** a QR code is generated for compartment "Cab" on unit "EC1"
-- **THEN** the encoded URL is `/checkoff/ec1/cab`
+- **THEN** the encoded URL includes the deployed app origin and the path `/checkoff/ec1/cab`
 
 ### Requirement: No manual navigation links to checkoff forms in the UI
 The crew UI SHALL NOT provide any clickable links, buttons, or navigation paths to compartment checkoff forms except through the QR scanner.

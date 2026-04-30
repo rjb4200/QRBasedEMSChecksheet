@@ -66,7 +66,7 @@ equipment_catalog (shared across all)
 
 **Decision:** QR codes are generated server-side using a library (e.g., `qrcode` npm package), rendered as printable pages with compartment labels, and exportable as PDF via browser print or server-side PDF generation.
 
-**Rationale:** QR codes encode simple URLs (`/checkoff/{unit-id}/{compartment-id}`). No need for external QR services. Server-side generation ensures consistency.
+**Rationale:** QR codes encode full web URLs to the public checkoff route (`https://app-host/checkoff/{unit-id}/{compartment-id}`), using `NEXT_PUBLIC_APP_URL` when configured and the current request host as a fallback. No need for external QR services. Server-side generation ensures consistency and avoids printed QR codes that only contain incomplete relative paths.
 
 ### 6. Input Types for Checkoff Items
 
@@ -77,15 +77,15 @@ equipment_catalog (shared across all)
 
 **Rationale:** The checksheet has a mix of item types. A single input model doesn't fit all cases. Three types cover the observed patterns.
 
-### 7. Authentication via Supabase Email Login for Privileged Access
+### 7. Authentication for Privileged Access
 
-**Decision:** Routine crew checkoffs do not require authentication. Authentication uses Supabase email magic-link login for admin/supervisor access and personnel sign-off. Admin and supervisor access is limited by the `user_roles` table, which acts as the pre-approved access list for privileged areas. Users created by admins are email-confirmed and default to the `user` role.
+**Decision:** Routine crew checkoffs do not require authentication. Admin access uses a dedicated username/password login that creates a signed, HTTP-only admin session cookie. Supervisor access and personnel sign-off continue to use Supabase authenticated identity and role data. Users created by admins are email-confirmed and default to the `user` role.
 
-**Rationale:** Removing login from the checkoff path keeps QR scanning fast for crews. Email magic-link login remains useful for role-protected administration and named sign-off accountability. Supabase SSR stores authenticated sessions in secure cookies so approved admins do not need to log in each time. Privileged admin access remains controlled by explicit approval in `user_roles`.
+**Rationale:** Removing login from the checkoff path keeps QR scanning fast for crews. A direct admin username/password gate avoids email validation dependency for admin pages while still storing the admin session in a secure cookie. Supabase authenticated identity remains useful for named sign-off accountability and supervisor role access.
 
 ### 10. Public Entry Point
 
-**Decision:** The app root redirects to `/units`. Approved admins see an Admin Dashboard button on the public unit selector after signing in.
+**Decision:** The app root redirects to `/units`. Admins with a valid admin session cookie see an Admin Dashboard button on the public unit selector after signing in.
 
 **Rationale:** Crew checkoff is the primary workflow, so the app should open directly to unit selection. Admin access remains available without exposing admin controls to unauthenticated users.
 

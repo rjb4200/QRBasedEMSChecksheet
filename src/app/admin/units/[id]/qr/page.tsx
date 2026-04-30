@@ -1,5 +1,6 @@
 import QRCode from "qrcode";
 import { QrCodeGrid } from "./print-button";
+import { getAppOrigin } from "@/lib/app-url";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
 export default async function UnitQrPage({ params }: { params: Promise<{ id: string }> }) {
@@ -10,7 +11,7 @@ export default async function UnitQrPage({ params }: { params: Promise<{ id: str
     .select("id, name, unit_compartments(id, name, sort_order)")
     .eq("id", id)
     .single();
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const appUrl = await getAppOrigin();
   const codes = await Promise.all((unit?.unit_compartments ?? []).sort((a, b) => a.sort_order - b.sort_order).map(async (compartment) => {
     const url = `${appUrl}/checkoff/${unit?.id}/${compartment.id}`;
     return {

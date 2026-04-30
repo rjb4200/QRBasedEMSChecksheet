@@ -1,11 +1,22 @@
 ## ADDED Requirements
 
 ### Requirement: QR codes are generated for each compartment of a unit
-The admin panel SHALL generate a QR code for each compartment of a unit, encoding the URL `/checkoff/{unit-id}/{compartment-id}`.
+The admin panel SHALL generate a QR code for each compartment of a unit, encoding an absolute web URL to `/checkoff/{unit-id}/{compartment-id}`.
 
 #### Scenario: Generate QR codes for a unit
 - **WHEN** admin requests QR codes for a unit
-- **THEN** a QR code is generated for each compartment of that unit
+- **THEN** a QR code is generated for each compartment of that unit with a complete URL including scheme and host
+
+### Requirement: QR code URLs resolve from configured or request host
+The QR generator SHALL use `NEXT_PUBLIC_APP_URL` when configured and SHALL fall back to the current request origin when the environment variable is missing.
+
+#### Scenario: Configured app URL is available
+- **WHEN** `NEXT_PUBLIC_APP_URL` is set to `https://example.org`
+- **THEN** generated QR codes encode URLs beginning with `https://example.org/checkoff/`
+
+#### Scenario: Configured app URL is missing
+- **WHEN** `NEXT_PUBLIC_APP_URL` is not set
+- **THEN** generated QR codes encode URLs using the current request host and protocol
 
 ### Requirement: QR codes are printable as a formatted page
 The generated QR codes SHALL be displayed in a printable layout with compartment labels and unit identification.

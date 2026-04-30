@@ -8,10 +8,10 @@ The app root SHALL redirect to `/units` so the crew unit selector is the primary
 - **THEN** the app redirects to `/units`
 
 ### Requirement: Admin dashboard is linked for approved admins
-The public unit list SHALL show an Admin Dashboard button only to signed-in users with Admin role.
+The public unit list SHALL show an Admin Dashboard button only to users with a valid admin session cookie.
 
-#### Scenario: Approved admin opens unit list
-- **WHEN** an authenticated admin opens `/units`
+#### Scenario: Signed-in admin opens unit list
+- **WHEN** a user with a valid admin session opens `/units`
 - **THEN** an Admin Dashboard button is displayed
 
 #### Scenario: Unauthenticated crew opens unit list
