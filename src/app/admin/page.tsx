@@ -2,6 +2,7 @@ import { AutoRefresh } from "@/components/auto-refresh";
 import { FleetMatrix } from "@/components/fleet-matrix";
 import { getCheckoffDiscrepanciesForRange, getDiscrepancyRange, groupDiscrepanciesByDate } from "@/lib/discrepancies";
 import { getFleetStatus } from "@/lib/fleet";
+import { getCurrentShift } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
 export default async function AdminDashboardPage({ searchParams }: { searchParams: Promise<{ from?: string; to?: string }> }) {
@@ -12,6 +13,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const discrepancyGroups = groupDiscrepanciesByDate(discrepancies, discrepancyRange);
   const expandedDates = new Set(discrepancyGroups.slice(0, 3).map((group) => group.date));
   const csvParams = new URLSearchParams({ from: discrepancyRange.from, to: discrepancyRange.to });
+  const currentShift = getCurrentShift();
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
@@ -25,6 +27,11 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         </div>
 
         <FleetMatrix admin units={units} />
+
+        <section className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm">
+          <p className="font-bold text-slate-700">Daily check sheets for {currentShift.shiftDate}</p>
+          <a className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" href={`/admin/checksheets/print?date=${currentShift.shiftDate}`}>Print Today's Check Sheets</a>
+        </section>
 
         <section className="rounded-3xl bg-white p-5 shadow-sm">
           <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">

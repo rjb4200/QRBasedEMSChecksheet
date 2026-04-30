@@ -122,6 +122,7 @@
 - [x] 12.5 Exclude out-of-service units from alert calculations
 - [x] 12.6 Include submitted missing and below-par item exceptions in alert payload/email
 - [ ] 12.7 Test n8n-to-Supabase integration and email delivery
+- [x] 12.8 Include daily check sheet print URL in alert payload for future email attachment workflow
 
 ## 13. Admin Dashboard - Fleet Matrix
 
@@ -133,6 +134,7 @@
 - [x] 13.6 Display last-14-day submitted missing and below-par item exceptions by date on Fleet page
 - [x] 13.7 Add date filtering and CSV export for Fleet exceptions
 - [x] 13.8 Compact Fleet page header copy and default exceptions to 7 days
+- [x] 13.9 Add Fleet page daily check sheet print action
 
 ## 14. Archive History
 
@@ -140,6 +142,8 @@
 - [x] 14.2 Build archive detail view showing all compartment data for a shift
 - [x] 14.3 Display partially complete markers with completion percentage
 - [x] 14.5 Use saved daily unit ledgers so OOS/deleted/added units do not rewrite history
+- [x] 14.6 Add simple and detailed records CSV export options
+- [x] 14.7 Add historical daily check sheet print action
 
 ## 15. Provider Analytics
 

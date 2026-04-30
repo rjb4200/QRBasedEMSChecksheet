@@ -14,6 +14,13 @@ Each email alert SHALL include the unit name, number of compartments completed, 
 - **WHEN** an alert email is sent
 - **THEN** it includes "EC3: 18 of 25 compartments completed (72%)"
 
+### Requirement: Daily alert can include printable check sheets
+The daily alert payload SHALL include the current day's printable check sheet document URL so the configured email workflow can attach the check sheets once email delivery is configured.
+
+#### Scenario: Alert payload includes check sheet print URL
+- **WHEN** the daily alert API returns an alert payload
+- **THEN** the payload includes the daily check sheet date and print URL for that checkoff day
+
 ### Requirement: No alert sent when all units are complete
 If all in-service units are 100% complete and no submitted item exceptions exist at alert time, no email SHALL be sent.
 

@@ -58,11 +58,22 @@ The admin interface SHALL provide a past checkoff records view that defaults to 
 - **THEN** the daily summary rows and expanded details update to only include matching unit-day records
 
 ### Requirement: Admin can export past checkoff records to CSV
-The admin interface SHALL allow exporting the selected past checkoff records to CSV.
+The admin interface SHALL allow exporting the selected past checkoff records to simple or detailed CSV formats.
 
-#### Scenario: Export filtered records
-- **WHEN** admin clicks "Export CSV" on the records page
+#### Scenario: Export simple filtered records
+- **WHEN** admin clicks "Simple CSV" on the records page
 - **THEN** the system downloads a CSV containing each visible unit-day record with date, unit, status, compartment counts, completion percentage, and archive ID when available
+
+#### Scenario: Export detailed filtered records
+- **WHEN** admin clicks "Detailed CSV" on the records page
+- **THEN** the system downloads a CSV containing the selected date range's unit, compartment, item, submitted value, expected value, check status, item status, and completion timestamp details
+
+### Requirement: Admin can print historical daily check sheets
+The admin interface SHALL allow printing the same compact daily check sheet document from historical Records data.
+
+#### Scenario: Print historical daily check sheets
+- **WHEN** admin clicks "Print Check Sheets" for a daily record
+- **THEN** the system opens a print-ready two-column daily check sheet document for that historical date
 
 ### Requirement: Archive viewer displays historical shift data
 The admin interface SHALL provide an archive viewer that displays historical compartment checkoff data in a readable format.

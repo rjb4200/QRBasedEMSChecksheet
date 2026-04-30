@@ -32,6 +32,17 @@ The fleet matrix SHALL update unit statuses periodically via page refresh or aut
 - **WHEN** the polling interval elapses (every 30 seconds)
 - **THEN** the fleet matrix refreshes with current completion data
 
+### Requirement: Fleet page can print daily check sheets
+The admin Fleet page SHALL provide a print action for the current daily check sheets in a compact two-column print layout intended to fit a daily packet on front/back letter pages.
+
+#### Scenario: Print current daily check sheets
+- **WHEN** admin clicks "Print Today's Check Sheets" on the Fleet page
+- **THEN** the system opens a print-ready document containing all units, compartments, check statuses, and submitted item values for the current daily checkoff
+
+#### Scenario: Daily check sheets use compact print layout
+- **WHEN** the print-ready daily check sheets render
+- **THEN** the document uses a two-column layout with print CSS for letter paper and compact typography
+
 ### Requirement: Fleet page displays submitted item exceptions by date
 The admin Fleet page SHALL display submitted checkoff items that are missing or below their configured par count for the last 7 days by default, grouped by date.
 

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { getCheckoffDiscrepancies } from "@/lib/discrepancies";
 import { buildMissedCheckoffEmail } from "@/lib/email/missed-checkoff";
 import { createAdminClient } from "@/lib/supabase/server-admin";
@@ -12,7 +12,7 @@ function getAlertShift(now = new Date()) {
   return { shiftDate: local.toISOString().slice(0, 10), shiftPeriod: "daily" as const };
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const supabase = createAdminClient();
   const { shiftDate, shiftPeriod } = getAlertShift();
   const [{ data: units, error }, discrepancies] = await Promise.all([
@@ -51,6 +51,10 @@ export async function GET() {
     shouldSend,
     incompleteUnits,
     discrepancies,
+    checkSheets: {
+      date: shiftDate,
+      printUrl: new URL(`/admin/checksheets/print?date=${shiftDate}`, request.nextUrl.origin).toString(),
+    },
     email: shouldSend ? buildMissedCheckoffEmail(incompleteUnits, discrepancies) : null,
   });
 }
