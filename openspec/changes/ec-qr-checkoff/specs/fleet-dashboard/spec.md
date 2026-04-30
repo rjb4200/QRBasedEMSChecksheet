@@ -33,7 +33,7 @@ The fleet matrix SHALL update unit statuses periodically via page refresh or aut
 - **THEN** the fleet matrix refreshes with current completion data
 
 ### Requirement: Fleet page can print daily check sheets
-The admin Fleet page SHALL provide a print action for the current daily check sheets in a compact two-column print layout intended to fit a daily packet on front/back letter pages.
+The admin Fleet page SHALL provide a print action for the current daily check sheets in a compact three-column print layout intended to fit a daily packet on front/back letter pages.
 
 #### Scenario: Print current daily check sheets
 - **WHEN** admin clicks "Print Today's Check Sheets" on the Fleet page
@@ -41,7 +41,11 @@ The admin Fleet page SHALL provide a print action for the current daily check sh
 
 #### Scenario: Daily check sheets use compact print layout
 - **WHEN** the print-ready daily check sheets render
-- **THEN** the document uses a three-column layout with print CSS for letter paper, compact typography, reduced margins, and crew names when available
+- **THEN** the document uses a three-column layout with print CSS for letter paper, compact typography, reduced margins, framed column boxes, and crew names when available
+
+#### Scenario: Printed exceptions are emphasized
+- **WHEN** the print-ready daily check sheets include missing or below-par item exceptions
+- **THEN** those exception rows display in red text with a red outline box
 
 #### Scenario: Printed checkbox items omit par label
 - **WHEN** the print-ready daily check sheets include checkbox yes/no items

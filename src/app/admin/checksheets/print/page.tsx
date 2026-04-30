@@ -39,9 +39,9 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
           </div>
         </header>
 
-        <div className="columns-1 gap-4 md:columns-2 print:columns-3 print:gap-3">
+        <div className="print-column-frame columns-1 gap-4 md:columns-2 print:columns-3 print:gap-3 print:p-1.5">
           {document.units.map((unit) => (
-            <section key={unit.id} className="mb-3 break-inside-avoid rounded-2xl border border-slate-950 p-2 print:mb-1 print:rounded-none print:p-1.5">
+            <section key={unit.id} className="mb-3 break-inside-avoid rounded-2xl border border-slate-950 p-2 print:mb-1 print:rounded-md print:border-slate-700 print:p-1.5">
               <div className="mb-1 flex items-start justify-between gap-2 border-b border-slate-300 pb-1">
                 <div>
                   <h2 className="text-xl font-black print:text-[10pt]">{unit.name}</h2>
@@ -61,7 +61,7 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
                     <table className="w-full text-left text-xs leading-tight print:text-[5.8pt]">
                       <tbody>
                         {compartment.items.map((item) => (
-                          <tr key={`${compartment.id}-${item.name}`} className={item.status === "ok" ? "" : "font-bold text-red-700 print:text-black"}>
+                          <tr key={`${compartment.id}-${item.name}`} className={item.status === "ok" ? "" : "exception-row font-bold text-red-700"}>
                             <td className="w-[58%] pr-1 align-top">{item.name}</td>
                             <td className="w-[18%] pr-1 align-top">{formatValue(item.actual)}</td>
                             <td className="w-[24%] align-top">{item.expected === null ? "" : `Par ${formatValue(item.expected)}`}</td>
@@ -80,6 +80,29 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
         @page { size: letter; margin: 0.25in; }
         @media print {
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .print-column-frame {
+            min-height: 9.6in;
+            border: 1px solid #0f172a;
+            border-radius: 0.35rem;
+            background-image: linear-gradient(to right, transparent calc(33.333% - 0.5px), #0f172a calc(33.333% - 0.5px), #0f172a calc(33.333% + 0.5px), transparent calc(33.333% + 0.5px)), linear-gradient(to right, transparent calc(66.666% - 0.5px), #0f172a calc(66.666% - 0.5px), #0f172a calc(66.666% + 0.5px), transparent calc(66.666% + 0.5px));
+          }
+
+          .exception-row td {
+            color: #b91c1c !important;
+            border-bottom: 1px solid #b91c1c;
+            border-top: 1px solid #b91c1c;
+          }
+
+          .exception-row td:first-child {
+            border-left: 1px solid #b91c1c;
+            border-radius: 0.2rem 0 0 0.2rem;
+            padding-left: 0.1rem;
+          }
+
+          .exception-row td:last-child {
+            border-right: 1px solid #b91c1c;
+            border-radius: 0 0.2rem 0.2rem 0;
+          }
         }
       `}</style>
     </main>
