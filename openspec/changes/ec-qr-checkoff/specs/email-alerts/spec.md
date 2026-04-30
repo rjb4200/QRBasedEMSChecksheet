@@ -15,11 +15,22 @@ Each email alert SHALL include the unit name, number of compartments completed, 
 - **THEN** it includes "EC3: 18 of 25 compartments completed (72%)"
 
 ### Requirement: No alert sent when all units are complete
-If all in-service units are 100% complete at alert time, no email SHALL be sent.
+If all in-service units are 100% complete and no submitted item exceptions exist at alert time, no email SHALL be sent.
 
 #### Scenario: All units complete at 09:00
 - **WHEN** all in-service units are 100% complete for the current daily checkoff
-- **THEN** no email alert is sent at 09:00
+- **THEN** no email alert is sent at 09:00 unless submitted item exceptions exist
+
+### Requirement: Alert includes submitted item exceptions
+Email alerts SHALL include completed checkoff items that were submitted unchecked or below configured par count.
+
+#### Scenario: Alert includes unchecked checkbox item
+- **WHEN** a checkbox item is submitted unchecked before the alert runs
+- **THEN** the alert includes the unit, compartment, item, and unchecked status
+
+#### Scenario: Alert includes below-par quantity item
+- **WHEN** a quantity item is submitted below par before the alert runs
+- **THEN** the alert includes the unit, compartment, item, submitted quantity, and par count
 
 ### Requirement: Out-of-service units are excluded from alerts
 Units marked as "Out-of-Service" SHALL NOT be included in missed checkoff alerts.

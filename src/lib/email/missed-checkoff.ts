@@ -1,3 +1,5 @@
+import { type CheckoffDiscrepancy } from "@/lib/discrepancies";
+
 type IncompleteUnit = {
   unitName: string;
   completedCompartments: number;
@@ -5,15 +7,23 @@ type IncompleteUnit = {
   completionPercentage: number;
 };
 
-export function buildMissedCheckoffEmail(units: IncompleteUnit[]) {
+export function buildMissedCheckoffEmail(units: IncompleteUnit[], discrepancies: CheckoffDiscrepancy[] = []) {
   const lines = units.map((unit) => `${unit.unitName}: ${unit.completedCompartments} of ${unit.totalCompartments} compartments completed (${unit.completionPercentage}%)`);
+  const discrepancyLines = discrepancies.map((item) => {
+    const issue = item.inputType === "checkbox" ? "unchecked" : `below par (${item.actual}/${item.expected})`;
+    return `${item.unitName} - ${item.compartmentName} - ${item.itemName}: ${issue}`;
+  });
 
   return {
-    subject: `EMS Missed Checkoff Alert: ${units.length} incomplete unit${units.length === 1 ? "" : "s"}`,
+    subject: `EMS Checkoff Alert: ${units.length} incomplete unit${units.length === 1 ? "" : "s"}, ${discrepancies.length} exception${discrepancies.length === 1 ? "" : "s"}`,
     text: [
-      "The following in-service units are not 100% complete:",
+      "Incomplete in-service units:",
       "",
-      ...lines,
+      ...(lines.length > 0 ? lines : ["None"]),
+      "",
+      "Submitted unchecked or below-par items:",
+      "",
+      ...(discrepancyLines.length > 0 ? discrepancyLines : ["None"]),
       "",
       "Open the EMS Checkoff admin dashboard for details.",
     ].join("\n"),

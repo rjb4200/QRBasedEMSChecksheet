@@ -1,11 +1,12 @@
 import { AutoRefresh } from "@/components/auto-refresh";
 import { FleetMatrix } from "@/components/fleet-matrix";
+import { getCheckoffDiscrepancies } from "@/lib/discrepancies";
 import { getFleetStatus } from "@/lib/fleet";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
 export default async function AdminDashboardPage() {
   const supabase = createAdminClient();
-  const units = await getFleetStatus(supabase);
+  const [units, discrepancies] = await Promise.all([getFleetStatus(supabase), getCheckoffDiscrepancies()]);
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
@@ -20,6 +21,45 @@ export default async function AdminDashboardPage() {
         </div>
 
         <FleetMatrix admin units={units} />
+
+        <section className="rounded-3xl bg-white p-5 shadow-sm">
+          <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Exceptions</p>
+              <h2 className="mt-2 text-3xl font-black">Unchecked / Below-Par Items</h2>
+              <p className="mt-2 text-slate-600">Items submitted unchecked or below par for the current checkoff day.</p>
+            </div>
+            <p className="text-3xl font-black text-slate-950">{discrepancies.length}</p>
+          </div>
+          {discrepancies.length === 0 ? (
+            <p className="mt-4 rounded-2xl bg-green-50 px-4 py-3 font-bold text-green-800">No submitted exceptions found.</p>
+          ) : (
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full min-w-[760px] text-left text-sm">
+                <thead className="bg-slate-950 text-white">
+                  <tr>
+                    <th className="p-3">Unit</th>
+                    <th className="p-3">Compartment</th>
+                    <th className="p-3">Item</th>
+                    <th className="p-3">Issue</th>
+                    <th className="p-3">Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {discrepancies.map((item) => (
+                    <tr key={`${item.compartmentId}-${item.itemId}`} className="border-t border-slate-200">
+                      <td className="p-3 font-black">{item.unitName}</td>
+                      <td className="p-3 font-semibold">{item.compartmentName}</td>
+                      <td className="p-3">{item.itemName}</td>
+                      <td className="p-3 capitalize text-red-700">{item.inputType === "checkbox" ? "Unchecked" : "Below par"}</td>
+                      <td className="p-3 font-semibold">{item.actual} / {item.expected}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       </section>
     </main>
   );

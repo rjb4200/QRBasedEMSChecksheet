@@ -119,7 +119,8 @@
 - [x] 12.3 Build email alert template with unit name, completion count, and percentage
 - [x] 12.4 Implement conditional alert sending (no email if all units complete)
 - [x] 12.5 Exclude out-of-service units from alert calculations
-- [ ] 12.6 Test n8n-to-Supabase integration and email delivery
+- [x] 12.6 Include submitted unchecked and below-par item exceptions in alert payload/email
+- [ ] 12.7 Test n8n-to-Supabase integration and email delivery
 
 ## 13. Admin Dashboard - Fleet Matrix
 
@@ -128,6 +129,7 @@
 - [x] 13.3 Implement auto-refresh polling every 30 seconds
 - [x] 13.4 Remove fleet filters because fleet size is limited and all units should be visible
 - [x] 13.5 Build supervisor dashboard (view-only fleet matrix and provider stats)
+- [x] 13.6 Display current-day submitted unchecked and below-par item exceptions on Fleet page
 
 ## 14. Archive History
 

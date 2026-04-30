@@ -31,3 +31,14 @@ The fleet matrix SHALL update unit statuses periodically via page refresh or aut
 #### Scenario: Status updates on polling interval
 - **WHEN** the polling interval elapses (every 30 seconds)
 - **THEN** the fleet matrix refreshes with current completion data
+
+### Requirement: Fleet page displays submitted item exceptions
+The admin Fleet page SHALL display submitted checkoff items that are unchecked or below their configured par count for the current checkoff day.
+
+#### Scenario: Checkbox submitted unchecked
+- **WHEN** a completed compartment checkoff includes a checkbox item saved as unchecked
+- **THEN** the Fleet page exceptions panel lists the unit, compartment, item, and unchecked issue
+
+#### Scenario: Quantity submitted below par
+- **WHEN** a completed compartment checkoff includes a quantity item below its configured par level
+- **THEN** the Fleet page exceptions panel lists the unit, compartment, item, submitted quantity, and expected par count
