@@ -29,7 +29,7 @@ export function CheckoffForm({ unitId, compartmentId, items, initialData, previo
   const defaults = useMemo(() => Object.fromEntries(items.map((item) => {
     if (initialData[item.id] !== undefined) return [item.id, initialData[item.id]];
     if (item.input_type === "quantity") return [item.id, item.par_level ?? 0];
-    if (item.input_type === "checkbox") return [item.id, false];
+    if (item.input_type === "checkbox") return [item.id, true];
     return [item.id, { status: "OK", value: "" }];
   })), [initialData, items]);
   const [values, setValues] = useState<Record<string, unknown>>(defaults);
