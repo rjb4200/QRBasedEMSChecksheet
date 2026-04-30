@@ -47,6 +47,10 @@ The admin Fleet page SHALL provide a print action for the current daily check sh
 - **WHEN** the print-ready daily check sheets render multiple units
 - **THEN** each unit starts on its own printed page and does not share that page with another unit
 
+#### Scenario: Printed unit header repeats across pages
+- **WHEN** a unit's print-ready daily check sheet extends across multiple printed pages
+- **THEN** each printed page for that unit repeats the unit header with title, unit/date, status, crew, generated timestamp, and completion count
+
 #### Scenario: Printed exceptions are emphasized
 - **WHEN** the print-ready daily check sheets include missing or below-par item exceptions
 - **THEN** those exception rows display in red text with a red outline box

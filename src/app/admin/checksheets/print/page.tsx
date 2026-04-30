@@ -30,53 +30,67 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
 
       <div className="mx-auto max-w-5xl space-y-4 print:max-w-none print:space-y-0">
         {document.units.map((unit) => (
-          <article key={unit.id} className="unit-print-page bg-white p-6 shadow-sm print:p-0 print:shadow-none">
-            <header className="mb-3 border-b-2 border-slate-950 pb-2 print:mb-1 print:pb-1">
-              <div className="flex items-end justify-between gap-4">
-                <div>
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 print:text-[7pt]">EMS Daily Check Sheets</p>
-                  <h1 className="text-3xl font-black print:text-[15pt]">{unit.name} | {document.date}</h1>
-                  <p className="text-xs font-bold uppercase text-slate-600 print:text-[6pt]">{unit.status.replace("_", " ")} | {unit.archiveStatus.replace("_", " ")}</p>
-                  {unit.providerNames ? <p className="mt-0.5 text-xs font-bold print:text-[6pt]">Crew: {unit.providerNames}</p> : null}
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold print:text-[7pt]">Generated {new Date(document.generatedAt).toLocaleString()}</p>
-                  <p className="text-lg font-black print:text-[9pt]">{unit.completedCompartments}/{unit.totalCompartments}</p>
-                </div>
-              </div>
-            </header>
-
-            <section className="rounded-2xl border border-slate-950 p-2 print:rounded-md print:border-slate-700 print:p-1.5">
-              <div className="columns-1 gap-4 md:columns-2 print:columns-3 print:gap-3">
-                {unit.compartments.map((compartment) => (
-                  <div key={compartment.id} className="break-inside-avoid border-b border-slate-200 pb-1 last:border-b-0">
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="text-sm font-black print:text-[7pt]">{compartment.name}</h3>
-                      <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-black uppercase print:text-[5.5pt]">{compartment.checkStatus.replace("_", " ")}</span>
+          <table key={unit.id} className="unit-print-page w-full border-collapse bg-white p-6 shadow-sm print:p-0 print:shadow-none">
+            <thead>
+              <tr>
+                <td className="p-0">
+                  <header className="mb-3 border-b-2 border-slate-950 pb-2 print:mb-1 print:pb-1">
+                    <div className="flex items-end justify-between gap-4">
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 print:text-[7pt]">EMS Daily Check Sheets</p>
+                        <h1 className="text-3xl font-black print:text-[15pt]">{unit.name} | {document.date}</h1>
+                        <p className="text-xs font-bold uppercase text-slate-600 print:text-[6pt]">{unit.status.replace("_", " ")} | {unit.archiveStatus.replace("_", " ")}</p>
+                        {unit.providerNames ? <p className="mt-0.5 text-xs font-bold print:text-[6pt]">Crew: {unit.providerNames}</p> : null}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold print:text-[7pt]">Generated {new Date(document.generatedAt).toLocaleString()}</p>
+                        <p className="text-lg font-black print:text-[9pt]">{unit.completedCompartments}/{unit.totalCompartments}</p>
+                      </div>
                     </div>
-                    {compartment.items.length === 0 ? <p className="text-xs text-slate-500 print:text-[5.5pt]">No configured items.</p> : null}
-                    <table className="w-full text-left text-xs leading-tight print:text-[5.8pt]">
-                      <tbody>
-                        {compartment.items.map((item) => (
-                          <tr key={`${compartment.id}-${item.name}`} className={item.status === "ok" ? "" : "exception-row font-bold text-red-700"}>
-                            <td className="w-[58%] pr-1 align-top">{item.name}</td>
-                            <td className="w-[18%] pr-1 align-top">{formatValue(item.actual)}</td>
-                            <td className="w-[24%] align-top">{item.expected === null ? "" : `Par ${formatValue(item.expected)}`}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </article>
+                  </header>
+                </td>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="p-0">
+                  <section className="rounded-2xl border border-slate-950 p-2 print:rounded-md print:border-slate-700 print:p-1.5">
+                    <div className="columns-1 gap-4 md:columns-2 print:columns-3 print:gap-3">
+                      {unit.compartments.map((compartment) => (
+                        <div key={compartment.id} className="break-inside-avoid border-b border-slate-200 pb-1 last:border-b-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <h3 className="text-sm font-black print:text-[7pt]">{compartment.name}</h3>
+                            <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-black uppercase print:text-[5.5pt]">{compartment.checkStatus.replace("_", " ")}</span>
+                          </div>
+                          {compartment.items.length === 0 ? <p className="text-xs text-slate-500 print:text-[5.5pt]">No configured items.</p> : null}
+                          <table className="w-full text-left text-xs leading-tight print:text-[5.8pt]">
+                            <tbody>
+                              {compartment.items.map((item) => (
+                                <tr key={`${compartment.id}-${item.name}`} className={item.status === "ok" ? "" : "exception-row font-bold text-red-700"}>
+                                  <td className="w-[58%] pr-1 align-top">{item.name}</td>
+                                  <td className="w-[18%] pr-1 align-top">{formatValue(item.actual)}</td>
+                                  <td className="w-[24%] align-top">{item.expected === null ? "" : `Par ${formatValue(item.expected)}`}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         ))}
       </div>
       <style>{`
         @page { size: letter; margin: 0.25in; }
         @media print {
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          thead { display: table-header-group; }
+          tfoot { display: table-footer-group; }
+
           section {
             box-decoration-break: clone;
             -webkit-box-decoration-break: clone;
