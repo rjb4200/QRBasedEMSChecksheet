@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { saveUnitCrew } from "./actions";
 import { ShiftResetWarning } from "./shift-reset-warning";
 import { getCurrentShift, getPreviousShift, getShiftLabel } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
@@ -9,21 +10,50 @@ const statusStyles = {
   green: "border-green-300 bg-green-100 text-green-900",
 };
 
+type UnitItem = {
+  id: string;
+  par_level: number | null;
+  input_type: "quantity" | "checkbox" | "condition";
+  equipment_catalog: { name: string } | { name: string }[] | null;
+};
+
+function equipmentName(item: UnitItem) {
+  return Array.isArray(item.equipment_catalog) ? item.equipment_catalog[0]?.name : item.equipment_catalog?.name;
+}
+
+function findPreviousExceptions(compartments: { id: string; name: string; unit_compartment_items?: UnitItem[] | null }[], checkData: unknown) {
+  if (!Array.isArray(checkData)) return [];
+  const checkMap = new Map(checkData.map((check: any) => [check.compartment_id, check.item_data ?? {}]));
+
+  return compartments.flatMap((compartment) => (compartment.unit_compartment_items ?? []).flatMap((item) => {
+    const value = checkMap.get(compartment.id)?.[item.id];
+    if (item.input_type === "checkbox" && value === false) {
+      return [{ compartment: compartment.name, item: equipmentName(item) ?? "Unknown item", issue: "Missing" }];
+    }
+    if (item.input_type === "quantity" && item.par_level !== null && Number(value) < item.par_level) {
+      return [{ compartment: compartment.name, item: equipmentName(item) ?? "Unknown item", issue: `Below par (${value ?? "-"}/${item.par_level})` }];
+    }
+    return [];
+  }));
+}
+
 export default async function UnitDashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = createAdminClient();
   const currentShift = getCurrentShift();
   const previousShift = getPreviousShift();
-  const [{ data: unit }, { data: checks }, { data: previousArchive }] = await Promise.all([
-    supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order)").eq("id", id).single(),
+  const [{ data: unit }, { data: checks }, { data: previousArchive }, { data: crew }] = await Promise.all([
+    supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))").eq("id", id).single(),
     supabase.from("compartment_checks").select("compartment_id, status").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
-    supabase.from("shift_archives").select("completed_compartments, total_compartments, completion_percentage").eq("unit_id", id).eq("shift_date", previousShift.shiftDate).eq("shift_period", previousShift.shiftPeriod).maybeSingle(),
+    supabase.from("shift_archives").select("completed_compartments, total_compartments, completion_percentage, check_data").eq("unit_id", id).eq("shift_date", previousShift.shiftDate).eq("shift_period", previousShift.shiftPeriod).maybeSingle(),
+    supabase.from("daily_unit_crews").select("provider_names").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
   ]);
   const compartments = (unit?.unit_compartments ?? []).sort((a, b) => a.sort_order - b.sort_order);
   const checkMap = new Map((checks ?? []).map((check) => [check.compartment_id, check.status]));
   const completed = checks?.filter((check) => check.status === "completed").length ?? 0;
   const total = compartments.length;
   const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+  const previousExceptions = findPreviousExceptions(compartments, previousArchive?.check_data);
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-6 text-slate-950">
@@ -59,12 +89,12 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
           </div>
         </div>
 
-        <div className="rounded-3xl bg-white p-5 shadow-sm">
-          <p className="text-sm font-semibold text-slate-600">Previous shift</p>
-          <p className="mt-1 text-lg font-black">
-            {previousArchive ? `${previousArchive.completed_compartments} of ${previousArchive.total_compartments} done (${previousArchive.completion_percentage}%)` : "No previous shift archive found"}
-          </p>
-        </div>
+        <form action={saveUnitCrew} className="rounded-3xl bg-white p-5 shadow-sm">
+          <input name="unitId" type="hidden" value={id} />
+          <label className="text-sm font-semibold text-slate-600" htmlFor="providerNames">Crew / Providers checking this unit</label>
+          <textarea className="mt-2 min-h-24 w-full rounded-2xl border border-slate-300 px-4 py-3 font-semibold" defaultValue={crew?.provider_names ?? ""} id="providerNames" name="providerNames" placeholder="Enter provider names" />
+          <button className="mt-3 rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Save Crew Names</button>
+        </form>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {compartments.map((compartment) => {
@@ -77,6 +107,25 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
               </div>
             );
           })}
+        </div>
+
+        <div className="rounded-3xl bg-white p-5 shadow-sm">
+          <p className="text-sm font-semibold text-slate-600">Exceptions for past check</p>
+          {previousExceptions.length === 0 ? <p className="mt-1 font-bold text-green-700">No previous missing or below-par items found.</p> : null}
+          {previousExceptions.length > 0 ? (
+            <ul className="mt-3 space-y-2">
+              {previousExceptions.map((exception) => (
+                <li key={`${exception.compartment}-${exception.item}`} className="rounded-2xl bg-red-50 px-4 py-3 font-semibold text-red-800">{exception.compartment} - {exception.item}: {exception.issue}</li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+
+        <div className="rounded-3xl bg-white p-5 shadow-sm">
+          <p className="text-sm font-semibold text-slate-600">Previous shift</p>
+          <p className="mt-1 text-lg font-black">
+            {previousArchive ? `${previousArchive.completed_compartments} of ${previousArchive.total_compartments} done (${previousArchive.completion_percentage}%)` : "No previous shift archive found"}
+          </p>
         </div>
       </section>
     </main>

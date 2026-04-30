@@ -41,7 +41,7 @@ The admin Fleet page SHALL provide a print action for the current daily check sh
 
 #### Scenario: Daily check sheets use compact print layout
 - **WHEN** the print-ready daily check sheets render
-- **THEN** the document uses a two-column layout with print CSS for letter paper and compact typography
+- **THEN** the document uses a two-column layout with print CSS for letter paper, compact typography, reduced margins, and crew names when available
 
 ### Requirement: Fleet page displays submitted item exceptions by date
 The admin Fleet page SHALL display submitted checkoff items that are missing or below their configured par count for the last 7 days by default, grouped by date.

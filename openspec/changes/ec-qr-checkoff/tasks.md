@@ -57,6 +57,7 @@
 - [x] 5.8 Carry equipment catalog defaults into compartment item assignments
 - [x] 5.9 Add single-compartment import
 - [x] 5.10 Add linked compartment groups for shared item changes
+- [x] 5.11 Delete individual unit compartment items without deleting the compartment
 
 ## 6. QR Code Generation
 
@@ -93,6 +94,7 @@
 - [x] 8.11 Handle out-of-service unit QR scan with error message
 - [x] 8.12 Handle invalid QR code scan with error message
 - [x] 8.13 Improve scan page visual hierarchy for scanner controls
+- [x] 8.14 Add current-day unit crew names and previous-check exceptions to unit checkoff page
 
 ## 9. Collision Prevention
 
@@ -135,6 +137,7 @@
 - [x] 13.7 Add date filtering and CSV export for Fleet exceptions
 - [x] 13.8 Compact Fleet page header copy and default exceptions to 7 days
 - [x] 13.9 Add Fleet page daily check sheet print action
+- [x] 13.10 Compact daily check sheet print layout and include crew names
 
 ## 14. Archive History
 

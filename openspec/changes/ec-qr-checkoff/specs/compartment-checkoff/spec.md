@@ -22,6 +22,24 @@ Routine compartment checkoff forms SHALL be accessible and submittable without a
 - **WHEN** user views an item with quantity input
 - **THEN** the display shows "Par: X | Prev: Y" where X is par level and Y is previous shift value
 
+### Requirement: Unit checkoff page collects crew names
+The unit checkoff page SHALL allow providers checking the unit to enter crew names for the current daily checkoff.
+
+#### Scenario: Provider names saved for current unit checkoff
+- **WHEN** a crew member enters provider names below Current progress and saves
+- **THEN** the names are stored for that unit and daily checkoff date
+
+### Requirement: Unit checkoff page shows past check exceptions before previous shift summary
+The unit checkoff page SHALL show missing and below-par exceptions from the previous shift near the bottom of the page, followed by the previous shift completion summary.
+
+#### Scenario: Past check exceptions displayed
+- **WHEN** the previous shift has submitted missing or below-par items
+- **THEN** the unit checkoff page lists those exceptions under "Exceptions for past check"
+
+#### Scenario: Previous shift summary moved below exceptions
+- **WHEN** the unit checkoff page renders
+- **THEN** the Previous shift summary appears below the Exceptions for past check section
+
 ### Requirement: Quantity items use stepper input
 Items with input type "quantity" SHALL use large [-] and [+] stepper components for adjusting counts.
 

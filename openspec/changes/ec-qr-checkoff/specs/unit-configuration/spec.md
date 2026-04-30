@@ -35,6 +35,10 @@ The unit builder SHALL allow adding items to a compartment by selecting from the
 - **WHEN** admin adds an item to a compartment and selects from the equipment catalog
 - **THEN** the item is added with its catalog-defined par level and input type
 
+#### Scenario: Remove individual compartment item
+- **WHEN** admin deletes an individual item from a compartment in the unit builder
+- **THEN** only that item is removed and the compartment remains on the unit
+
 #### Scenario: Add new item to catalog while building unit
 - **WHEN** admin adds an item that doesn't exist in the catalog
 - **THEN** a new equipment catalog entry is created and added to the compartment

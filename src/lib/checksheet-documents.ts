@@ -21,6 +21,7 @@ export type ChecksheetUnit = {
   id: string;
   name: string;
   status: string;
+  providerNames: string;
   archiveStatus: string;
   completedCompartments: number;
   totalCompartments: number;
@@ -77,6 +78,11 @@ type LedgerRow = {
   total_compartments: number;
 };
 
+type CrewRow = {
+  unit_id: string;
+  provider_names: string;
+};
+
 function single<T>(value: T | T[] | null | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
@@ -96,7 +102,7 @@ function itemExpected(item: UnitItemRow) {
 
 export async function getDailyChecksheetDocument(date = getCurrentShift().shiftDate): Promise<DailyChecksheetDocument> {
   const supabase = createAdminClient();
-  const [{ data: units }, { data: ledgers }, { data: archives }, { data: checks }] = await Promise.all([
+  const [{ data: units }, { data: ledgers }, { data: archives }, { data: checks }, { data: crews }] = await Promise.all([
     supabase
       .from("units")
       .select("id, name, status, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))")
@@ -117,12 +123,18 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
       .select("unit_id, compartment_id, status, completed_at, item_data")
       .eq("shift_date", date)
       .eq("shift_period", "daily"),
+    supabase
+      .from("daily_unit_crews")
+      .select("unit_id, provider_names")
+      .eq("shift_date", date)
+      .eq("shift_period", "daily"),
   ]);
 
   const unitRows = (units ?? []) as UnitRow[];
   const unitMap = new Map(unitRows.map((unit) => [unit.id, unit]));
   const ledgerRows = (ledgers ?? []) as LedgerRow[];
   const archiveMap = new Map(((archives ?? []) as ArchiveRow[]).map((archive) => [archive.unit_id, archive]));
+  const crewMap = new Map(((crews ?? []) as CrewRow[]).map((crew) => [crew.unit_id, crew.provider_names]));
   const currentCheckMap = new Map<string, CheckRow[]>();
 
   for (const check of (checks ?? []) as (CheckRow & { unit_id: string })[]) {
@@ -148,6 +160,7 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
         id: source.id,
         name: source.name,
         status: source.status,
+        providerNames: crewMap.get(source.id) ?? "",
         archiveStatus: archive?.status ?? (savedChecks.length > 0 ? "current" : "no_record"),
         completedCompartments: archive?.completed_compartments ?? savedChecks.filter((check) => check.status === "completed").length,
         totalCompartments: archive?.total_compartments ?? source.totalCompartments,

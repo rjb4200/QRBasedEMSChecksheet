@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { addUnitCompartment, addUnitItem, deleteUnitCompartment, importUnitCompartment, linkUnitCompartment, toggleUnitStatus, uploadCompartmentPhoto } from "../actions";
+import { addUnitCompartment, addUnitItem, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, linkUnitCompartment, toggleUnitStatus, uploadCompartmentPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
 export default async function UnitDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -85,9 +85,16 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
 
               <ul className="mt-4 grid gap-2">
                 {(compartment.unit_compartment_items ?? []).map((item) => (
-                  <li key={item.id} className="rounded-2xl bg-slate-100 px-4 py-3 text-sm">
-                    <span className="font-bold">{Array.isArray(item.equipment_catalog) ? (item.equipment_catalog[0] as any)?.name : (item.equipment_catalog as any)?.name}</span>
-                    <span className="text-slate-600"> | {item.input_type} | Par {item.par_level ?? "-"}</span>
+                  <li key={item.id} className="flex flex-col justify-between gap-2 rounded-2xl bg-slate-100 px-4 py-3 text-sm sm:flex-row sm:items-center">
+                    <div>
+                      <span className="font-bold">{Array.isArray(item.equipment_catalog) ? (item.equipment_catalog[0] as any)?.name : (item.equipment_catalog as any)?.name}</span>
+                      <span className="text-slate-600"> | {item.input_type} | Par {item.par_level ?? "-"}</span>
+                    </div>
+                    <form action={deleteUnitItem}>
+                      <input name="unitId" type="hidden" value={id} />
+                      <input name="id" type="hidden" value={item.id} />
+                      <button className="rounded-xl border border-red-200 bg-white px-3 py-2 font-bold text-red-700" type="submit">Delete Item</button>
+                    </form>
                   </li>
                 ))}
               </ul>

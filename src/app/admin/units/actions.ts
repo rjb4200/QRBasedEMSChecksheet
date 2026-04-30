@@ -146,6 +146,14 @@ export async function deleteUnitCompartment(formData: FormData) {
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
+export async function deleteUnitItem(formData: FormData) {
+  const parsed = z.object({ unitId: z.string().uuid(), id: z.string().uuid() }).parse({ unitId: formData.get("unitId"), id: formData.get("id") });
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("unit_compartment_items").delete().eq("id", parsed.id);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/units/${parsed.unitId}`);
+}
+
 export async function addUnitItem(formData: FormData) {
   const parsed = z.object({
     unitId: z.string().uuid(),
