@@ -39,7 +39,7 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
           </div>
         </header>
 
-        <div className="columns-1 gap-4 md:columns-2 print:columns-2 print:gap-3">
+        <div className="columns-1 gap-4 md:columns-2 print:columns-3 print:gap-3">
           {document.units.map((unit) => (
             <section key={unit.id} className="mb-3 break-inside-avoid rounded-2xl border border-slate-950 p-2 print:mb-1 print:rounded-none print:p-1.5">
               <div className="mb-1 flex items-start justify-between gap-2 border-b border-slate-300 pb-1">

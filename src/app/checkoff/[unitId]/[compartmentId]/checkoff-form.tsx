@@ -54,13 +54,16 @@ export function CheckoffForm({ unitId, compartmentId, items, initialData, previo
         const name = equipmentName(item) ?? "Unnamed item";
         const value = values[item.id];
         const prev = previousData[item.id] ?? "-";
+        const itemMeta = item.input_type === "checkbox"
+          ? `Prev: ${typeof prev === "object" ? JSON.stringify(prev) : String(prev)}`
+          : `Par: ${item.par_level ?? "-"} | Prev: ${typeof prev === "object" ? JSON.stringify(prev) : String(prev)}`;
 
         return (
           <div key={item.id} className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h3 className="text-lg font-black">{name}</h3>
-                <p className="text-sm text-slate-600">Par: {item.par_level ?? "-"} | Prev: {typeof prev === "object" ? JSON.stringify(prev) : String(prev)}</p>
+                <p className="text-sm text-slate-600">{itemMeta}</p>
               </div>
               {item.input_type === "quantity" ? (
                 <div className="flex items-center gap-3">

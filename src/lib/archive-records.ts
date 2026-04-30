@@ -17,6 +17,8 @@ export type DailyUnitRecord = {
   completedCompartments: number;
   totalCompartments: number;
   completionPercentage: number;
+  providerNames: string;
+  crewLocked: boolean;
   hasArchive: boolean;
 };
 
@@ -53,6 +55,14 @@ type ArchiveRow = {
   completion_percentage: number | null;
   completed_compartments: number | null;
   total_compartments: number | null;
+};
+
+type CrewRow = {
+  shift_date: string;
+  shift_period: string;
+  unit_id: string;
+  provider_names: string | null;
+  locked: boolean | null;
 };
 
 function toDateInputValue(date: Date) {
@@ -123,7 +133,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
     ledgerQuery = ledgerQuery.eq("unit_id", params.unitId);
   }
 
-  const [{ data: units }, { data: ledgers }, { data: archives }] = await Promise.all([
+  const [{ data: units }, { data: ledgers }, { data: archives }, { data: crews }] = await Promise.all([
     unitsQuery,
     ledgerQuery,
     supabase
@@ -132,12 +142,18 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
       .gte("shift_date", range.from)
       .lte("shift_date", range.to)
       .order("shift_date", { ascending: false }),
+    supabase
+      .from("daily_unit_crews")
+      .select("shift_date, shift_period, unit_id, provider_names, locked")
+      .gte("shift_date", range.from)
+      .lte("shift_date", range.to),
   ]);
 
   const unitRows = (units ?? []) as UnitRow[];
   const ledgerRows = (ledgers ?? []) as LedgerRow[];
   const archiveRows = (archives ?? []) as ArchiveRow[];
   const archiveMap = new Map(archiveRows.map((archive) => [`${archive.unit_id}:${archive.shift_date}:${archive.shift_period}`, archive]));
+  const crewMap = new Map(((crews ?? []) as CrewRow[]).map((crew) => [`${crew.unit_id}:${crew.shift_date}:${crew.shift_period}`, crew]));
   const dates = eachDate(new Date(`${range.from}T00:00:00.000Z`), new Date(`${range.to}T00:00:00.000Z`)).reverse();
   const ledgerMap = new Map<string, LedgerRow[]>();
   const records: DailyUnitRecord[] = [];
@@ -150,8 +166,13 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
   for (const date of dates) {
     for (const ledger of ledgerMap.get(`${date}:daily`) ?? []) {
       const archive = archiveMap.get(`${ledger.unit_id}:${date}:daily`);
-      const totalCompartments = archive?.total_compartments ?? ledger.total_compartments;
-      const completedCompartments = archive?.completed_compartments ?? 0;
+      const crew = crewMap.get(`${ledger.unit_id}:${date}:daily`);
+      const crewLocked = Boolean(crew?.locked && crew.provider_names?.trim());
+      const baseTotal = archive?.total_compartments ?? ledger.total_compartments;
+      const baseCompleted = archive?.completed_compartments ?? 0;
+      const totalCompartments = baseTotal + 1;
+      const completedCompartments = baseCompleted + (crewLocked ? 1 : 0);
+      const completionPercentage = totalCompartments === 0 ? 0 : Math.round((completedCompartments / totalCompartments) * 10000) / 100;
 
       records.push({
         archiveId: archive?.id ?? null,
@@ -163,7 +184,9 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
         archiveStatus: archive?.status ?? "no_record",
         completedCompartments,
         totalCompartments,
-        completionPercentage: archive?.completion_percentage ?? 0,
+        completionPercentage,
+        providerNames: crew?.provider_names ?? "",
+        crewLocked,
         hasArchive: Boolean(archive),
       });
     }
@@ -216,6 +239,8 @@ export function archiveRecordToCsv(records: DailyUnitRecord[]) {
     "Completed Compartments",
     "Total Compartments",
     "Completion Percentage",
+    "Crew Names",
+    "Crew Locked",
     "Archive ID",
   ];
 
@@ -235,6 +260,8 @@ export function archiveRecordToCsv(records: DailyUnitRecord[]) {
       record.completedCompartments,
       record.totalCompartments,
       record.completionPercentage,
+      record.providerNames,
+      record.crewLocked ? "yes" : "no",
       record.archiveId,
     ].map(escapeCell).join(",")),
   ].join("\n");

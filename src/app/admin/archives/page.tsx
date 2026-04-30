@@ -65,16 +65,17 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                       <th className="p-4">Unit</th>
                       <th className="p-4">Unit Status</th>
                       <th className="p-4">Record Status</th>
-                      <th className="p-4">Unit Compartments</th>
-                      <th className="p-4">Completed</th>
-                      <th className="p-4">Completion</th>
-                      <th className="p-4">Details</th>
+                        <th className="p-4">Checks</th>
+                        <th className="p-4">Completed</th>
+                        <th className="p-4">Completion</th>
+                        <th className="p-4">Crew</th>
+                        <th className="p-4">Details</th>
                     </tr>
                   </thead>
                   <tbody>
                     {group.records.length === 0 ? (
                       <tr className="border-t border-slate-200">
-                        <td className="p-4 text-slate-500" colSpan={7}>No unit ledger was saved for this day.</td>
+                        <td className="p-4 text-slate-500" colSpan={8}>No unit ledger was saved for this day.</td>
                       </tr>
                     ) : null}
                     {group.records.map((record) => (
@@ -85,6 +86,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                         <td className="p-4 font-semibold">{record.totalCompartments}</td>
                         <td className="p-4 font-semibold">{record.completedCompartments}/{record.totalCompartments}</td>
                         <td className="p-4 font-semibold">{record.completionPercentage}%</td>
+                        <td className="p-4 font-semibold">{record.crewLocked ? record.providerNames || "Locked" : "Not locked"}</td>
                         <td className="p-4">
                           {record.archiveId ? (
                             <Link className="rounded-2xl border border-slate-300 px-4 py-2 font-bold" href={`/admin/archives/${record.archiveId}`}>View</Link>

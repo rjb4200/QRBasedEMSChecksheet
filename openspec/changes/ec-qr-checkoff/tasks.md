@@ -96,6 +96,7 @@
 - [x] 8.13 Improve scan page visual hierarchy for scanner controls
 - [x] 8.14 Add current-day unit crew names and previous-check exceptions to unit checkoff page
 - [x] 8.15 Add lock/unlock feedback for saving current-day unit crew names
+- [x] 8.16 Count locked crew names toward completion and hide checkbox par labels
 
 ## 9. Collision Prevention
 
@@ -139,6 +140,7 @@
 - [x] 13.8 Compact Fleet page header copy and default exceptions to 7 days
 - [x] 13.9 Add Fleet page daily check sheet print action
 - [x] 13.10 Compact daily check sheet print layout and include crew names
+- [x] 13.11 Use three-column check sheet print layout and omit checkbox par values
 
 ## 14. Archive History
 
@@ -148,6 +150,7 @@
 - [x] 14.5 Use saved daily unit ledgers so OOS/deleted/added units do not rewrite history
 - [x] 14.6 Add simple and detailed records CSV export options
 - [x] 14.7 Add historical daily check sheet print action
+- [x] 14.8 Include crew names and crew lock status in records completion/export
 
 ## 15. Provider Analytics
 

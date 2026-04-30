@@ -31,7 +31,19 @@ The unit checkoff page SHALL allow providers checking the unit to enter crew nam
 
 #### Scenario: Provider names unlocked for editing
 - **WHEN** a crew member taps the locked icon
-- **THEN** the provider names field unlocks for editing and can be saved again by tapping the unlocked icon
+- **THEN** the provider names field unlocks for editing, no longer counts toward completion, and can be saved again by tapping the unlocked icon
+
+#### Scenario: Provider names field has stable size
+- **WHEN** a crew member locks or unlocks provider names
+- **THEN** no helper text appears or disappears below the field
+
+#### Scenario: Crew lock counts toward completion
+- **WHEN** provider names are locked for the current daily unit checkoff
+- **THEN** the crew entry counts as one completed check toward the unit's current progress
+
+#### Scenario: Checkbox items omit par label
+- **WHEN** a crew member views a checkbox yes/no item on a compartment checkoff form
+- **THEN** the item does not display a par level label
 
 ### Requirement: Unit checkoff page shows past check exceptions before previous shift summary
 The unit checkoff page SHALL show missing and below-par exceptions from the previous shift near the bottom of the page, followed by the previous shift completion summary.

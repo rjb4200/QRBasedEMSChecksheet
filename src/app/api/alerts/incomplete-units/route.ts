@@ -15,7 +15,7 @@ function getAlertShift(now = new Date()) {
 export async function GET(request: NextRequest) {
   const supabase = createAdminClient();
   const { shiftDate, shiftPeriod } = getAlertShift();
-  const [{ data: units, error }, discrepancies] = await Promise.all([
+  const [{ data: units, error }, { data: crews }, discrepancies] = await Promise.all([
     supabase
       .from("units")
       .select("id, name, unit_compartments(id), shift_archives(completed_compartments, total_compartments, completion_percentage)")
@@ -23,6 +23,11 @@ export async function GET(request: NextRequest) {
       .eq("shift_archives.shift_date", shiftDate)
       .eq("shift_archives.shift_period", shiftPeriod)
       .order("name"),
+    supabase
+      .from("daily_unit_crews")
+      .select("unit_id, provider_names, locked")
+      .eq("shift_date", shiftDate)
+      .eq("shift_period", shiftPeriod),
     getCheckoffDiscrepancies({ shiftDate, shiftPeriod }),
   ]);
 
@@ -30,16 +35,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  const crewMap = new Map((crews ?? []).map((crew) => [crew.unit_id, Boolean(crew.locked && crew.provider_names?.trim())]));
   const incompleteUnits = (units ?? []).map((unit) => {
     const archive = Array.isArray(unit.shift_archives) ? unit.shift_archives[0] : unit.shift_archives;
-    const total = archive?.total_compartments ?? unit.unit_compartments?.length ?? 0;
-    const completed = archive?.completed_compartments ?? 0;
+    const total = (archive?.total_compartments ?? unit.unit_compartments?.length ?? 0) + 1;
+    const completed = (archive?.completed_compartments ?? 0) + (crewMap.get(unit.id) ? 1 : 0);
     const percentage = total === 0 ? 0 : Math.round((completed / total) * 10000) / 100;
     return {
       unitName: unit.name,
       completedCompartments: completed,
       totalCompartments: total,
-      completionPercentage: archive?.completion_percentage ?? percentage,
+      completionPercentage: percentage,
     };
   }).filter((unit) => unit.totalCompartments > 0 && unit.completionPercentage < 100);
 

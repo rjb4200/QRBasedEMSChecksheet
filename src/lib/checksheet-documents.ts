@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/server-admin";
 export type ChecksheetItem = {
   name: string;
   inputType: string;
-  expected: number | true | null;
+  expected: number | null;
   actual: unknown;
   status: "ok" | "missing" | "below_par" | "not_recorded";
 };
@@ -81,6 +81,7 @@ type LedgerRow = {
 type CrewRow = {
   unit_id: string;
   provider_names: string;
+  locked: boolean | null;
 };
 
 function single<T>(value: T | T[] | null | undefined) {
@@ -95,7 +96,6 @@ function itemStatus(item: UnitItemRow, actual: unknown): ChecksheetItem["status"
 }
 
 function itemExpected(item: UnitItemRow) {
-  if (item.input_type === "checkbox") return true;
   if (item.input_type === "quantity") return item.par_level;
   return null;
 }
@@ -125,7 +125,7 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
       .eq("shift_period", "daily"),
     supabase
       .from("daily_unit_crews")
-      .select("unit_id, provider_names")
+      .select("unit_id, provider_names, locked")
       .eq("shift_date", date)
       .eq("shift_period", "daily"),
   ]);
@@ -134,7 +134,7 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
   const unitMap = new Map(unitRows.map((unit) => [unit.id, unit]));
   const ledgerRows = (ledgers ?? []) as LedgerRow[];
   const archiveMap = new Map(((archives ?? []) as ArchiveRow[]).map((archive) => [archive.unit_id, archive]));
-  const crewMap = new Map(((crews ?? []) as CrewRow[]).map((crew) => [crew.unit_id, crew.provider_names]));
+  const crewMap = new Map(((crews ?? []) as CrewRow[]).map((crew) => [crew.unit_id, crew]));
   const currentCheckMap = new Map<string, CheckRow[]>();
 
   for (const check of (checks ?? []) as (CheckRow & { unit_id: string })[]) {
@@ -160,7 +160,7 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
         id: source.id,
         name: source.name,
         status: source.status,
-        providerNames: crewMap.get(source.id) ?? "",
+        providerNames: crewMap.get(source.id)?.provider_names ?? "",
         archiveStatus: archive?.status ?? (savedChecks.length > 0 ? "current" : "no_record"),
         completedCompartments: archive?.completed_compartments ?? savedChecks.filter((check) => check.status === "completed").length,
         totalCompartments: archive?.total_compartments ?? source.totalCompartments,
@@ -191,7 +191,7 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
 }
 
 export function detailedChecksheetsCsv(documents: DailyChecksheetDocument[]) {
-  const headers = ["Date", "Unit", "Unit Status", "Compartment", "Check Status", "Item", "Input Type", "Actual", "Expected", "Item Status", "Completed At"];
+  const headers = ["Date", "Unit", "Unit Status", "Crew Names", "Compartment", "Check Status", "Item", "Input Type", "Actual", "Expected", "Item Status", "Completed At"];
   const escapeCell = (value: unknown) => {
     const text = String(value ?? "");
     return /[",\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
@@ -203,6 +203,7 @@ export function detailedChecksheetsCsv(documents: DailyChecksheetDocument[]) {
       document.date,
       unit.name,
       unit.status,
+      unit.providerNames,
       compartment.name,
       compartment.checkStatus,
       item.name,

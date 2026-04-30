@@ -62,11 +62,15 @@ The admin interface SHALL allow exporting the selected past checkoff records to 
 
 #### Scenario: Export simple filtered records
 - **WHEN** admin clicks "Simple CSV" on the records page
-- **THEN** the system downloads a CSV containing each visible unit-day record with date, unit, status, compartment counts, completion percentage, and archive ID when available
+- **THEN** the system downloads a CSV containing each visible unit-day record with date, unit, status, check counts, crew names, crew lock status, completion percentage, and archive ID when available
 
 #### Scenario: Export detailed filtered records
 - **WHEN** admin clicks "Detailed CSV" on the records page
-- **THEN** the system downloads a CSV containing the selected date range's unit, compartment, item, submitted value, expected value, check status, item status, and completion timestamp details
+- **THEN** the system downloads a CSV containing the selected date range's unit, crew names, compartment, item, submitted value, expected value, check status, item status, and completion timestamp details
+
+#### Scenario: Records completion includes crew lock
+- **WHEN** admin views historical Records for a unit-day
+- **THEN** locked crew names count as one completed check and unlocked crew names do not count toward 100% completion
 
 ### Requirement: Admin can print historical daily check sheets
 The admin interface SHALL allow printing the same compact daily check sheet document from historical Records data.

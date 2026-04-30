@@ -27,7 +27,7 @@ export function FleetMatrix({ units, admin = false }: { units: FleetUnit[]; admi
           <div className="mt-5 h-4 overflow-hidden rounded-full bg-slate-200">
             <div className="h-full rounded-full bg-red-700" style={{ width: `${unit.percentage}%` }} />
           </div>
-          <p className="mt-3 font-bold">{unit.completed} of {unit.total} compartments completed</p>
+          <p className="mt-3 font-bold">{unit.completed} of {unit.total} checks completed</p>
           <p className="text-sm text-slate-600">{unit.inProgress} in progress</p>
           {admin ? <Link className="mt-4 inline-flex rounded-2xl border border-slate-300 px-4 py-2 font-bold" href={`/admin/units/${unit.id}`}>Manage Unit</Link> : null}
         </article>

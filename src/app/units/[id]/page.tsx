@@ -46,12 +46,14 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
     supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))").eq("id", id).single(),
     supabase.from("compartment_checks").select("compartment_id, status").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
     supabase.from("shift_archives").select("completed_compartments, total_compartments, completion_percentage, check_data").eq("unit_id", id).eq("shift_date", previousShift.shiftDate).eq("shift_period", previousShift.shiftPeriod).maybeSingle(),
-    supabase.from("daily_unit_crews").select("provider_names").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
+    supabase.from("daily_unit_crews").select("provider_names, locked").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
   ]);
   const compartments = (unit?.unit_compartments ?? []).sort((a, b) => a.sort_order - b.sort_order);
   const checkMap = new Map((checks ?? []).map((check) => [check.compartment_id, check.status]));
-  const completed = checks?.filter((check) => check.status === "completed").length ?? 0;
-  const total = compartments.length;
+  const crewComplete = Boolean(crew?.locked && crew.provider_names?.trim());
+  const completedCompartments = checks?.filter((check) => check.status === "completed").length ?? 0;
+  const completed = completedCompartments + (crewComplete ? 1 : 0);
+  const total = compartments.length + 1;
   const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
   const previousExceptions = findPreviousExceptions(compartments, previousArchive?.check_data);
 
@@ -78,7 +80,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-sm font-semibold text-slate-600">Current progress</p>
-              <p className="text-2xl font-black">{completed} of {total} compartments ({percentage}%)</p>
+              <p className="text-2xl font-black">{completed} of {total} checks ({percentage}%)</p>
             </div>
             <div className="h-16 w-16 rounded-full bg-slate-950 p-2 text-center text-sm font-black text-white">
               <span className="flex h-full items-center justify-center">{percentage}%</span>
@@ -89,7 +91,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
           </div>
         </div>
 
-        <CrewNameLock initialProviderNames={crew?.provider_names ?? ""} unitId={id} />
+        <CrewNameLock initialLocked={crewComplete} initialProviderNames={crew?.provider_names ?? ""} unitId={id} />
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {compartments.map((compartment) => {

@@ -1,21 +1,25 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { saveUnitCrew } from "./actions";
+import { saveUnitCrew, unlockUnitCrew } from "./actions";
 
 type Props = {
   initialProviderNames: string;
+  initialLocked: boolean;
   unitId: string;
 };
 
-export function CrewNameLock({ initialProviderNames, unitId }: Props) {
+export function CrewNameLock({ initialProviderNames, initialLocked, unitId }: Props) {
   const [providerNames, setProviderNames] = useState(initialProviderNames);
-  const [locked, setLocked] = useState(initialProviderNames.trim().length > 0);
+  const [locked, setLocked] = useState(initialLocked);
   const [isPending, startTransition] = useTransition();
 
   function toggleLock() {
     if (locked) {
-      setLocked(false);
+      startTransition(async () => {
+        await unlockUnitCrew(unitId, providerNames);
+        setLocked(false);
+      });
       return;
     }
 
@@ -57,7 +61,6 @@ export function CrewNameLock({ initialProviderNames, unitId }: Props) {
           )}
         </button>
       </div>
-      <p className={`mt-2 text-sm font-bold ${locked ? "text-green-800" : "text-slate-500"}`}>{locked ? "Crew names locked and saved." : "Tap the unlocked icon to save and lock crew names."}</p>
     </section>
   );
 }
