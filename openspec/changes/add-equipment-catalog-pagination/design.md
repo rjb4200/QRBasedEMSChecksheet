@@ -1,83 +1,69 @@
 ## Context
 
-The Equipment Catalog page in the admin panel displays all equipment items in a single list with infinite scroll. As the equipment catalog grows, this causes performance degradation and a cluttered UI. Users need a more manageable way to view and navigate through equipment items.
+The Equipment Catalog page currently displays all equipment items in one endless list. As the equipment catalog grows, this increases DOM size, causes visual clutter, and can create performance issues.
+
+This change adds client-side pagination while keeping the existing data fetching, search/filter behavior, and equipment management workflows intact.
 
 ## Goals / Non-Goals
 
-**Goals:**
-- Replace infinite scroll with pagination controls
-- Allow users to select page size (10, 25, 50, 100)
-- Add scroll-to-top button for long pages
-- Persist page size preference
-- Improve page performance by limiting DOM nodes
+### Goals
 
-**Non-Goals:**
-- Server-side pagination (current data set is manageable client-side)
-- Bulk selection or actions
-- Changing the equipment add/edit modal functionality
-- Search/filter changes (existing filter should still work)
+- Replace endless scrolling with client-side pagination
+- Add a page size selector
+- Persist the selected page size across sessions
+- Add previous/next pagination controls
+- Show current page and total pages
+- Reset pagination when search/filter or page size changes
+- Add a clear empty state for zero results
+- Add a floating "Go to Top" button
+- Avoid changes to database, API, or equipment CRUD behavior
+
+### Non-Goals
+
+- Server-side pagination
+- Database schema changes
+- API changes
+- Bulk equipment actions
+- Changes to equipment creation, editing, or deletion
+- Changes to existing search/filter logic
+- New external libraries
 
 ## Decisions
 
-### 1. Client-Side Pagination Approach
+### 1. Client-Side Pagination
 
-**Decision:** Use client-side pagination with React state.
+Use client-side pagination with React state.
 
-**Rationale:**
-- Equipment catalog size is small enough for client-side pagination
-- Simpler implementation than server-side
-- Faster page transitions (no additional API calls)
-- Maintains existing data fetching pattern
+The existing equipment data should continue to be fetched the same way. Pagination should be applied after data is loaded and after any existing search/filter logic runs.
 
-**Alternative Considered:** Server-side pagination with offset/limit
-- Would require API changes
-- Overkill for expected equipment count (~100-200 items)
+Expected data size is manageable client-side, so server-side pagination is unnecessary.
 
-### 2. Page Size Options
+### 2. Page State
 
-**Decision:** Offer 10, 25, 50, 100 as page size options.
+Add the following state to the Equipment Catalog page:
 
-**Rationale:**
-- 10: Good for detailed review
-- 25: Balanced default
-- 50: For users who want more visibility
-- 100: For power users with large monitors
-- These are standard pagination sizes that work well
+- `currentPage`
+- `pageSize`
 
-### 3. UI Layout
+Default values:
 
-**Decision:** Place pagination controls at bottom of the equipment list, with page size selector above the list.
+- `currentPage = 1`
+- `pageSize = 25`
 
-**Rationale:**
-- Familiar pattern (Google, e-commerce)
-- Keeps controls visible without taking vertical space from equipment
-- Page size selector at top allows setting before browsing
+Valid page size values:
 
-### 4. Go to Top Button
+- `10`
+- `25`
+- `50`
+- `100`
 
-**Decision:** Floating button fixed to bottom-right corner, appears after scrolling past first viewport.
+If localStorage contains an invalid page size, fall back to `25`.
 
-**Rationale:**
-- Standard pattern users expect
-- Position doesn't interfere with content
-- Only shows when needed to reduce visual clutter
+### 3. Page Size Persistence
 
-## Risks / Trade-offs
+Store the selected page size in localStorage.
 
-- **User Disorientation:** Users may lose scroll position when changing page. Mitigated by clear page indicators.
-- **Preference Storage:** localStorage may be cleared. Mitigated by defaulting to sensible 25.
-- **Search/Filter Interaction:** Pagination must work with existing search/filter. Mitigated by resetting to page 1 when filter changes.
+Suggested localStorage key:
 
-## Migration Plan
-
-1. Modify Equipment Catalog page component
-2. Add pagination state management
-3. Add page size selector UI
-4. Add pagination controls UI
-5. Add scroll-to-top button
-6. Test with various equipment counts
-7. Verify existing search/filter still works
-
-## Open Questions
-
-- Should page preference be per-session or persisted? (Persisted in localStorage for convenience)
+```ts
+equipmentCatalogPageSize

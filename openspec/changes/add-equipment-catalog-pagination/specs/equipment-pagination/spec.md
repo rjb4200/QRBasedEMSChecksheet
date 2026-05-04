@@ -3,51 +3,118 @@
 ### Requirement: Default Paginated View
 The Equipment Catalog page SHALL display equipment items in a paginated view by default instead of endless scroll.
 
+- The default page size SHALL be 25 items per page.
+- The initial page SHALL be page 1.
+- Pagination SHALL preserve the existing equipment item sort order.
+
 #### Scenario: Page loads with pagination
 - **WHEN** the Equipment Catalog page loads
-- **THEN** it SHALL display a limited number of items with pagination controls visible
+- **THEN** it SHALL display a limited number of items based on the current page size
+- **AND** pagination controls SHALL be visible
+- **AND** the total number of pages SHALL reflect the full dataset
+
+---
 
 ### Requirement: Page Size Selection
 The page SHALL provide a dropdown selector to choose how many items display per page.
 
+- Valid page size options SHALL be: 10, 25, 50, 100
+- The selected page size SHALL persist across sessions using localStorage
+- If localStorage has no value or an invalid value, the page SHALL default to 25
+
 #### Scenario: User can select page size
 - **WHEN** a user clicks the page size dropdown
 - **THEN** they SHALL see options: 10, 25, 50, 100 items per page
-- **AND** selecting an option SHALL update the displayed items immediately
+
+#### Scenario: Page size updates results
+- **WHEN** a user selects a page size
+- **THEN** the displayed items SHALL update immediately
+- **AND** the current page SHALL reset to page 1
+
+---
 
 ### Requirement: Pagination Controls
 The page SHALL display pagination controls for navigating between pages.
 
+- The page SHALL display previous and next buttons
+- The page SHALL display current page number and total pages
+- The "Previous" button SHALL be disabled on page 1
+- The "Next" button SHALL be disabled on the last page
+
 #### Scenario: Navigation controls present
 - **WHEN** there are multiple pages of equipment
 - **THEN** the page SHALL show previous/next buttons
-- **AND** the page SHALL display current page number and total pages
+- **AND** display the current page and total pages
 
-### Requirement: Go To Top Button
-The page SHALL show a floating "Go to Top" button when the user scrolls down.
+#### Scenario: Navigate between pages
+- **WHEN** a user clicks next or previous
+- **THEN** the current page SHALL update
+- **AND** the displayed items SHALL update accordingly
 
-#### Scenario: Button appears on scroll
-- **WHEN** the user scrolls down past the first viewport height
-- **THEN** a floating button SHALL appear in the bottom-right corner
-- **AND** clicking the button SHALL scroll smoothly to the top of the list
+---
 
-### Requirement: Go To Top Button Hidden at Top
-The "Go to Top" button SHALL be hidden when the user is at the top of the page.
+### Requirement: Pagination Data Behavior
+Pagination SHALL operate on the correct dataset.
 
-#### Scenario: Button hidden at top
-- **WHEN** the user scrolls to the very top of the equipment list
-- **THEN** the "Go to Top" button SHALL be hidden
-
-### Requirement: Page Size Preference Persistence
-The selected page size SHALL be saved to localStorage and restored on page reload.
-
-#### Scenario: Preference persists across sessions
-- **WHEN** a user selects a page size and reloads the page
-- **THEN** the page SHALL display the previously selected number of items per page
-
-### Requirement: Pagination Resets on Filter Change
-When the user applies a search filter, pagination SHALL reset to page 1.
+- Filtering and search SHALL be applied before pagination
+- Pagination SHALL apply only to the filtered result set
 
 #### Scenario: Filter resets pagination
 - **WHEN** a user is on page 2 or higher and applies a search filter
-- **THEN** the displayed items SHALL reset to page 1
+- **THEN** the current page SHALL reset to page 1
+- **AND** pagination SHALL reflect the filtered results
+
+#### Scenario: Page reflects filtered dataset
+- **WHEN** a filter is applied
+- **THEN** the total pages and items SHALL reflect only the filtered results
+
+---
+
+### Requirement: Empty State Handling
+The page SHALL handle cases where no items match the current filter.
+
+#### Scenario: No results found
+- **WHEN** no equipment items match the current search or filter
+- **THEN** the page SHALL display "No equipment items found"
+- **AND** pagination controls SHALL be hidden or disabled
+
+---
+
+### Requirement: Go To Top Button
+The page SHALL provide a floating "Go to Top" button.
+
+- The button SHALL be positioned in the bottom-right corner
+- The button SHALL appear when scrollY exceeds the viewport height
+- Clicking the button SHALL scroll smoothly to the top
+
+#### Scenario: Button appears on scroll
+- **WHEN** the user scrolls down past the first viewport height
+- **THEN** a floating button SHALL appear
+
+#### Scenario: Button scrolls to top
+- **WHEN** the user clicks the button
+- **THEN** the page SHALL scroll smoothly to the top
+
+#### Scenario: Button hidden at top
+- **WHEN** the user is at the top of the page
+- **THEN** the button SHALL be hidden
+
+---
+
+### Requirement: Non-Regression Constraints
+The implementation SHALL NOT modify existing functionality outside pagination.
+
+- Equipment creation, editing, and deletion SHALL remain unchanged
+- Search and filtering logic SHALL remain unchanged
+- Database and API behavior SHALL remain unchanged
+- Existing UI structure SHALL remain unchanged except for pagination additions
+
+---
+
+### Requirement: Implementation Constraints
+The implementation SHALL follow these constraints to reduce complexity.
+
+- Pagination SHALL be implemented client-side
+- The existing Equipment Catalog page SHALL be modified directly
+- No new external libraries SHALL be introduced
+- Existing data fetching logic SHALL remain unchanged
