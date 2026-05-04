@@ -14,11 +14,12 @@ export async function signInAdmin(formData: FormData) {
     redirect("/login?error=Username%20and%20password%20are%20required");
   }
 
-  if (!(await verifyAdminCredentials(username, password))) {
+  const user = await verifyAdminCredentials(username, password);
+  if (!user) {
     redirect("/login?error=Invalid%20username%20or%20password");
   }
 
-  (await cookies()).set(ADMIN_COOKIE_NAME, await createAdminSessionValue(), {
+  (await cookies()).set(ADMIN_COOKIE_NAME, await createAdminSessionValue(user.username), {
     httpOnly: true,
     maxAge: 12 * 60 * 60,
     path: "/",
