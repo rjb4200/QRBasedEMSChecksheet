@@ -1,25 +1,13 @@
+import { createAdminClient } from "@/lib/supabase/server-admin";
+import { verifyPassword } from "./password";
+
 const ADMIN_COOKIE_NAME = "ec_admin_session";
-const DEFAULT_ADMIN_USERNAME = "rjb4200";
-const DEFAULT_ADMIN_PASSWORD_HASH = "47b7cd2a058898bc4d2d94d46ea2c2654bfd398638396fc7724de7e22e5aaa6d";
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
 
 export { ADMIN_COOKIE_NAME };
 
-function getAdminUsername() {
-  return process.env.ADMIN_USERNAME ?? DEFAULT_ADMIN_USERNAME;
-}
-
-function getAdminPasswordHash() {
-  return process.env.ADMIN_PASSWORD_HASH ?? DEFAULT_ADMIN_PASSWORD_HASH;
-}
-
 function getSessionSecret() {
-  return process.env.ADMIN_SESSION_SECRET ?? `${getAdminUsername()}:${getAdminPasswordHash()}`;
-}
-
-async function sha256Hex(value: string) {
-  const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
-  return Array.from(new Uint8Array(hash), (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return process.env.ADMIN_SESSION_SECRET ?? "ec-default-session-secret-change-me";
 }
 
 async function hmacHex(value: string) {
@@ -48,13 +36,33 @@ function safeEqual(left: string, right: string) {
 }
 
 export async function verifyAdminCredentials(username: string, password: string) {
-  const passwordHash = await sha256Hex(password);
-  return safeEqual(username.trim(), getAdminUsername()) && safeEqual(passwordHash, getAdminPasswordHash());
+  const trimmedUsername = username.trim();
+
+  if (!trimmedUsername || !password) {
+    return false;
+  }
+
+  const supabase = createAdminClient();
+
+  const { data: user } = await supabase
+    .from("admin_users")
+    .select("id, username, password_hash")
+    .eq("username", trimmedUsername)
+    .single();
+
+  if (user) {
+    const isValid = await verifyPassword(password, user.password_hash);
+    if (isValid) {
+      return { username: user.username, id: user.id };
+    }
+  }
+
+  return false;
 }
 
-export async function createAdminSessionValue() {
+export async function createAdminSessionValue(username: string) {
   const expiresAt = Date.now() + SESSION_TTL_MS;
-  const payload = `${getAdminUsername()}.${expiresAt}`;
+  const payload = `${username}.${expiresAt}`;
   const signature = await hmacHex(payload);
   return `${payload}.${signature}`;
 }
@@ -65,7 +73,19 @@ export async function verifyAdminSession(value?: string) {
   }
 
   const [username, expiresAt, signature] = value.split(".");
-  if (!username || !expiresAt || !signature || Number(expiresAt) <= Date.now() || username !== getAdminUsername()) {
+  if (!username || !expiresAt || !signature || Number(expiresAt) <= Date.now()) {
+    return false;
+  }
+
+  const supabase = createAdminClient();
+
+  const { data: user } = await supabase
+    .from("admin_users")
+    .select("id, username")
+    .eq("username", username)
+    .single();
+
+  if (!user) {
     return false;
   }
 
