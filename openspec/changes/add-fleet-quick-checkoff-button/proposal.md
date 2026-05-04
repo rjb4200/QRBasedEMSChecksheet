@@ -1,27 +1,32 @@
-## Why
+# Proposal: Fleet Quick Checkoff Button
 
-Admin users need quick access to view the current status of in-progress daily checkoffs directly from the fleet matrix. Currently, admin must navigate through multiple pages to check on crew progress. Adding a quick action button to each unit card on the fleet matrix will streamline this workflow.
+## Why
+Currently, admins and supervisors experience "multi-click fatigue" when checking crew progress. To monitor a unit's live checkoff status, they must navigate through multiple screens. This update reduces the path from three clicks to one.
 
 ## What Changes
 
-- Add a "View Checkoff" button to each unit card on the admin fleet matrix page
-- The button navigates directly to the unit's daily checkoff page (`/units/[id]`)
-- This allows admin to quickly monitor crew progress without additional navigation steps
-- The button is visible for all unit states (in-progress, completed, not started)
+### Component
+- **File:** `src/components/fleet-matrix.tsx`
+- **Feature:** A "View Checkoff" button on each unit card that links directly to the live checkoff page
 
-## Capabilities
+### Button Behavior
+- **Navigation:** Links to `/units/{unitId}` using Next.js client-side routing
+- **Styling:** State-aware based on unit progress:
+  - In-progress units: Solid neutral fill (prominent)
+  - Completed/Not started: Outlined ghost style (subtle)
+- **Accessibility:** 44px minimum height, text label (not icon)
 
-### New Capabilities
-
-- `fleet-quick-checkoff`: Quick access button on fleet matrix unit cards that navigates to the daily checkoff page for real-time progress monitoring.
-
-### Modified Capabilities
-
-- None. This is a UI enhancement that doesn't change existing requirements.
+### Interaction
+- Uses Next.js `<Link>` with prefetch for instantaneous transitions
+- No additional API calls or data fetching required
 
 ## Impact
 
-- Updates to admin fleet page component to add button to each unit card
+- **Performance:** Optimized navigation via Next.js prefetching
+- **UX:** Single-click access to live checkoff status from fleet view
+- **Accessibility:** Meets mobile tap target requirements (44px minimum)
+
+## Dependencies
+- Uses existing `unit.id`, `unit.inProgress` fields from FleetMatrix component
 - No database changes required
-- No changes to authentication or authorization
-- No changes to public checkoff flow
+- No new dependencies

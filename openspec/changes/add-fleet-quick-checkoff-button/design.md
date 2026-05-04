@@ -1,55 +1,78 @@
+# Design Document: Fleet Matrix Quick Access
+
 ## Context
+Admin users need to monitor unit checkoffs efficiently. The current workflow requires navigating through unit details to reach the live checkoff status, causing unnecessary latency.
 
-The admin fleet matrix page displays all units with their completion percentage and progress bar. Admin users currently need to click on the unit name to view details, then navigate to the checkoff page to see the current crew progress. This requires multiple clicks and page loads.
+## Goals
+- Add a "View Checkoff" button to each unit card.
+- Implement **State-Aware Styling** for better visual hierarchy.
+- Ensure the interface remains "performance-first" with zero layout shift.
 
-## Goals / Non-Goals
+## Implementation Details
 
-**Goals:**
-- Add a visible button to each unit card on the fleet matrix
-- Button navigates directly to the daily checkoff page (`/units/[id]`)
-- Button is styled consistently with admin UI (red primary, white outlined)
+### File: src/components/fleet-matrix.tsx
+The `FleetMatrix` component renders unit cards in the fleet view. We will add a new button inside each card.
 
-**Non-Goals:**
-- Adding any new data display on the fleet matrix itself
-- Changing the fleet matrix layout or existing information
-- Adding any functionality beyond navigation
+### Button Placement
+Located below the existing "Manage Unit" button in the admin view, or as a primary action for the user view.
 
-## Decisions
+### Visual Style
 
-### 1. Button Placement and Style
+**In-Progress Units:**
+- Solid neutral background (e.g., `bg-slate-700`) with white text
+- Indicates active work requiring attention
 
-**Decision:** Add a "View Checkoff" button below the progress bar on each unit card.
+**Completed/Not Started:**
+- Outlined "ghost" style (`border border-slate-300 text-slate-600`)
+- Reduces visual noise while remaining clearly clickable
 
-**Rationale:** The progress bar area is already the focal point for status. Adding the button below keeps it accessible without cluttering the unit name or percentage display.
+### Link Destination
+- Direct navigation to `/units/{unitId}` using Next.js `<Link>` with `prefetch={true}`
 
-**Alternative Considered:** Adding a button in the unit card header. Rejected because it would compete with the unit name for attention.
+### Accessibility
+- Minimum 44px height for tap targets
+- Text label "View Checkoff" (not icon only)
 
-### 2. Button Styling
+## Component Structure (Target)
 
-**Decision:** Use the standard admin button styling (red background with white text).
+```tsx
+<article key={unit.id} className="rounded-3xl bg-white p-5 shadow-sm">
+  {/* ... existing header content ... */}
+  
+  {/* Progress bar */}
+  <div className="mt-5 h-4 overflow-hidden rounded-full bg-slate-200">
+    <div className="h-full rounded-full bg-red-700" style={{ width: `${unit.percentage}%` }} />
+  </div>
+  
+  <p className="mt-3 font-bold">{unit.completed} of {unit.total} checks completed</p>
+  <p className="text-sm text-slate-600">{unit.inProgress} in progress</p>
+  
+  {/* New View Checkoff Button */}
+  <Link 
+    href={`/units/${unit.id}`}
+    prefetch={true}
+    className={`mt-4 inline-flex min-h-[44px] items-center justify-center rounded-2xl px-4 py-2 font-bold ${
+      unit.inProgress > 0 
+        ? "bg-slate-700 text-white" 
+        : "border border-slate-300 text-slate-600"
+    }`}
+  >
+    View Checkoff
+  </Link>
+  
+  {/* Admin-only Manage Unit button */}
+  {admin ? <Link ...>Manage Unit</Link> : null}
+</article>
+```
 
-**Rationale:** Consistency with other admin UI elements. The red primary color is already established in the admin interface.
+## Validation
+- TypeScript compiles without errors
+- ESLint passes
+- Build succeeds
+- Button navigates to correct `/units/{id}` URL
+- Button visible on all unit states (Not started, In progress, Completed)
+- Mobile view maintains card height
 
-**Alternative Considered:** Outline style only. Rejected because filled buttons are more visible and encourage action.
-
-### 3. Link Destination
-
-**Decision:** Navigate to `/units/{unitId}` which is the existing unit checkoff page.
-
-**Rationale:** This page already displays crew names, lock status, and all compartment checkoff items with their completion status. No new page or route needed.
-
-## Risks / Trade-offs
-
-- **Visual Clutter:** Adding buttons to each unit card may make the fleet matrix feel busier. Mitigated by keeping the button compact and unobtrusive.
-- **Mobile Experience:** Button may be small on mobile devices. Mitigated by using a touch-friendly button size (minimum 44px tap target).
-
-## Migration Plan
-
-1. Update fleet matrix component to add button to each unit card
-2. Test button navigation works correctly
-3. Verify no layout regressions on fleet page
-4. Deploy to production
-
-## Open Questions
-
-- None. This is a straightforward UI enhancement with clear requirements.
+## Risks
+- **Button Fatigue:** Mitigated by using neutral palette that only draws attention to active units.
+- **Mobile Tap Targets:** Maintain 44px minimum height.

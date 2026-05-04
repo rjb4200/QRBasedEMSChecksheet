@@ -1,25 +1,20 @@
-## ADDED Requirements
+# Functional Specifications: Fleet Quick Access
 
-### Requirement: Fleet matrix displays checkoff button
-The system SHALL display a "View Checkoff" button on each unit card within the admin fleet matrix page.
+## Requirement: State-Aware Navigation Button
+The system SHALL display a "View Checkoff" button on every unit card, regardless of status[cite: 4].
 
-#### Scenario: Button visible on all unit cards
-- **WHEN** an admin user views the fleet matrix page
-- **THEN** each unit card SHALL display a "View Checkoff" button
+### Scenario: High Visibility, Low Contrast
+- **WHEN** a unit is "In Progress"
+- **THEN** the button SHALL be displayed with a solid, neutral fill to indicate activity.
+- **WHEN** a unit is "Completed" or "Not Started"
+- **THEN** the button SHALL be displayed as an outlined/ghost button to reduce visual clutter.
 
-#### Scenario: Button present regardless of completion status
-- **WHEN** a unit is in any state (not started, in progress, completed)
-- **THEN** the "View Checkoff" button SHALL still be visible on the unit card
+### Scenario: Navigation Accuracy
+- **WHEN** the "View Checkoff" button is clicked
+- **THEN** the system SHALL navigate to `/units/{unitId}` using client-side routing[cite: 1, 4].
+- **AND** the page SHALL load the specific data for that unit ID[cite: 4].
 
-### Requirement: Button navigates to checkoff page
-The system SHALL navigate to the unit's daily checkoff page when the "View Checkoff" button is clicked.
-
-#### Scenario: Navigation to checkoff page
-- **WHEN** an admin user clicks the "View Checkoff" button on a unit card
-- **THEN** the browser SHALL navigate to the `/units/{unitId}` page
-- **AND** the daily checkoff page SHALL display with current crew progress
-
-#### Scenario: Correct unit loaded
-- **WHEN** an admin user clicks "View Checkoff" on a specific unit
-- **THEN** the checkoff page SHALL load the correct unit's data
-- **AND** the URL SHALL reflect the correct unit ID
+### Scenario: Physical Accessibility
+- **GIVEN** a mobile or desktop viewport
+- **THEN** the button SHALL have a minimum tap target of 44px[cite: 1].
+- **AND** the button SHALL display text ("View Checkoff") rather than an icon only.

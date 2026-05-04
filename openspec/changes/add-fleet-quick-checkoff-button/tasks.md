@@ -1,13 +1,19 @@
-## 1. Fleet Matrix Updates
+# Implementation Tasks
 
-- [ ] 1.1 Locate fleet matrix component in admin page
-- [ ] 1.2 Add "View Checkoff" button to each unit card
-- [ ] 1.3 Style button with admin red primary color
-- [ ] 1.4 Add link to `/units/{unitId}` for each button
+## 1. Frontend Development
+
+- [x] 1.1 Update `src/components/fleet-matrix.tsx` to include the "View Checkoff" button.
+- [x] 1.2 Implement dynamic Tailwind classes for state-aware styling:
+  - **Active:** `bg-slate-700 text-white` (when inProgress > 0)
+  - **Inactive:** `border border-slate-300 text-slate-600` (when inProgress = 0)
+- [x] 1.3 Wrap button in Next.js `<Link>` with `prefetch={true}` and link to `/units/{unit.id}`.
+- [x] 1.4 Ensure 44px minimum height for mobile accessibility using `min-h-[44px]`.
 
 ## 2. Validation and Testing
 
-- [ ] 2.1 Run typecheck to verify no type errors
-- [ ] 2.2 Run lint to verify no linting issues
-- [ ] 2.3 Build the project to ensure everything compiles
-- [ ] 2.4 Test button navigation from fleet matrix to checkoff page
+- [x] 2.1 Verify "View Checkoff" navigates to correct `/units/{unitId}` URL.
+- [x] 2.2 Confirm button is visible on all states (Not started, In progress, Completed).
+- [x] 2.3 Check mobile view to ensure card height remains manageable.
+- [x] 2.4 Run typecheck to verify no type errors.
+- [x] 2.5 Run lint to verify no linting issues.
+- [x] 2.6 Build the project to ensure everything compiles.

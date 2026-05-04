@@ -29,7 +29,16 @@ export function FleetMatrix({ units, admin = false }: { units: FleetUnit[]; admi
           </div>
           <p className="mt-3 font-bold">{unit.completed} of {unit.total} checks completed</p>
           <p className="text-sm text-slate-600">{unit.inProgress} in progress</p>
-          {admin ? <Link className="mt-4 inline-flex rounded-2xl border border-slate-300 px-4 py-2 font-bold" href={`/admin/units/${unit.id}`}>Manage Unit</Link> : null}
+          <Link
+            href={`/units/${unit.id}`}
+            prefetch={true}
+            className={`mt-4 inline-flex min-h-[44px] items-center justify-center rounded-2xl px-4 py-2 font-bold ${
+              unit.inProgress > 0 ? "bg-slate-700 text-white" : "border border-slate-300 text-slate-600"
+            }`}
+          >
+            View Checkoff
+          </Link>
+          {admin ? <Link className="mt-2 block rounded-2xl border border-slate-300 px-4 py-2 text-center text-sm font-bold" href={`/admin/units/${unit.id}`}>Manage Unit</Link> : null}
         </article>
       ))}
     </div>
