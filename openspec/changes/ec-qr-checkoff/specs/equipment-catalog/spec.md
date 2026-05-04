@@ -1,15 +1,18 @@
 ## ADDED Requirements
 
 ### Requirement: Equipment catalog stores item definitions
-The system SHALL maintain an EC5-based catalog of equipment items with name, default par level, input type, and category.
+The system SHALL maintain a catalog of equipment items with name, default par level, input type, and category.
 
 #### Scenario: View equipment catalog
 - **WHEN** admin opens the equipment catalog
-- **THEN** EC5 checksheet equipment items are displayed with their properties
+- **THEN** equipment items are displayed with their properties
 
-#### Scenario: Non-EC5 equipment is excluded
-- **WHEN** equipment is not part of the EC5 checksheet
-- **THEN** it is not shown in the equipment catalog
+### Requirement: Equipment catalog supports data import
+The system SHALL allow bulk importing of equipment items from external sources.
+
+#### Scenario: Import equipment data
+- **WHEN** admin imports equipment items from an external dataset
+- **THEN** items are added to the catalog with their defined properties
 
 ### Requirement: Equipment items have input type classification
 Each equipment item SHALL be classified as one of three input types: quantity (stepper), checkbox (done/not-done), or condition (status selector).
