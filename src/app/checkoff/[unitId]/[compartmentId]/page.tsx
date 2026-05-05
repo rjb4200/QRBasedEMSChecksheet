@@ -2,12 +2,51 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { takeOverCheckoff } from "./actions";
 import { CheckoffForm } from "./checkoff-form";
-import { getCurrentShift, getPreviousShift } from "@/lib/shifts";
+import { getCurrentShift, type ShiftPeriod } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
 function isStale(lastActivityAt?: string | null) {
   if (!lastActivityAt) return false;
   return Date.now() - new Date(lastActivityAt).getTime() > 30 * 60 * 1000;
+}
+
+function dateDaysAgo(shiftDate: string, days: number) {
+  const date = new Date(`${shiftDate}T12:00:00`);
+  date.setDate(date.getDate() - days);
+  return date.toISOString().slice(0, 10);
+}
+
+async function getRecentCompletedCompartmentData(
+  supabase: ReturnType<typeof createAdminClient>,
+  unitId: string,
+  compartmentId: string,
+  currentShift: { shiftDate: string; shiftPeriod: ShiftPeriod },
+) {
+  const { data: crew, error: crewError } = await supabase
+    .from("daily_unit_crews")
+    .select("shift_date, shift_period")
+    .eq("unit_id", unitId)
+    .eq("locked", true)
+    .gte("shift_date", dateDaysAgo(currentShift.shiftDate, 7))
+    .lte("shift_date", currentShift.shiftDate)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (crewError) throw new Error(crewError.message);
+  if (!crew) return {};
+
+  const { data: previousCheck, error: previousCheckError } = await supabase
+    .from("compartment_checks")
+    .select("item_data")
+    .eq("unit_id", unitId)
+    .eq("compartment_id", compartmentId)
+    .eq("shift_date", crew.shift_date)
+    .eq("shift_period", crew.shift_period)
+    .maybeSingle();
+
+  if (previousCheckError) throw new Error(previousCheckError.message);
+  return (previousCheck?.item_data ?? {}) as Record<string, unknown>;
 }
 
 export default async function CheckoffPage({ params, searchParams }: { params: Promise<{ unitId: string; compartmentId: string }>; searchParams: Promise<{ mode?: string }> }) {
@@ -16,12 +55,10 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
   const supabase = createAdminClient();
 
   const currentShift = getCurrentShift();
-  const previousShift = getPreviousShift();
-  const [{ data: unit }, { data: compartment }, { data: check }, { data: previousArchive }] = await Promise.all([
+  const [{ data: unit }, { data: compartment }, { data: check }] = await Promise.all([
     supabase.from("units").select("id, name, status").eq("id", unitId).is("deleted_at", null).single(),
     supabase.from("unit_compartments").select("id, name, photo_url, unit_compartment_item_groups(id, name, sort_order, created_at), unit_compartment_items(id, group_id, sort_order, par_level, input_type, equipment_catalog(name))").eq("id", compartmentId).eq("unit_id", unitId).single(),
     supabase.from("compartment_checks").select("*, users(full_name, email)").eq("unit_id", unitId).eq("compartment_id", compartmentId).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
-    supabase.from("shift_archives").select("check_data").eq("unit_id", unitId).eq("shift_date", previousShift.shiftDate).eq("shift_period", previousShift.shiftPeriod).maybeSingle(),
   ]);
 
   if (!unit || !compartment) redirect("/units");
@@ -32,6 +69,10 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
   const stale = isStale(check?.last_activity_at);
   const ownedByOther = check?.status === "in_progress" && Boolean(check.checked_by) && !stale;
   const readOnly = mode === "view";
+  const currentItemData = (check?.item_data ?? {}) as Record<string, unknown>;
+  const hasCurrentItemData = Object.keys(currentItemData).length > 0;
+  const recentCompletedData = await getRecentCompletedCompartmentData(supabase, unitId, compartmentId, currentShift);
+  const initialItemData = hasCurrentItemData ? currentItemData : recentCompletedData;
 
   if (!ownedByOther && !readOnly && check?.status !== "completed") {
     const payload = {
@@ -42,7 +83,7 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
       shift_period: currentShift.shiftPeriod,
       status: "in_progress",
       checked_by: null,
-      item_data: check?.item_data ?? {},
+      item_data: initialItemData,
       last_activity_at: new Date().toISOString(),
     };
     if (check?.id) {
@@ -73,10 +114,6 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
     );
   }
 
-  const previousCheck = Array.isArray(previousArchive?.check_data)
-    ? previousArchive.check_data.find((item) => item.compartment_id === compartmentId)
-    : null;
-
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-6 text-slate-950">
       <section className="mx-auto max-w-3xl space-y-5">
@@ -88,10 +125,10 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
         </div>
         <CheckoffForm
           compartmentId={compartmentId}
-          initialData={(check?.item_data ?? {}) as Record<string, unknown>}
+          initialData={initialItemData}
           items={compartment.unit_compartment_items ?? []}
           groups={compartment.unit_compartment_item_groups ?? []}
-          previousData={(previousCheck?.item_data ?? {}) as Record<string, unknown>}
+          previousData={recentCompletedData}
           readOnly={readOnly}
           unitId={unitId}
         />

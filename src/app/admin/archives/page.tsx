@@ -89,7 +89,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                         <td className="p-4 font-semibold">{record.crewLocked ? record.providerNames || "Locked" : "Not locked"}</td>
                         <td className="p-4">
                           {record.archiveId ? (
-                            <Link className="rounded-2xl border border-slate-300 px-4 py-2 font-bold" href={`/admin/archives/${record.archiveId}`}>View</Link>
+                            <Link className="rounded-2xl border border-slate-300 px-4 py-2 font-bold !text-pink-600 visited:!text-pink-600" href={`/admin/archives/${record.archiveId}`}>View</Link>
                           ) : (
                             <span className="text-slate-400">No archive</span>
                           )}
