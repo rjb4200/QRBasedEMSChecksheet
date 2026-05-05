@@ -5,6 +5,22 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
+type SupabaseAdmin = ReturnType<typeof createAdminClient>;
+
+async function copyCompartmentGroups(supabase: SupabaseAdmin, sourceGroups: any[] = [], destinationCompartmentId: string) {
+  const groupMap = new Map<string, string>();
+  for (const group of sourceGroups) {
+    const { data, error } = await supabase
+      .from("unit_compartment_item_groups")
+      .upsert({ compartment_id: destinationCompartmentId, name: group.name, sort_order: group.sort_order ?? 0 }, { onConflict: "compartment_id,name" })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+    groupMap.set(group.id, data.id);
+  }
+  return groupMap;
+}
+
 export async function createUnit(formData: FormData) {
   const parsed = z.object({ name: z.string().min(1), unitKind: z.string().min(1), sourceUnitId: z.string().uuid().optional() }).parse({
     name: formData.get("name"),
@@ -23,7 +39,7 @@ export async function createUnit(formData: FormData) {
     const [{ data: compartments, error: compError }, { data: sourceKits, error: kitError }] = await Promise.all([
       supabase
       .from("unit_compartments")
-      .select("*, unit_compartment_items(*)")
+      .select("*, unit_compartment_item_groups(id, name, sort_order), unit_compartment_items(*)")
       .eq("unit_id", parsed.sourceUnitId)
         .order("sort_order"),
       supabase
@@ -45,12 +61,14 @@ export async function createUnit(formData: FormData) {
       }, { onConflict: "unit_id,name" }).select("id").single();
       if (newCompError) throw new Error(newCompError.message);
 
+      const groupMap = await copyCompartmentGroups(supabase, compartment.unit_compartment_item_groups ?? [], newCompartment.id);
       const items = (compartment.unit_compartment_items ?? []).map((item: any) => ({
         compartment_id: newCompartment.id,
         equipment_id: item.equipment_id,
         sort_order: item.sort_order,
         par_level: item.par_level,
         input_type: item.input_type,
+        group_id: item.group_id ? groupMap.get(item.group_id) ?? null : null,
       }));
       if (items.length > 0) {
         const { error: itemError } = await supabase.from("unit_compartment_items").upsert(items, { onConflict: "compartment_id,equipment_id" });
@@ -114,7 +132,7 @@ export async function importUnitCompartment(formData: FormData) {
   const supabase = createAdminClient();
   const { data: source, error: sourceError } = await supabase
     .from("unit_compartments")
-    .select("name, grid_position, photo_url, unit_compartment_items(equipment_id, sort_order, par_level, input_type)")
+    .select("name, grid_position, photo_url, unit_compartment_item_groups(id, name, sort_order), unit_compartment_items(equipment_id, sort_order, par_level, input_type, group_id)")
     .eq("id", parsed.sourceCompartmentId)
     .single();
   if (sourceError) throw new Error(sourceError.message);
@@ -128,12 +146,14 @@ export async function importUnitCompartment(formData: FormData) {
   }, { onConflict: "unit_id,name" }).select("id").single();
   if (error) throw new Error(error.message);
 
+  const groupMap = await copyCompartmentGroups(supabase, source.unit_compartment_item_groups ?? [], newCompartment.id);
   const items = (source.unit_compartment_items ?? []).map((item: any) => ({
     compartment_id: newCompartment.id,
     equipment_id: item.equipment_id,
     sort_order: item.sort_order,
     par_level: item.par_level,
     input_type: item.input_type,
+    group_id: item.group_id ? groupMap.get(item.group_id) ?? null : null,
   }));
   if (items.length > 0) {
     const { error: itemError } = await supabase.from("unit_compartment_items").upsert(items, { onConflict: "compartment_id,equipment_id" });
@@ -153,7 +173,7 @@ export async function cloneKitToUnitCompartment(formData: FormData) {
   const supabase = createAdminClient();
   const { data: kit, error: kitError } = await supabase
     .from("kits")
-    .select("name, photo_url, kit_items(equipment_id, sort_order, par_level, input_type)")
+    .select("name, photo_url, kit_item_groups(id, name, sort_order), kit_items(equipment_id, sort_order, par_level, input_type, group_id)")
     .eq("id", parsed.kitId)
     .single();
   if (kitError) throw new Error(kitError.message);
@@ -166,12 +186,24 @@ export async function cloneKitToUnitCompartment(formData: FormData) {
   }, { onConflict: "unit_id,name" }).select("id").single();
   if (error) throw new Error(error.message);
 
+  const groupMap = new Map<string, string>();
+  for (const group of kit.kit_item_groups ?? []) {
+    const { data, error: groupError } = await supabase
+      .from("unit_compartment_item_groups")
+      .upsert({ compartment_id: newCompartment.id, name: group.name, sort_order: group.sort_order ?? 0 }, { onConflict: "compartment_id,name" })
+      .select("id")
+      .single();
+    if (groupError) throw new Error(groupError.message);
+    groupMap.set(group.id, data.id);
+  }
+
   const items = (kit.kit_items ?? []).map((item: any) => ({
     compartment_id: newCompartment.id,
     equipment_id: item.equipment_id,
     sort_order: item.sort_order,
     par_level: item.par_level,
     input_type: item.input_type,
+    group_id: item.group_id ? groupMap.get(item.group_id) ?? null : null,
   }));
   if (items.length > 0) {
     const { error: itemError } = await supabase.from("unit_compartment_items").upsert(items, { onConflict: "compartment_id,equipment_id" });
@@ -226,10 +258,12 @@ export async function addUnitItem(formData: FormData) {
     unitId: z.string().uuid(),
     compartmentId: z.string().uuid(),
     equipmentId: z.string().uuid(),
+    groupId: z.string().uuid().nullable(),
   }).parse({
     unitId: formData.get("unitId"),
     compartmentId: formData.get("compartmentId"),
     equipmentId: formData.get("equipmentId"),
+    groupId: formData.get("groupId") || null,
   });
   const supabase = createAdminClient();
   const { data: equipment, error: equipmentError } = await supabase.from("equipment_catalog").select("default_par_level, input_type").eq("id", parsed.equipmentId).single();
@@ -240,9 +274,56 @@ export async function addUnitItem(formData: FormData) {
     equipment_id: parsed.equipmentId,
     input_type: equipment.input_type,
     par_level: equipment.default_par_level,
+    group_id: parsed.groupId,
   }, {
     onConflict: "compartment_id,equipment_id",
   });
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/units/${parsed.unitId}`);
+}
+
+export async function createCompartmentGroup(formData: FormData) {
+  const parsed = z.object({ unitId: z.string().uuid(), compartmentId: z.string().uuid(), name: z.string().min(1), sortOrder: z.coerce.number().default(0) }).parse({
+    unitId: formData.get("unitId"),
+    compartmentId: formData.get("compartmentId"),
+    name: formData.get("name"),
+    sortOrder: formData.get("sortOrder") || 0,
+  });
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("unit_compartment_item_groups").upsert({ compartment_id: parsed.compartmentId, name: parsed.name.trim(), sort_order: parsed.sortOrder }, { onConflict: "compartment_id,name" });
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/units/${parsed.unitId}`);
+}
+
+export async function updateCompartmentGroup(formData: FormData) {
+  const parsed = z.object({ unitId: z.string().uuid(), groupId: z.string().uuid(), name: z.string().min(1), sortOrder: z.coerce.number().default(0) }).parse({
+    unitId: formData.get("unitId"),
+    groupId: formData.get("groupId"),
+    name: formData.get("name"),
+    sortOrder: formData.get("sortOrder") || 0,
+  });
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("unit_compartment_item_groups").update({ name: parsed.name.trim(), sort_order: parsed.sortOrder }).eq("id", parsed.groupId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/units/${parsed.unitId}`);
+}
+
+export async function deleteCompartmentGroup(formData: FormData) {
+  const parsed = z.object({ unitId: z.string().uuid(), groupId: z.string().uuid() }).parse({ unitId: formData.get("unitId"), groupId: formData.get("groupId") });
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("unit_compartment_item_groups").delete().eq("id", parsed.groupId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/units/${parsed.unitId}`);
+}
+
+export async function updateUnitItemGroup(formData: FormData) {
+  const parsed = z.object({ unitId: z.string().uuid(), itemId: z.string().uuid(), groupId: z.string().uuid().nullable() }).parse({
+    unitId: formData.get("unitId"),
+    itemId: formData.get("itemId"),
+    groupId: formData.get("groupId") || null,
+  });
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("unit_compartment_items").update({ group_id: parsed.groupId }).eq("id", parsed.itemId);
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }

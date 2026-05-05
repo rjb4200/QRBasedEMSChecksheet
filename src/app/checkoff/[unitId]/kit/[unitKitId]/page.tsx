@@ -18,7 +18,7 @@ export default async function KitCheckoffPage({ params, searchParams }: { params
   const previousShift = getPreviousShift();
   const [{ data: unit }, { data: unitKit }, { data: check }, { data: previousArchive }] = await Promise.all([
     supabase.from("units").select("id, name, status").eq("id", unitId).is("deleted_at", null).single(),
-    supabase.from("unit_kits").select("id, kit_id, kits(id, name, photo_url, kit_items(id, par_level, input_type, equipment_catalog(name)))").eq("id", unitKitId).eq("unit_id", unitId).single(),
+    supabase.from("unit_kits").select("id, kit_id, kits(id, name, photo_url, kit_item_groups(id, name, sort_order, created_at), kit_items(id, group_id, sort_order, par_level, input_type, equipment_catalog(name)))").eq("id", unitKitId).eq("unit_id", unitId).single(),
     supabase.from("compartment_checks").select("*, users(full_name, email)").eq("unit_id", unitId).eq("unit_kit_id", unitKitId).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
     supabase.from("shift_archives").select("check_data").eq("unit_id", unitId).eq("shift_date", previousShift.shiftDate).eq("shift_period", previousShift.shiftPeriod).maybeSingle(),
   ]);
@@ -71,6 +71,7 @@ export default async function KitCheckoffPage({ params, searchParams }: { params
           compartmentId={unitKitId}
           initialData={(check?.item_data ?? {}) as Record<string, unknown>}
           items={kit.kit_items ?? []}
+          groups={kit.kit_item_groups ?? []}
           previousData={(previousCheck?.item_data ?? {}) as Record<string, unknown>}
           readOnly={readOnly}
           targetType="kit"

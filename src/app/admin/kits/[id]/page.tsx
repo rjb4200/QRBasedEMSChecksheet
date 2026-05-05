@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { addKitItem, deleteKit, deleteKitItem, updateKit, updateKitItem, uploadKitPhoto } from "../actions";
+import { addKitItem, createKitGroup, deleteKit, deleteKitGroup, deleteKitItem, updateKit, updateKitGroup, updateKitItem, uploadKitPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { groupItems } from "@/lib/item-groups";
 
 function equipmentName(item: any) {
   const equipment = Array.isArray(item.equipment_catalog) ? item.equipment_catalog[0] : item.equipment_catalog;
@@ -13,13 +14,15 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
   const [{ data: kit }, { data: equipment }] = await Promise.all([
     supabase
       .from("kits")
-      .select("id, name, description, sort_order, photo_url, active, kit_items(id, equipment_id, sort_order, par_level, input_type, equipment_catalog(name)), unit_kits(id, units(name))")
+      .select("id, name, description, sort_order, photo_url, active, kit_item_groups(id, name, sort_order, created_at), kit_items(id, equipment_id, group_id, sort_order, par_level, input_type, equipment_catalog(name)), unit_kits(id, units(name))")
       .eq("id", id)
       .single(),
     supabase.from("equipment_catalog").select("id, name, default_par_level, input_type").order("name"),
   ]);
 
   const assignments = kit?.unit_kits ?? [];
+  const groups = [...(kit?.kit_item_groups ?? [])].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+  const sections = groupItems(kit?.kit_items ?? [], groups);
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
@@ -76,17 +79,53 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
 
         <section className="rounded-3xl bg-white p-5 shadow-sm">
           <h2 className="text-2xl font-black">Equipment</h2>
-          <form action={addKitItem} className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
+          <div className="mt-4 rounded-2xl bg-slate-100 p-3">
+            <h3 className="font-black">Item Groups</h3>
+            <div className="mt-3 grid gap-2">
+              {groups.map((group: any) => (
+                <div key={group.id} className="grid gap-2 rounded-xl bg-white p-2 md:grid-cols-[1fr_100px_auto_auto]">
+                  <form action={updateKitGroup} className="contents">
+                    <input name="kitId" type="hidden" value={id} />
+                    <input name="groupId" type="hidden" value={group.id} />
+                    <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.name} name="name" />
+                    <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.sort_order ?? 0} name="sortOrder" type="number" />
+                    <button className="rounded-xl border border-slate-300 px-3 py-2 font-bold" type="submit">Save</button>
+                  </form>
+                  <form action={deleteKitGroup}>
+                    <input name="kitId" type="hidden" value={id} />
+                    <input name="groupId" type="hidden" value={group.id} />
+                    <button className="rounded-xl border border-red-200 px-3 py-2 font-bold text-red-700" type="submit">Delete</button>
+                  </form>
+                </div>
+              ))}
+            </div>
+            <form action={createKitGroup} className="mt-3 grid gap-2 sm:grid-cols-[1fr_100px_auto]">
+              <input name="kitId" type="hidden" value={id} />
+              <input className="rounded-xl border border-slate-300 px-3 py-2" name="name" placeholder="New group name" required />
+              <input className="rounded-xl border border-slate-300 px-3 py-2" name="sortOrder" placeholder="Order" type="number" />
+              <button className="rounded-xl bg-red-700 px-3 py-2 font-bold text-white" type="submit">Add Group</button>
+            </form>
+          </div>
+
+          <form action={addKitItem} className="mt-4 grid gap-3 sm:grid-cols-[1fr_180px_auto]">
             <input name="kitId" type="hidden" value={id} />
             <select className="rounded-2xl border border-slate-300 px-4 py-3" name="equipmentId" required>
               <option value="">Select equipment</option>
               {(equipment ?? []).map((item: any) => <option key={item.id} value={item.id}>{item.name} ({item.input_type}{item.default_par_level === null ? "" : `, par ${item.default_par_level}`})</option>)}
             </select>
+            <select className="rounded-2xl border border-slate-300 px-4 py-3" name="groupId">
+              <option value="">Ungrouped</option>
+              {groups.map((group: any) => <option key={group.id} value={group.id}>{group.name}</option>)}
+            </select>
             <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold" type="submit">Add Equipment</button>
           </form>
-          <ul className="mt-4 grid gap-2">
-            {[...(kit?.kit_items ?? [])].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0)).map((item: any) => (
-              <li key={item.id} className="grid gap-2 rounded-2xl bg-slate-100 px-4 py-3 md:grid-cols-[1fr_100px_120px_auto_auto] md:items-center">
+          <div className="mt-4 grid gap-3">
+            {sections.map((section) => (
+              <details key={section.group?.id ?? "ungrouped"} className="rounded-2xl bg-slate-50 p-3" open>
+                <summary className="cursor-pointer font-black">{section.group?.name ?? "Ungrouped"}</summary>
+                <ul className="mt-3 grid gap-2">
+            {section.items.map((item: any) => (
+              <li key={item.id} className="grid gap-2 rounded-2xl bg-slate-100 px-4 py-3 md:grid-cols-[1fr_100px_120px_180px_auto_auto] md:items-center">
                 <div>
                   <span className="font-bold">{equipmentName(item)}</span>
                   <span className="text-slate-600"> | {item.input_type}</span>
@@ -96,6 +135,10 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
                   <input name="itemId" type="hidden" value={item.id} />
                   <input className="rounded-xl bg-white px-3 py-2" defaultValue={item.par_level ?? ""} name="parLevel" placeholder="Par" type="number" />
                   <input className="rounded-xl bg-white px-3 py-2" defaultValue={item.sort_order ?? 0} name="sortOrder" placeholder="Order" type="number" />
+                  <select className="rounded-xl bg-white px-3 py-2" defaultValue={item.group_id ?? ""} name="groupId">
+                    <option value="">Ungrouped</option>
+                    {groups.map((group: any) => <option key={group.id} value={group.id}>{group.name}</option>)}
+                  </select>
                   <button className="rounded-xl border border-slate-300 bg-white px-3 py-2 font-bold" type="submit">Save</button>
                 </form>
                 <form action={deleteKitItem}>
@@ -105,7 +148,10 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
                 </form>
               </li>
             ))}
-          </ul>
+                </ul>
+              </details>
+            ))}
+          </div>
         </section>
       </section>
     </main>

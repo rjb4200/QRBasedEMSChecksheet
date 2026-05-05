@@ -5,6 +5,22 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
+type SupabaseAdmin = ReturnType<typeof createAdminClient>;
+
+async function copyKitGroups(supabase: SupabaseAdmin, sourceGroups: any[] = [], destinationKitId: string) {
+  const groupMap = new Map<string, string>();
+  for (const group of sourceGroups) {
+    const { data, error } = await supabase
+      .from("kit_item_groups")
+      .upsert({ kit_id: destinationKitId, name: group.name, sort_order: group.sort_order ?? 0 }, { onConflict: "kit_id,name" })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+    groupMap.set(group.id, data.id);
+  }
+  return groupMap;
+}
+
 const kitMetadataSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string().min(1),
@@ -81,7 +97,7 @@ export async function copyKit(formData: FormData) {
   const supabase = createAdminClient();
   const { data: source, error: sourceError } = await supabase
     .from("kits")
-    .select("description, sort_order, photo_url, active, kit_items(equipment_id, sort_order, par_level, input_type)")
+    .select("description, sort_order, photo_url, active, kit_item_groups(id, name, sort_order), kit_items(equipment_id, sort_order, par_level, input_type, group_id)")
     .eq("id", parsed.kitId)
     .single();
   if (sourceError) throw new Error(sourceError.message);
@@ -97,7 +113,8 @@ export async function copyKit(formData: FormData) {
     .select("id")
     .single();
   if (error) throw new Error(error.message);
-  const items = (source.kit_items ?? []).map((item: any) => ({ ...item, kit_id: kit.id }));
+  const groupMap = await copyKitGroups(supabase, source.kit_item_groups ?? [], kit.id);
+  const items = (source.kit_items ?? []).map((item: any) => ({ ...item, kit_id: kit.id, group_id: item.group_id ? groupMap.get(item.group_id) ?? null : null }));
   if (items.length > 0) {
     const { error: itemError } = await supabase.from("kit_items").insert(items);
     if (itemError) throw new Error(itemError.message);
@@ -114,7 +131,7 @@ export async function createKitFromCompartment(formData: FormData) {
   const supabase = createAdminClient();
   const { data: source, error: sourceError } = await supabase
     .from("unit_compartments")
-    .select("photo_url, unit_compartment_items(equipment_id, sort_order, par_level, input_type)")
+    .select("photo_url, unit_compartment_item_groups(id, name, sort_order), unit_compartment_items(equipment_id, sort_order, par_level, input_type, group_id)")
     .eq("id", parsed.sourceCompartmentId)
     .single();
   if (sourceError) throw new Error(sourceError.message);
@@ -124,7 +141,17 @@ export async function createKitFromCompartment(formData: FormData) {
     .select("id")
     .single();
   if (error) throw new Error(error.message);
-  const items = (source.unit_compartment_items ?? []).map((item: any) => ({ ...item, kit_id: kit.id }));
+  const groupMap = new Map<string, string>();
+  for (const group of source.unit_compartment_item_groups ?? []) {
+    const { data, error: groupError } = await supabase
+      .from("kit_item_groups")
+      .upsert({ kit_id: kit.id, name: group.name, sort_order: group.sort_order ?? 0 }, { onConflict: "kit_id,name" })
+      .select("id")
+      .single();
+    if (groupError) throw new Error(groupError.message);
+    groupMap.set(group.id, data.id);
+  }
+  const items = (source.unit_compartment_items ?? []).map((item: any) => ({ ...item, kit_id: kit.id, group_id: item.group_id ? groupMap.get(item.group_id) ?? null : null }));
   if (items.length > 0) {
     const { error: itemError } = await supabase.from("kit_items").insert(items);
     if (itemError) throw new Error(itemError.message);
@@ -133,9 +160,10 @@ export async function createKitFromCompartment(formData: FormData) {
 }
 
 export async function addKitItem(formData: FormData) {
-  const parsed = z.object({ kitId: z.string().uuid(), equipmentId: z.string().uuid() }).parse({
+  const parsed = z.object({ kitId: z.string().uuid(), equipmentId: z.string().uuid(), groupId: z.string().uuid().nullable() }).parse({
     kitId: formData.get("kitId"),
     equipmentId: formData.get("equipmentId"),
+    groupId: formData.get("groupId") || null,
   });
   const supabase = createAdminClient();
   const { data: equipment, error: equipmentError } = await supabase
@@ -157,20 +185,22 @@ export async function addKitItem(formData: FormData) {
     sort_order: (maxSort?.sort_order ?? -1) + 1,
     par_level: equipment.default_par_level,
     input_type: equipment.input_type,
+    group_id: parsed.groupId,
   }, { onConflict: "kit_id,equipment_id" });
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/kits/${parsed.kitId}`);
 }
 
 export async function updateKitItem(formData: FormData) {
-  const parsed = z.object({ kitId: z.string().uuid(), itemId: z.string().uuid(), parLevel: z.coerce.number().nullable(), sortOrder: z.coerce.number().default(0) }).parse({
+  const parsed = z.object({ kitId: z.string().uuid(), itemId: z.string().uuid(), parLevel: z.coerce.number().nullable(), sortOrder: z.coerce.number().default(0), groupId: z.string().uuid().nullable() }).parse({
     kitId: formData.get("kitId"),
     itemId: formData.get("itemId"),
     parLevel: formData.get("parLevel") === "" ? null : formData.get("parLevel"),
     sortOrder: formData.get("sortOrder") || 0,
+    groupId: formData.get("groupId") || null,
   });
   const supabase = createAdminClient();
-  const { error } = await supabase.from("kit_items").update({ par_level: parsed.parLevel, sort_order: parsed.sortOrder }).eq("id", parsed.itemId);
+  const { error } = await supabase.from("kit_items").update({ par_level: parsed.parLevel, sort_order: parsed.sortOrder, group_id: parsed.groupId }).eq("id", parsed.itemId);
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/kits/${parsed.kitId}`);
 }
@@ -196,4 +226,28 @@ export async function uploadKitPhoto(formData: FormData) {
   const { error } = await supabase.from("kits").update({ photo_url: data.publicUrl }).eq("id", kitId);
   if (error) throw new Error(error.message);
   revalidatePath(`/admin/kits/${kitId}`);
+}
+
+export async function createKitGroup(formData: FormData) {
+  const parsed = z.object({ kitId: z.string().uuid(), name: z.string().min(1), sortOrder: z.coerce.number().default(0) }).parse({ kitId: formData.get("kitId"), name: formData.get("name"), sortOrder: formData.get("sortOrder") || 0 });
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("kit_item_groups").upsert({ kit_id: parsed.kitId, name: parsed.name.trim(), sort_order: parsed.sortOrder }, { onConflict: "kit_id,name" });
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/kits/${parsed.kitId}`);
+}
+
+export async function updateKitGroup(formData: FormData) {
+  const parsed = z.object({ kitId: z.string().uuid(), groupId: z.string().uuid(), name: z.string().min(1), sortOrder: z.coerce.number().default(0) }).parse({ kitId: formData.get("kitId"), groupId: formData.get("groupId"), name: formData.get("name"), sortOrder: formData.get("sortOrder") || 0 });
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("kit_item_groups").update({ name: parsed.name.trim(), sort_order: parsed.sortOrder }).eq("id", parsed.groupId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/kits/${parsed.kitId}`);
+}
+
+export async function deleteKitGroup(formData: FormData) {
+  const parsed = z.object({ kitId: z.string().uuid(), groupId: z.string().uuid() }).parse({ kitId: formData.get("kitId"), groupId: formData.get("groupId") });
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("kit_item_groups").delete().eq("id", parsed.groupId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/kits/${parsed.kitId}`);
 }

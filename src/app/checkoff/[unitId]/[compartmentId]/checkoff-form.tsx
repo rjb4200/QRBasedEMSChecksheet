@@ -2,9 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { saveCheckData, submitCheckData } from "./actions";
+import { groupItems, type ItemGroup } from "@/lib/item-groups";
 
 type CheckoffItem = {
   id: string;
+  group_id?: string | null;
+  sort_order?: number | null;
   par_level: number | null;
   input_type: "quantity" | "checkbox" | "condition";
   equipment_catalog: { name: string } | { name: string }[] | null;
@@ -15,6 +18,7 @@ type Props = {
   compartmentId: string;
   targetType?: "compartment" | "kit";
   items: CheckoffItem[];
+  groups?: ItemGroup[];
   initialData: Record<string, unknown>;
   previousData: Record<string, unknown>;
   readOnly?: boolean;
@@ -24,7 +28,7 @@ function equipmentName(item: CheckoffItem) {
   return Array.isArray(item.equipment_catalog) ? item.equipment_catalog[0]?.name : item.equipment_catalog?.name;
 }
 
-export function CheckoffForm({ unitId, compartmentId, targetType = "compartment", items, initialData, previousData, readOnly = false }: Props) {
+export function CheckoffForm({ unitId, compartmentId, targetType = "compartment", items, groups = [], initialData, previousData, readOnly = false }: Props) {
   const startTimeRef = useRef(Date.now());
   const [isPending, startTransition] = useTransition();
   const defaults = useMemo(() => Object.fromEntries(items.map((item) => {
@@ -49,9 +53,9 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
     setValues((current) => ({ ...current, [id]: value }));
   }
 
-  return (
-    <div className="space-y-4">
-      {items.map((item) => {
+  const sections = useMemo(() => groupItems(items, groups, { hideEmptyGroups: true }), [groups, items]);
+
+  function renderItem(item: CheckoffItem) {
         const name = equipmentName(item) ?? "Unnamed item";
         const value = values[item.id];
         const prev = previousData[item.id] ?? "-";
@@ -94,7 +98,18 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
             ) : null}
           </div>
         );
-      })}
+  }
+
+  return (
+    <div className="space-y-4">
+      {sections.map((section) => section.group ? (
+        <details key={section.group.id} className="rounded-3xl border border-slate-200 bg-slate-50 p-3" open>
+          <summary className="cursor-pointer px-2 py-2 text-lg font-black">{section.group.name}</summary>
+          <div className="mt-2 space-y-4">{section.items.map(renderItem)}</div>
+        </details>
+      ) : (
+        <div key="ungrouped" className="space-y-4">{section.items.map(renderItem)}</div>
+      ))}
 
       {!readOnly ? (
         <button className="w-full rounded-3xl bg-green-700 px-5 py-5 text-xl font-black text-white" disabled={isPending} onClick={() => {

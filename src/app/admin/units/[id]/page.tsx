@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { addUnitCompartment, addUnitItem, assignKitToUnit, cloneKitToUnitCompartment, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, removeKitFromUnit, toggleUnitStatus, uploadCompartmentPhoto } from "../actions";
+import { addUnitCompartment, addUnitItem, assignKitToUnit, cloneKitToUnitCompartment, createCompartmentGroup, deleteCompartmentGroup, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, removeKitFromUnit, toggleUnitStatus, updateCompartmentGroup, updateUnitItemGroup, uploadCompartmentPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { groupItems } from "@/lib/item-groups";
 
 export default async function UnitDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createAdminClient();
   const [{ data: unit }, { data: equipment }, { data: sourceCompartments }, { data: kits }] = await Promise.all([
-    supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, photo_url, unit_compartment_items(id, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(id, name, description, photo_url, kit_items(id, par_level, input_type, sort_order, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
+    supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, photo_url, unit_compartment_item_groups(id, name, sort_order, created_at), unit_compartment_items(id, group_id, sort_order, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(id, name, description, photo_url, kit_item_groups(id, name, sort_order, created_at), kit_items(id, group_id, par_level, input_type, sort_order, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
     supabase.from("equipment_catalog").select("id, name, default_par_level, input_type").order("name"),
     supabase.from("unit_compartments").select("id, name, units(name)").order("name"),
     supabase.from("kits").select("id, name, active").eq("active", true).order("name"),
@@ -85,7 +86,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
             if (item.type === "kit") {
               const assignment = item.assignment;
               const kit = Array.isArray(assignment.kits) ? assignment.kits[0] : assignment.kits;
-              const kitItems = [...(kit?.kit_items ?? [])].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+              const kitSections = groupItems(kit?.kit_items ?? [], kit?.kit_item_groups ?? []);
               return (
                 <details key={assignment.id} className="rounded-3xl border border-red-100 bg-white p-5 shadow-sm">
                   <summary className="cursor-pointer list-none">
@@ -106,22 +107,31 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                     </div>
                   </summary>
                   {kit?.photo_url ? <img alt={kit.name} className="mt-4 max-h-52 rounded-2xl object-cover" src={kit.photo_url} /> : null}
-                  <ul className="mt-4 grid gap-2">
-                    {kitItems.map((kitItem: any) => {
-                      const equipment = Array.isArray(kitItem.equipment_catalog) ? kitItem.equipment_catalog[0] : kitItem.equipment_catalog;
-                      return (
-                        <li key={kitItem.id} className="rounded-2xl bg-slate-100 px-4 py-3 text-sm">
-                          <span className="font-bold">{equipment?.name ?? "Unknown item"}</span>
-                          <span className="text-slate-600"> | {kitItem.input_type} | Par {kitItem.par_level ?? "-"}</span>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                  <div className="mt-4 grid gap-3">
+                    {kitSections.map((section) => (
+                      <details key={section.group?.id ?? "ungrouped"} className="rounded-2xl bg-slate-50 p-3" open>
+                        <summary className="cursor-pointer font-black">{section.group?.name ?? "Ungrouped"}</summary>
+                        <ul className="mt-3 grid gap-2">
+                          {section.items.map((kitItem: any) => {
+                            const equipment = Array.isArray(kitItem.equipment_catalog) ? kitItem.equipment_catalog[0] : kitItem.equipment_catalog;
+                            return (
+                              <li key={kitItem.id} className="rounded-2xl bg-slate-100 px-4 py-3 text-sm">
+                                <span className="font-bold">{equipment?.name ?? "Unknown item"}</span>
+                                <span className="text-slate-600"> | {kitItem.input_type} | Par {kitItem.par_level ?? "-"}</span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </details>
+                    ))}
+                  </div>
                 </details>
               );
             }
 
             const compartment = item.compartment;
+            const compartmentGroups = [...(compartment.unit_compartment_item_groups ?? [])].sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+            const compartmentSections = groupItems(compartment.unit_compartment_items ?? [], compartmentGroups);
             return (
             <section key={compartment.id} className="rounded-3xl bg-white p-5 shadow-sm">
               <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
@@ -143,13 +153,55 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                 <button className="rounded-xl bg-red-700 px-4 py-2 font-bold text-white" type="submit">Upload Photo</button>
               </form>
 
-              <ul className="mt-4 grid gap-2">
-                {(compartment.unit_compartment_items ?? []).map((item: any) => (
-                  <li key={item.id} className="flex flex-col justify-between gap-2 rounded-2xl bg-slate-100 px-4 py-3 text-sm sm:flex-row sm:items-center">
+              <div className="mt-4 rounded-2xl bg-slate-100 p-3">
+                <h3 className="font-black">Item Groups</h3>
+                <div className="mt-3 grid gap-2">
+                  {compartmentGroups.map((group: any) => (
+                    <div key={group.id} className="grid gap-2 rounded-xl bg-white p-2 md:grid-cols-[1fr_100px_auto_auto]">
+                      <form action={updateCompartmentGroup} className="contents">
+                        <input name="unitId" type="hidden" value={id} />
+                        <input name="groupId" type="hidden" value={group.id} />
+                        <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.name} name="name" />
+                        <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.sort_order ?? 0} name="sortOrder" type="number" />
+                        <button className="rounded-xl border border-slate-300 px-3 py-2 font-bold" type="submit">Save</button>
+                      </form>
+                      <form action={deleteCompartmentGroup}>
+                        <input name="unitId" type="hidden" value={id} />
+                        <input name="groupId" type="hidden" value={group.id} />
+                        <button className="rounded-xl border border-red-200 px-3 py-2 font-bold text-red-700" type="submit">Delete</button>
+                      </form>
+                    </div>
+                  ))}
+                </div>
+                <form action={createCompartmentGroup} className="mt-3 grid gap-2 sm:grid-cols-[1fr_100px_auto]">
+                  <input name="unitId" type="hidden" value={id} />
+                  <input name="compartmentId" type="hidden" value={compartment.id} />
+                  <input className="rounded-xl border border-slate-300 px-3 py-2" name="name" placeholder="New group name" required />
+                  <input className="rounded-xl border border-slate-300 px-3 py-2" name="sortOrder" placeholder="Order" type="number" />
+                  <button className="rounded-xl bg-red-700 px-3 py-2 font-bold text-white" type="submit">Add Group</button>
+                </form>
+              </div>
+
+              <div className="mt-4 grid gap-3">
+                {compartmentSections.map((section) => (
+                  <details key={section.group?.id ?? "ungrouped"} className="rounded-2xl bg-slate-50 p-3" open>
+                    <summary className="cursor-pointer font-black">{section.group?.name ?? "Ungrouped"}</summary>
+                    <ul className="mt-3 grid gap-2">
+                {section.items.map((item: any) => (
+                  <li key={item.id} className="grid gap-2 rounded-2xl bg-slate-100 px-4 py-3 text-sm md:grid-cols-[1fr_180px_auto_auto] md:items-center">
                     <div>
                       <span className="font-bold">{Array.isArray(item.equipment_catalog) ? (item.equipment_catalog[0] as any)?.name : (item.equipment_catalog as any)?.name}</span>
                       <span className="text-slate-600"> | {item.input_type} | Par {item.par_level ?? "-"}</span>
                     </div>
+                    <form action={updateUnitItemGroup} className="contents">
+                      <input name="unitId" type="hidden" value={id} />
+                      <input name="itemId" type="hidden" value={item.id} />
+                      <select className="rounded-xl bg-white px-3 py-2" defaultValue={item.group_id ?? ""} name="groupId">
+                        <option value="">Ungrouped</option>
+                        {compartmentGroups.map((group: any) => <option key={group.id} value={group.id}>{group.name}</option>)}
+                      </select>
+                      <button className="rounded-xl border border-slate-300 bg-white px-3 py-2 font-bold" type="submit">Move</button>
+                    </form>
                     <form action={deleteUnitItem}>
                       <input name="unitId" type="hidden" value={id} />
                       <input name="id" type="hidden" value={item.id} />
@@ -157,14 +209,21 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                     </form>
                   </li>
                 ))}
-              </ul>
+                    </ul>
+                  </details>
+                ))}
+              </div>
 
-              <form action={addUnitItem} className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
+              <form action={addUnitItem} className="mt-4 grid gap-3 sm:grid-cols-[1fr_180px_auto]">
                 <input name="unitId" type="hidden" value={id} />
                 <input name="compartmentId" type="hidden" value={compartment.id} />
                 <select className="rounded-2xl border border-slate-300 px-4 py-3" name="equipmentId" required>
                   <option value="">Select equipment</option>
                   {(equipment ?? []).map((item) => <option key={item.id} value={item.id}>{item.name} ({item.input_type}{item.default_par_level === null ? "" : `, par ${item.default_par_level}`})</option>)}
+                </select>
+                <select className="rounded-2xl border border-slate-300 px-4 py-3" name="groupId">
+                  <option value="">Ungrouped</option>
+                  {compartmentGroups.map((group: any) => <option key={group.id} value={group.id}>{group.name}</option>)}
                 </select>
                 <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" type="submit">Add Item From Defaults</button>
               </form>
