@@ -55,14 +55,7 @@ The unit builder SHALL allow importing one compartment from an existing unit int
 
 #### Scenario: Import compartment
 - **WHEN** admin selects a source compartment to import
-- **THEN** the current unit receives a new compartment with the source compartment's items, par levels, input types, photo, and link group
-
-### Requirement: Admin can link compartments for shared item values
-The unit builder SHALL allow assigning the same link group to multiple compartments on a unit so item changes apply to all linked compartments.
-
-#### Scenario: Add item to linked compartments
-- **WHEN** admin adds a catalog item to a compartment with a link group
-- **THEN** the item is added to every compartment in that unit with the same link group using the catalog input type and default par level
+- **THEN** the current unit receives a new independent compartment with the source compartment's items, par levels, input types, and photo
 
 ### Requirement: Admin can upload compartment photos
 The unit builder SHALL allow uploading photos for each compartment.

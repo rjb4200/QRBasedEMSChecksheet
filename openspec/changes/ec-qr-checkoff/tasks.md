@@ -56,7 +56,7 @@
 - [x] 5.7 Implement unit edit and delete functionality
 - [x] 5.8 Carry equipment catalog defaults into compartment item assignments
 - [x] 5.9 Add single-compartment import
-- [x] 5.10 Add linked compartment groups for shared item changes
+- [x] 5.10 Ensure imported/copied compartments remain independent
 - [x] 5.11 Delete individual unit compartment items without deleting the compartment
 - [x] 5.12 Soft-delete units so historical records remain available
 

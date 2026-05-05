@@ -132,7 +132,7 @@ The User Management page controls admin access to the system.
 - ✅ Complete admin tasks during your shift as needed
 - ✅ Keep equipment catalog up to date with current items
 - ✅ Verify compartment configurations are accurate
-- ✅ Use linked compartments to keep similar units in sync
+- ✅ Configure each compartment independently for the unit it belongs to
 - ✅ Review fleet status regularly to catch issues
 - ✅ Generate and review printouts for accuracy
 - ✅ Archive units properly when they go out of service
@@ -143,7 +143,6 @@ The User Management page controls admin access to the system.
 
 - ❌ Delete equipment that is assigned to active compartments
 - ❌ Remove a unit's compartments without a backup plan
-- ❌ Break compartment links without understanding the impact
 - ❌ Create duplicate equipment with different names
 - ❌ Leave equipment in the catalog that is no longer used
 - ❌ Give admin access to unauthorized personnel
@@ -200,32 +199,7 @@ The User Management page controls admin access to the system.
 6. Drag items to reorder as needed
 7. Set subcategories to group related items
 
-**Linked Compartments:** If you want this compartment to share configuration with other units, see "Linking Compartments" below.
-
----
-
-### Linking Compartments
-
-Linking compartments allows you to share equipment configuration across multiple units. When you add, remove, or modify items in a linked compartment, all linked compartments update automatically.
-
-**Use Cases:**
-- Multiple units with identical "Narc Box" configurations
-- Common compartments across similar apparatus
-- Standardized equipment layouts
-
-**To Link Compartments:**
-
-1. Navigate to `/admin/units` and select a unit
-2. Select the compartment to link
-3. Click "Link Compartment"
-4. Enter a link group name (e.g., "Narc Box", "Airway Kit")
-5. Select other units' compartments to link
-6. Confirm the link
-
-**Behavior:**
-- Existing items in the new link group are preserved
-- Future changes sync across all linked compartments
-- Deleting a linked compartment doesn't affect other units
+**Important:** Compartments are independent. Updating one compartment does not update any other compartment.
 
 ---
 
@@ -270,7 +244,6 @@ Linking compartments allows you to share equipment configuration across multiple
 **Configuration Options:**
 - Unit name and identification
 - Compartment structure
-- Linked compartment groups
 - Photo for visual identification
 - OOS (Out of Service) status
 
@@ -356,33 +329,6 @@ Records are kept indefinitely unless deleted by admin.
 1. Unit goes out of service → Mark OOS
 2. Unit retired from fleet → Archive
 3. Unit returns to service → Restore from archive
-
----
-
-### Linked Compartment Synchronization
-
-**How It Works:**
-
-When compartments are linked:
-1. Changes in one compartment apply to all linked compartments
-2. Adding equipment propagates to all links
-3. Removing equipment propagates to all links
-4. Reordering items syncs across all links
-
-**Important Behaviors:**
-
-| Action | Non-Linked | Linked |
-|--------|------------|--------|
-| Add item | Applies to single compartment | Applies to all linked |
-| Remove item | Applies to single compartment | Applies to all linked |
-| Edit item | Applies to single compartment | Applies to all linked |
-| Delete unit | Compartment data lost | Shared data preserved |
-
-**Shared Item Storage:**
-Linked compartments use a shared item table. This means:
-- The link group owns the items, not individual units
-- Deleting a unit doesn't delete shared items
-- Other units with the same link continue normally
 
 ---
 

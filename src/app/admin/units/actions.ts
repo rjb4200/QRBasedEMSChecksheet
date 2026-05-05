@@ -86,18 +86,6 @@ export async function addUnitCompartment(formData: FormData) {
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
-export async function linkUnitCompartment(formData: FormData) {
-  const parsed = z.object({ unitId: z.string().uuid(), compartmentId: z.string().uuid(), linkedGroup: z.string().optional() }).parse({
-    unitId: formData.get("unitId"),
-    compartmentId: formData.get("compartmentId"),
-    linkedGroup: formData.get("linkedGroup") || undefined,
-  });
-  const supabase = createAdminClient();
-  const { error } = await supabase.from("unit_compartments").update({ linked_group: parsed.linkedGroup?.trim() || null }).eq("id", parsed.compartmentId).eq("unit_id", parsed.unitId);
-  if (error) throw new Error(error.message);
-  revalidatePath(`/admin/units/${parsed.unitId}`);
-}
-
 export async function importUnitCompartment(formData: FormData) {
   const parsed = z.object({ unitId: z.string().uuid(), sourceCompartmentId: z.string().uuid(), name: z.string().optional(), sortOrder: z.coerce.number().default(0) }).parse({
     unitId: formData.get("unitId"),
@@ -108,7 +96,7 @@ export async function importUnitCompartment(formData: FormData) {
   const supabase = createAdminClient();
   const { data: source, error: sourceError } = await supabase
     .from("unit_compartments")
-    .select("name, grid_position, photo_url, linked_group, unit_compartment_items(equipment_id, sort_order, par_level, input_type)")
+    .select("name, grid_position, photo_url, unit_compartment_items(equipment_id, sort_order, par_level, input_type)")
     .eq("id", parsed.sourceCompartmentId)
     .single();
   if (sourceError) throw new Error(sourceError.message);
@@ -119,7 +107,6 @@ export async function importUnitCompartment(formData: FormData) {
     sort_order: parsed.sortOrder,
     grid_position: source.grid_position,
     photo_url: source.photo_url,
-    linked_group: source.linked_group,
   }, { onConflict: "unit_id,name" }).select("id").single();
   if (error) throw new Error(error.message);
 
@@ -165,27 +152,15 @@ export async function addUnitItem(formData: FormData) {
     equipmentId: formData.get("equipmentId"),
   });
   const supabase = createAdminClient();
-  const [{ data: equipment, error: equipmentError }, { data: compartment, error: compartmentError }] = await Promise.all([
-    supabase.from("equipment_catalog").select("default_par_level, input_type").eq("id", parsed.equipmentId).single(),
-    supabase.from("unit_compartments").select("id, unit_id, linked_group").eq("id", parsed.compartmentId).single(),
-  ]);
+  const { data: equipment, error: equipmentError } = await supabase.from("equipment_catalog").select("default_par_level, input_type").eq("id", parsed.equipmentId).single();
   if (equipmentError) throw new Error(equipmentError.message);
-  if (compartmentError) throw new Error(compartmentError.message);
 
-  let targetCompartments = [parsed.compartmentId];
-  if (compartment.linked_group) {
-    const { data: linked, error: linkedError } = await supabase.from("unit_compartments").select("id").eq("unit_id", parsed.unitId).eq("linked_group", compartment.linked_group);
-    if (linkedError) throw new Error(linkedError.message);
-    targetCompartments = (linked ?? []).map((item) => item.id);
-  }
-
-  const rows = targetCompartments.map((compartmentId) => ({
-    compartment_id: compartmentId,
+  const { error } = await supabase.from("unit_compartment_items").upsert({
+    compartment_id: parsed.compartmentId,
     equipment_id: parsed.equipmentId,
     input_type: equipment.input_type,
     par_level: equipment.default_par_level,
-  }));
-  const { error } = await supabase.from("unit_compartment_items").upsert(rows, {
+  }, {
     onConflict: "compartment_id,equipment_id",
   });
   if (error) throw new Error(error.message);

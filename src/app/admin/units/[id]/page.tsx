@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { addUnitCompartment, addUnitItem, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, linkUnitCompartment, toggleUnitStatus, uploadCompartmentPhoto } from "../actions";
+import { addUnitCompartment, addUnitItem, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, toggleUnitStatus, uploadCompartmentPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
 export default async function UnitDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createAdminClient();
   const [{ data: unit }, { data: equipment }, { data: sourceCompartments }] = await Promise.all([
-    supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, photo_url, linked_group, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))").eq("id", id).is("deleted_at", null).single(),
+    supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, photo_url, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))").eq("id", id).is("deleted_at", null).single(),
     supabase.from("equipment_catalog").select("id, name, default_par_level, input_type").order("name"),
     supabase.from("unit_compartments").select("id, name, units(name)").order("name"),
   ]);
@@ -59,7 +59,6 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
               <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                 <div>
                   <h2 className="text-2xl font-black">{compartment.name}</h2>
-                  {compartment.linked_group ? <p className="mt-1 text-sm font-bold text-red-700">Linked: {compartment.linked_group}</p> : null}
                   {compartment.photo_url ? <img alt={compartment.name} className="mt-3 max-h-52 rounded-2xl object-cover" src={compartment.photo_url} /> : null}
                 </div>
                 <form action={deleteUnitCompartment}>
@@ -68,13 +67,6 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                   <button className="rounded-2xl border border-red-200 px-4 py-2 font-bold text-red-700" type="submit">Remove</button>
                 </form>
               </div>
-
-              <form action={linkUnitCompartment} className="mt-4 grid gap-3 rounded-2xl bg-slate-100 p-3 sm:grid-cols-[1fr_auto]">
-                <input name="unitId" type="hidden" value={id} />
-                <input name="compartmentId" type="hidden" value={compartment.id} />
-                <input className="rounded-xl bg-white px-3 py-2" defaultValue={compartment.linked_group ?? ""} name="linkedGroup" placeholder="Link group name (same name links compartments)" />
-                <button className="rounded-xl border border-slate-300 bg-white px-4 py-2 font-bold text-slate-950" type="submit">Save Link</button>
-              </form>
 
               <form action={uploadCompartmentPhoto} className="mt-4 flex flex-col gap-3 rounded-2xl bg-slate-100 p-3 sm:flex-row">
                 <input name="unitId" type="hidden" value={id} />
