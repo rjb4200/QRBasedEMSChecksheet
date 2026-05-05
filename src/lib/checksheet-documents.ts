@@ -42,6 +42,7 @@ type UnitRow = {
   created_at: string;
   deleted_at: string | null;
   unit_compartments?: CompartmentRow[] | null;
+  unit_kits?: UnitKitRow[] | null;
 };
 
 type CompartmentRow = {
@@ -58,8 +59,15 @@ type UnitItemRow = {
   equipment_catalog: { name: string } | { name: string }[] | null;
 };
 
+type UnitKitRow = {
+  id: string;
+  sort_order: number | null;
+  kits: { name: string; kit_items?: UnitItemRow[] | null } | { name: string; kit_items?: UnitItemRow[] | null }[] | null;
+};
+
 type CheckRow = {
-  compartment_id: string;
+  compartment_id: string | null;
+  unit_kit_id: string | null;
   status: string;
   completed_at: string | null;
   item_data: Record<string, unknown> | null;
@@ -109,7 +117,7 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
   const [{ data: units }, { data: ledgers }, { data: archives }, { data: checks }, { data: crews }] = await Promise.all([
     supabase
       .from("units")
-      .select("id, name, status, created_at, deleted_at, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))")
+      .select("id, name, status, created_at, deleted_at, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(name, kit_items(id, par_level, input_type, equipment_catalog(name))))")
       .order("name"),
     supabase
       .from("daily_unit_ledgers")
@@ -124,7 +132,7 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
       .eq("shift_period", "daily"),
     supabase
       .from("compartment_checks")
-      .select("unit_id, compartment_id, status, completed_at, item_data")
+      .select("unit_id, compartment_id, unit_kit_id, status, completed_at, item_data")
       .eq("shift_date", date)
       .eq("shift_period", "daily"),
     supabase
@@ -148,7 +156,7 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
   const unitsAvailableOnDate = unitRows.filter((unit) => new Date(unit.created_at) <= requestedEnd && (!unit.deleted_at || new Date(unit.deleted_at) >= requestedStart));
   const unitSources = ledgerRows.length > 0
     ? ledgerRows.map((ledger) => ({ id: ledger.unit_id, name: ledger.unit_name, status: ledger.unit_status, totalCompartments: ledger.total_compartments }))
-    : unitsAvailableOnDate.map((unit) => ({ id: unit.id, name: unit.name, status: unit.status, totalCompartments: unit.unit_compartments?.length ?? 0 }));
+    : unitsAvailableOnDate.map((unit) => ({ id: unit.id, name: unit.name, status: unit.status, totalCompartments: (unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0) }));
 
   return {
     date,
@@ -158,8 +166,14 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
       const unit = unitMap.get(source.id);
       const archive = archiveMap.get(source.id);
       const savedChecks = Array.isArray(archive?.check_data) ? archive.check_data as CheckRow[] : currentCheckMap.get(source.id) ?? [];
-      const checkMap = new Map(savedChecks.map((check) => [check.compartment_id, check]));
-      const compartments = [...(unit?.unit_compartments ?? [])].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+      const checkMap = new Map(savedChecks.map((check) => [check.compartment_id ?? check.unit_kit_id, check]));
+      const targets = [
+        ...(unit?.unit_compartments ?? []).map((compartment) => ({ id: compartment.id, name: compartment.name, sort_order: compartment.sort_order, items: compartment.unit_compartment_items ?? [] })),
+        ...(unit?.unit_kits ?? []).map((assignment) => {
+          const kit = single(assignment.kits);
+          return { id: assignment.id, name: `${kit?.name ?? "Shared Kit"} (Kit)`, sort_order: assignment.sort_order, items: kit?.kit_items ?? [] };
+        }),
+      ].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
 
       return {
         id: source.id,
@@ -169,15 +183,15 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
         archiveStatus: archive?.status ?? (savedChecks.length > 0 ? "current" : "no_record"),
         completedCompartments: archive?.completed_compartments ?? savedChecks.filter((check) => check.status === "completed").length,
         totalCompartments: archive?.total_compartments ?? source.totalCompartments,
-        compartments: compartments.map((compartment) => {
-          const check = checkMap.get(compartment.id);
+        compartments: targets.map((target) => {
+          const check = checkMap.get(target.id);
           const itemData = check?.item_data ?? {};
           return {
-            id: compartment.id,
-            name: compartment.name,
+            id: target.id,
+            name: target.name,
             checkStatus: check?.status ?? "not_started",
             completedAt: check?.completed_at ?? null,
-            items: (compartment.unit_compartment_items ?? []).map((item) => {
+            items: (target.items ?? []).map((item) => {
               const equipment = single(item.equipment_catalog);
               const actual = itemData[item.id];
               return {

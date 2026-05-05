@@ -13,6 +13,7 @@ type CheckoffItem = {
 type Props = {
   unitId: string;
   compartmentId: string;
+  targetType?: "compartment" | "kit";
   items: CheckoffItem[];
   initialData: Record<string, unknown>;
   previousData: Record<string, unknown>;
@@ -23,7 +24,7 @@ function equipmentName(item: CheckoffItem) {
   return Array.isArray(item.equipment_catalog) ? item.equipment_catalog[0]?.name : item.equipment_catalog?.name;
 }
 
-export function CheckoffForm({ unitId, compartmentId, items, initialData, previousData, readOnly = false }: Props) {
+export function CheckoffForm({ unitId, compartmentId, targetType = "compartment", items, initialData, previousData, readOnly = false }: Props) {
   const startTimeRef = useRef(Date.now());
   const [isPending, startTransition] = useTransition();
   const defaults = useMemo(() => Object.fromEntries(items.map((item) => {
@@ -38,11 +39,11 @@ export function CheckoffForm({ unitId, compartmentId, items, initialData, previo
     if (readOnly) return;
     const timer = setTimeout(() => {
       const seconds = Math.round((Date.now() - startTimeRef.current) / 1000);
-      startTransition(() => void saveCheckData(unitId, compartmentId, values, seconds));
+      startTransition(() => void saveCheckData(unitId, compartmentId, values, seconds, targetType));
     }, 700);
 
     return () => clearTimeout(timer);
-  }, [compartmentId, readOnly, unitId, values]);
+  }, [compartmentId, readOnly, targetType, unitId, values]);
 
   function setItemValue(id: string, value: unknown) {
     setValues((current) => ({ ...current, [id]: value }));
@@ -98,9 +99,9 @@ export function CheckoffForm({ unitId, compartmentId, items, initialData, previo
       {!readOnly ? (
         <button className="w-full rounded-3xl bg-green-700 px-5 py-5 text-xl font-black text-white" disabled={isPending} onClick={() => {
           const seconds = Math.round((Date.now() - startTimeRef.current) / 1000);
-          startTransition(() => void submitCheckData(unitId, compartmentId, values, seconds));
+          startTransition(() => void submitCheckData(unitId, compartmentId, values, seconds, targetType));
         }} type="button">
-          Submit Compartment
+          Submit {targetType === "kit" ? "Kit" : "Compartment"}
         </button>
       ) : null}
     </div>

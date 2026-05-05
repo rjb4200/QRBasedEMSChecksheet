@@ -21,17 +21,17 @@ function equipmentName(item: UnitItem) {
   return Array.isArray(item.equipment_catalog) ? item.equipment_catalog[0]?.name : item.equipment_catalog?.name;
 }
 
-function findPreviousExceptions(compartments: { id: string; name: string; unit_compartment_items?: UnitItem[] | null }[], checkData: unknown) {
+function findPreviousExceptions(targets: { id: string; name: string; items?: UnitItem[] | null }[], checkData: unknown) {
   if (!Array.isArray(checkData)) return [];
-  const checkMap = new Map(checkData.map((check: any) => [check.compartment_id, check.item_data ?? {}]));
+  const checkMap = new Map(checkData.map((check: any) => [check.compartment_id ?? check.unit_kit_id, check.item_data ?? {}]));
 
-  return compartments.flatMap((compartment) => (compartment.unit_compartment_items ?? []).flatMap((item) => {
-    const value = checkMap.get(compartment.id)?.[item.id];
+  return targets.flatMap((target) => (target.items ?? []).flatMap((item) => {
+    const value = checkMap.get(target.id)?.[item.id];
     if (item.input_type === "checkbox" && value === false) {
-      return [{ compartment: compartment.name, item: equipmentName(item) ?? "Unknown item", issue: "Missing" }];
+      return [{ compartment: target.name, item: equipmentName(item) ?? "Unknown item", issue: "Missing" }];
     }
     if (item.input_type === "quantity" && item.par_level !== null && Number(value) < item.par_level) {
-      return [{ compartment: compartment.name, item: equipmentName(item) ?? "Unknown item", issue: `Below par (${value ?? "-"}/${item.par_level})` }];
+      return [{ compartment: target.name, item: equipmentName(item) ?? "Unknown item", issue: `Below par (${value ?? "-"}/${item.par_level})` }];
     }
     return [];
   }));
@@ -43,17 +43,34 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   const currentShift = getCurrentShift();
   const previousShift = getPreviousShift();
   const [{ data: unit }, { data: checks }, { data: previousArchive }, { data: crew }] = await Promise.all([
-    supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name)))").eq("id", id).is("deleted_at", null).single(),
-    supabase.from("compartment_checks").select("compartment_id, status").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
+    supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(id, name, kit_items(id, par_level, input_type, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
+    supabase.from("compartment_checks").select("compartment_id, unit_kit_id, status").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
     supabase.from("shift_archives").select("completed_compartments, total_compartments, completion_percentage, check_data").eq("unit_id", id).eq("shift_date", previousShift.shiftDate).eq("shift_period", previousShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_crews").select("provider_names, locked").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
   ]);
-  const compartments = (unit?.unit_compartments ?? []).sort((a, b) => a.sort_order - b.sort_order);
-  const checkMap = new Map((checks ?? []).map((check) => [check.compartment_id, check.status]));
+  const compartments = (unit?.unit_compartments ?? []).map((compartment: any) => ({
+    id: compartment.id,
+    name: compartment.name,
+    sortOrder: compartment.sort_order ?? 0,
+    href: `/checkoff/${id}/${compartment.id}`,
+    items: compartment.unit_compartment_items ?? [],
+  }));
+  const kits = (unit?.unit_kits ?? []).map((assignment: any) => {
+    const kit = Array.isArray(assignment.kits) ? assignment.kits[0] : assignment.kits;
+    return {
+      id: assignment.id,
+      name: kit?.name ?? "Shared kit",
+      sortOrder: assignment.sort_order ?? 0,
+      href: `/checkoff/${id}/kit/${assignment.id}`,
+      items: kit?.kit_items ?? [],
+    };
+  });
+  const targets = [...compartments, ...kits].sort((a, b) => a.sortOrder - b.sortOrder);
+  const checkMap = new Map((checks ?? []).map((check: any) => [check.compartment_id ?? check.unit_kit_id, check.status]));
   const crewComplete = Boolean(crew?.locked && crew.provider_names?.trim());
   const completedCompartments = checks?.filter((check) => check.status === "completed").length ?? 0;
-  const total = compartments.length + 1;
-  const previousExceptions = findPreviousExceptions(compartments, previousArchive?.check_data);
+  const total = targets.length + 1;
+  const previousExceptions = findPreviousExceptions(targets, previousArchive?.check_data);
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-6 text-slate-950">
@@ -77,14 +94,14 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
         <CrewNameLock completedCompartments={completedCompartments} initialLocked={crewComplete} initialProviderNames={crew?.provider_names ?? ""} totalChecks={total} unitId={id} />
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {compartments.map((compartment) => {
-            const dbStatus = checkMap.get(compartment.id);
+          {targets.map((target) => {
+            const dbStatus = checkMap.get(target.id);
             const status = dbStatus === "completed" ? "green" : dbStatus === "in_progress" ? "yellow" : "grey";
             return (
-              <div key={compartment.id} aria-label={`${compartment.name}: ${status}`} className={`rounded-3xl border-2 p-5 ${statusStyles[status]}`} role="status">
-                <p className="text-xl font-black">{compartment.name}</p>
+              <Link key={target.id} aria-label={`${target.name}: ${status}`} className={`rounded-3xl border-2 p-5 ${statusStyles[status]}`} href={target.href} role="status">
+                <p className="text-xl font-black">{target.name}</p>
                 <p className="mt-2 text-sm font-bold uppercase tracking-[0.2em]">{status === "grey" ? "Not Started" : status === "yellow" ? "In Progress" : "Completed"}</p>
-              </div>
+              </Link>
             );
           })}
         </div>

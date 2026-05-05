@@ -8,7 +8,7 @@ export default async function UnitsPage() {
   const [{ data: units }, canAccessAdmin] = await Promise.all([
     supabase
     .from("units")
-    .select("id, name, unit_kind, unit_compartments(id)")
+    .select("id, name, unit_kind, unit_compartments(id), unit_kits(id)")
     .eq("status", "in_service")
     .is("deleted_at", null)
       .order("name"),
@@ -34,7 +34,7 @@ export default async function UnitsPage() {
             <Link key={unit.id} className="rounded-3xl border border-white/10 bg-white/10 p-5 shadow-xl transition hover:bg-white/15" href={`/units/${unit.id}`}>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-200">{unit.unit_kind}</p>
               <h2 className="mt-3 text-3xl font-black">{unit.name}</h2>
-              <p className="mt-3 text-slate-300">{unit.unit_compartments?.length ?? 0} compartments</p>
+              <p className="mt-3 text-slate-300">{(unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0)} checks</p>
             </Link>
           ))}
         </div>

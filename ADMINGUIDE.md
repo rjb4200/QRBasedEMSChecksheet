@@ -26,7 +26,7 @@ As an admin, you are responsible for:
 - Adding and configuring new units
 - Managing the equipment catalog
 - Building and organizing compartments
-- Linking compartments for synchronized configuration
+- Building and assigning shared kits
 - Monitoring fleet readiness
 - Generating reports and printouts
 
@@ -59,7 +59,7 @@ The Units page is where you create and manage individual vehicles.
 **Features:**
 - Create new units with custom names
 - Configure compartments for each unit
-- Link compartments across multiple units
+- Assign shared kits to units
 - Set up photos for visual identification
 - Archive units that are out of service (OOS)
 - View unit checkoff history
@@ -68,6 +68,24 @@ The Units page is where you create and manage individual vehicles.
 - Unit name (e.g., "EC5", "Medic 1")
 - Status: Active or OOS (Out of Service)
 - Compartments with custom equipment assignments
+- Shared kits assigned by reference
+
+---
+
+### Kits Page (`/admin/kits`)
+
+The Kits page is where you manage shared equipment layouts that can be assigned to multiple units.
+
+**Features:**
+- Create reusable kits
+- Add equipment from the catalog to a kit
+- Edit kit name, description, sort order, active status, and photo
+- Copy an existing kit
+- Create a kit from an existing compartment
+- See which units currently use each kit
+- Prevent deleting kits that are still assigned to units
+
+**Important:** Kits are shared. Editing a kit changes that kit everywhere it is assigned. Unit pages show assigned kits as read-only; use the Kits page to edit kit contents.
 
 ---
 
@@ -133,6 +151,7 @@ The User Management page controls admin access to the system.
 - ✅ Keep equipment catalog up to date with current items
 - ✅ Verify compartment configurations are accurate
 - ✅ Configure each compartment independently for the unit it belongs to
+- ✅ Use Kits for shared layouts that should stay identical across units
 - ✅ Review fleet status regularly to catch issues
 - ✅ Generate and review printouts for accuracy
 - ✅ Archive units properly when they go out of service
@@ -143,6 +162,7 @@ The User Management page controls admin access to the system.
 
 - ❌ Delete equipment that is assigned to active compartments
 - ❌ Remove a unit's compartments without a backup plan
+- ❌ Edit a shared kit without understanding every unit it is assigned to
 - ❌ Create duplicate equipment with different names
 - ❌ Leave equipment in the catalog that is no longer used
 - ❌ Give admin access to unauthorized personnel
@@ -203,6 +223,38 @@ The User Management page controls admin access to the system.
 
 ---
 
+### Creating and Assigning Kits
+
+1. Navigate to `/admin/kits`
+2. Create a new kit or copy an existing compartment into a kit
+3. Open the kit and add equipment from the catalog
+4. Set each kit item's par level and sort order as needed
+5. Return to `/admin/units` and open the unit
+6. Use "Add kit to unit" to assign the kit
+7. Assigned kits appear with compartments but are read-only on the unit page
+
+**Shared Behavior:**
+- The kit exists once in the database
+- Each unit assignment references the same kit
+- Editing kit equipment affects every assigned unit
+- Each unit assignment has its own QR code and checkoff state
+
+---
+
+### Cloning a Kit Into a Compartment
+
+Use cloning when a kit is a useful starting point but a unit needs a custom version.
+
+1. Navigate to `/admin/units` and select a unit
+2. Use "Create compartment from kit"
+3. Choose the kit
+4. Optionally enter a new compartment name and sort order
+5. Submit the form
+
+The new compartment is independent. Later kit edits do not affect it.
+
+---
+
 ### Printing Daily Checksheets
 
 1. Navigate to `/admin/checksheets`
@@ -244,6 +296,7 @@ The User Management page controls admin access to the system.
 **Configuration Options:**
 - Unit name and identification
 - Compartment structure
+- Shared kit assignments
 - Photo for visual identification
 - OOS (Out of Service) status
 
@@ -281,7 +334,7 @@ The Fleet page shows a summary of all units:
 Each checksheet record contains:
 - Timestamp
 - Crew names
-- Compartment-by-compartment item status
+- Compartment and kit item status
 - Actual counts vs par levels
 - Comments from crew
 - Completion status
@@ -337,6 +390,7 @@ Records are kept indefinitely unless deleted by admin.
 ### Common Admin URLs
 - Fleet: `/admin/fleet`
 - Units: `/admin/units`
+- Kits: `/admin/kits`
 - Checksheets: `/admin/checksheets`
 - Equipment: `/admin/equipment`
 - Users: `/admin/users`

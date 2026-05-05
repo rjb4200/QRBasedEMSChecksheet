@@ -3,16 +3,20 @@ import { createClient } from "@/lib/supabase/server";
 export default async function ProviderAnalyticsPage({ searchParams }: { searchParams: Promise<{ from?: string; to?: string; unitId?: string }> }) {
   const params = await searchParams;
   const supabase = await createClient();
-  let query = supabase.from("compartment_checks").select("checked_by, time_on_page, item_data, unit_id, compartment_id, users(full_name, email), units(name)").eq("status", "completed");
+  let query = supabase.from("compartment_checks").select("checked_by, time_on_page, item_data, unit_id, compartment_id, unit_kit_id, users(full_name, email), units(name)").eq("status", "completed");
   if (params.from) query = query.gte("shift_date", params.from);
   if (params.to) query = query.lte("shift_date", params.to);
   if (params.unitId) query = query.eq("unit_id", params.unitId);
-  const [{ data: checks }, { data: units }, { data: configuredItems }] = await Promise.all([
+  const [{ data: checks }, { data: units }, { data: configuredItems }, { data: kitItems }] = await Promise.all([
     query,
     supabase.from("units").select("id, name").is("deleted_at", null).order("name"),
     supabase.from("unit_compartment_items").select("id, compartment_id, par_level"),
+    supabase.from("kit_items").select("id, kit_id, par_level"),
   ]);
-  const parMap = new Map((configuredItems ?? []).map((item) => [item.id, { compartmentId: item.compartment_id, parLevel: item.par_level }]));
+  const parMap = new Map<string, { parLevel: number | null }>([
+    ...(configuredItems ?? []).map((item) => [item.id, { parLevel: item.par_level }] as [string, { parLevel: number | null }]),
+    ...(kitItems ?? []).map((item) => [item.id, { parLevel: item.par_level }] as [string, { parLevel: number | null }]),
+  ]);
 
   const stats = new Map<string, { name: string; count: number; seconds: number; discrepancies: number; itemCount: number }>();
   for (const check of checks ?? []) {
@@ -23,9 +27,8 @@ export default async function ProviderAnalyticsPage({ searchParams }: { searchPa
     current.seconds += check.time_on_page ?? 0;
     for (const [itemId, value] of Object.entries(check.item_data ?? {})) {
       const configuredItem = parMap.get(itemId);
-      if (!configuredItem || configuredItem.compartmentId !== check.compartment_id) continue;
       current.itemCount += 1;
-      if (typeof value === "number" && configuredItem.parLevel !== null && value !== Number(configuredItem.parLevel)) {
+      if (typeof value === "number" && configuredItem?.parLevel !== null && configuredItem?.parLevel !== undefined && value !== Number(configuredItem.parLevel)) {
         current.discrepancies += 1;
       }
     }
@@ -53,7 +56,7 @@ export default async function ProviderAnalyticsPage({ searchParams }: { searchPa
           {Array.from(stats.entries()).map(([id, stat]) => (
             <article key={id} className="rounded-3xl bg-white p-5 shadow-sm">
               <h2 className="text-xl font-black">{stat.name}</h2>
-              <p className="mt-2">Completed compartments: <strong>{stat.count}</strong></p>
+              <p className="mt-2">Completed checks: <strong>{stat.count}</strong></p>
               <p>Average time: <strong>{stat.count ? Math.round(stat.seconds / stat.count) : 0}s</strong></p>
               <p>Discrepancy rate: <strong>{stat.itemCount ? Math.round((stat.discrepancies / stat.itemCount) * 100) : 0}%</strong></p>
               <p>Tracked item entries: <strong>{stat.itemCount}</strong></p>

@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminUnitsPage() {
   const supabase = createAdminClient();
-  const { data: units } = await supabase.from("units").select("id, name, unit_kind, status, unit_compartments(id)").is("deleted_at", null).order("name");
+  const { data: units } = await supabase.from("units").select("id, name, unit_kind, status, unit_compartments(id), unit_kits(id)").is("deleted_at", null).order("name");
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
@@ -32,7 +32,7 @@ export default async function AdminUnitsPage() {
             <div key={unit.id} className="flex flex-col justify-between gap-4 rounded-3xl bg-white p-5 shadow-sm sm:flex-row sm:items-center">
               <div>
                 <h2 className="text-xl font-black">{unit.name}</h2>
-                <p className="text-sm text-slate-600">{unit.unit_kind} | {unit.unit_compartments?.length ?? 0} compartments | {unit.status.replace("_", " ")}</p>
+                <p className="text-sm text-slate-600">{unit.unit_kind} | {(unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0)} checks | {unit.status.replace("_", " ")}</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Link className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" href={`/admin/units/${unit.id}`}>Edit</Link>

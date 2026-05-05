@@ -34,6 +34,7 @@ type UnitRow = {
   name: string;
   status: string;
   unit_compartments?: { id: string }[] | null;
+  unit_kits?: { id: string }[] | null;
 };
 
 type LedgerRow = {
@@ -114,7 +115,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
   const supabase = createAdminClient();
   let unitsQuery = supabase
     .from("units")
-    .select("id, name, status, unit_compartments(id)")
+    .select("id, name, status, unit_compartments(id), unit_kits(id)")
     .is("deleted_at", null)
     .order("name");
 

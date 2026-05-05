@@ -17,15 +17,16 @@ export type CheckoffDiscrepancy = {
 type CheckRow = {
   shift_date: string;
   unit_id: string;
-  compartment_id: string;
+  compartment_id: string | null;
+  unit_kit_id: string | null;
   item_data: Record<string, unknown> | null;
   units: { name: string } | { name: string }[] | null;
   unit_compartments: { name: string } | { name: string }[] | null;
+  unit_kits: { kits: { name: string } | { name: string }[] | null } | { kits: { name: string } | { name: string }[] | null }[] | null;
 };
 
 type ItemRow = {
   id: string;
-  compartment_id: string;
   par_level: number | null;
   input_type: "quantity" | "checkbox" | "condition";
   equipment_catalog: { name: string } | { name: string }[] | null;
@@ -84,28 +85,36 @@ export async function getCheckoffDiscrepancies(shift = getCurrentShift()) {
 
 export async function getCheckoffDiscrepanciesForRange(from: string, to: string, shiftPeriod = "daily" as const) {
   const supabase = createAdminClient();
-  const [{ data: checks, error: checksError }, { data: items, error: itemsError }] = await Promise.all([
+  const [{ data: checks, error: checksError }, { data: items, error: itemsError }, { data: kitItems, error: kitItemsError }] = await Promise.all([
     supabase
       .from("compartment_checks")
-      .select("shift_date, unit_id, compartment_id, item_data, units(name), unit_compartments(name)")
+      .select("shift_date, unit_id, compartment_id, unit_kit_id, item_data, units(name), unit_compartments(name), unit_kits(kits(name))")
       .gte("shift_date", from)
       .lte("shift_date", to)
       .eq("shift_period", shiftPeriod)
       .eq("status", "completed"),
     supabase
       .from("unit_compartment_items")
-      .select("id, compartment_id, par_level, input_type, equipment_catalog(name)"),
+      .select("id, par_level, input_type, equipment_catalog(name)"),
+    supabase
+      .from("kit_items")
+      .select("id, par_level, input_type, equipment_catalog(name)"),
   ]);
 
   if (checksError) throw new Error(checksError.message);
   if (itemsError) throw new Error(itemsError.message);
+  if (kitItemsError) throw new Error(kitItemsError.message);
 
-  const itemMap = new Map((items ?? []).map((item) => [item.id, item as ItemRow]));
+  const itemMap = new Map([...(items ?? []), ...(kitItems ?? [])].map((item) => [item.id, item as ItemRow]));
   const discrepancies: CheckoffDiscrepancy[] = [];
 
   for (const check of (checks ?? []) as CheckRow[]) {
     const unit = single(check.units);
     const compartment = single(check.unit_compartments);
+    const unitKit = single(check.unit_kits);
+    const kit = single(unitKit?.kits);
+    const targetId = check.compartment_id ?? check.unit_kit_id ?? "";
+    const targetName = compartment?.name ?? (kit?.name ? `${kit.name} (Kit)` : "Unknown target");
 
     for (const [itemId, value] of Object.entries(check.item_data ?? {})) {
       const item = itemMap.get(itemId);
@@ -116,8 +125,8 @@ export async function getCheckoffDiscrepanciesForRange(from: string, to: string,
         shiftDate: check.shift_date,
         unitId: check.unit_id,
         unitName: unit?.name ?? "Unknown unit",
-        compartmentId: check.compartment_id,
-        compartmentName: compartment?.name ?? "Unknown compartment",
+        compartmentId: targetId,
+        compartmentName: targetName,
         itemId,
         itemName: equipment?.name ?? "Unknown item",
       };

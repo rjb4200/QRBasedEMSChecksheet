@@ -8,15 +8,23 @@ export default async function UnitQrPage({ params }: { params: Promise<{ id: str
   const supabase = createAdminClient();
   const { data: unit } = await supabase
     .from("units")
-    .select("id, name, unit_compartments(id, name, sort_order)")
+    .select("id, name, unit_compartments(id, name, sort_order), unit_kits(id, sort_order, kits(name))")
       .eq("id", id)
       .is("deleted_at", null)
     .single();
   const appUrl = await getAppOrigin();
-  const codes = await Promise.all((unit?.unit_compartments ?? []).sort((a, b) => a.sort_order - b.sort_order).map(async (compartment) => {
-    const url = `${appUrl}/checkoff/${unit?.id}/${compartment.id}`;
+  const targets = [
+    ...(unit?.unit_compartments ?? []).map((compartment: any) => ({ id: compartment.id, name: compartment.name, sort_order: compartment.sort_order ?? 0, url: `${appUrl}/checkoff/${unit?.id}/${compartment.id}` })),
+    ...(unit?.unit_kits ?? []).map((assignment: any) => {
+      const kit = Array.isArray(assignment.kits) ? assignment.kits[0] : assignment.kits;
+      return { id: assignment.id, name: `${kit?.name ?? "Shared Kit"} (Kit)`, sort_order: assignment.sort_order ?? 0, url: `${appUrl}/checkoff/${unit?.id}/kit/${assignment.id}` };
+    }),
+  ].sort((a, b) => a.sort_order - b.sort_order);
+  const codes = await Promise.all(targets.map(async (target) => {
+    const url = target.url;
     return {
-      ...compartment,
+      id: target.id,
+      name: target.name,
       url,
       dataUrl: await QRCode.toDataURL(url, { margin: 2, width: 320 }),
     };

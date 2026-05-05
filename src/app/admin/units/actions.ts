@@ -20,12 +20,20 @@ export async function createUnit(formData: FormData) {
   if (error) throw new Error(error.message);
 
   if (parsed.sourceUnitId && parsed.sourceUnitId !== unit.id) {
-    const { data: compartments, error: compError } = await supabase
+    const [{ data: compartments, error: compError }, { data: sourceKits, error: kitError }] = await Promise.all([
+      supabase
       .from("unit_compartments")
       .select("*, unit_compartment_items(*)")
       .eq("unit_id", parsed.sourceUnitId)
-      .order("sort_order");
+        .order("sort_order"),
+      supabase
+        .from("unit_kits")
+        .select("kit_id, sort_order")
+        .eq("unit_id", parsed.sourceUnitId)
+        .order("sort_order"),
+    ]);
     if (compError) throw new Error(compError.message);
+    if (kitError) throw new Error(kitError.message);
 
     for (const compartment of compartments ?? []) {
       const { data: newCompartment, error: newCompError } = await supabase.from("unit_compartments").upsert({
@@ -48,6 +56,16 @@ export async function createUnit(formData: FormData) {
         const { error: itemError } = await supabase.from("unit_compartment_items").upsert(items, { onConflict: "compartment_id,equipment_id" });
         if (itemError) throw new Error(itemError.message);
       }
+    }
+
+    const kitAssignments = (sourceKits ?? []).map((assignment) => ({
+      unit_id: unit.id,
+      kit_id: assignment.kit_id,
+      sort_order: assignment.sort_order,
+    }));
+    if (kitAssignments.length > 0) {
+      const { error: assignmentError } = await supabase.from("unit_kits").upsert(kitAssignments, { onConflict: "unit_id,kit_id" });
+      if (assignmentError) throw new Error(assignmentError.message);
     }
   }
 
@@ -122,6 +140,68 @@ export async function importUnitCompartment(formData: FormData) {
     if (itemError) throw new Error(itemError.message);
   }
 
+  revalidatePath(`/admin/units/${parsed.unitId}`);
+}
+
+export async function cloneKitToUnitCompartment(formData: FormData) {
+  const parsed = z.object({ unitId: z.string().uuid(), kitId: z.string().uuid(), name: z.string().optional(), sortOrder: z.coerce.number().default(0) }).parse({
+    unitId: formData.get("unitId"),
+    kitId: formData.get("kitId"),
+    name: formData.get("name") || undefined,
+    sortOrder: formData.get("sortOrder") || 0,
+  });
+  const supabase = createAdminClient();
+  const { data: kit, error: kitError } = await supabase
+    .from("kits")
+    .select("name, photo_url, kit_items(equipment_id, sort_order, par_level, input_type)")
+    .eq("id", parsed.kitId)
+    .single();
+  if (kitError) throw new Error(kitError.message);
+
+  const { data: newCompartment, error } = await supabase.from("unit_compartments").upsert({
+    unit_id: parsed.unitId,
+    name: parsed.name?.trim() || kit.name,
+    sort_order: parsed.sortOrder,
+    photo_url: kit.photo_url,
+  }, { onConflict: "unit_id,name" }).select("id").single();
+  if (error) throw new Error(error.message);
+
+  const items = (kit.kit_items ?? []).map((item: any) => ({
+    compartment_id: newCompartment.id,
+    equipment_id: item.equipment_id,
+    sort_order: item.sort_order,
+    par_level: item.par_level,
+    input_type: item.input_type,
+  }));
+  if (items.length > 0) {
+    const { error: itemError } = await supabase.from("unit_compartment_items").upsert(items, { onConflict: "compartment_id,equipment_id" });
+    if (itemError) throw new Error(itemError.message);
+  }
+
+  revalidatePath(`/admin/units/${parsed.unitId}`);
+}
+
+export async function assignKitToUnit(formData: FormData) {
+  const parsed = z.object({ unitId: z.string().uuid(), kitId: z.string().uuid(), sortOrder: z.coerce.number().default(0) }).parse({
+    unitId: formData.get("unitId"),
+    kitId: formData.get("kitId"),
+    sortOrder: formData.get("sortOrder") || 0,
+  });
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("unit_kits").upsert({
+    unit_id: parsed.unitId,
+    kit_id: parsed.kitId,
+    sort_order: parsed.sortOrder,
+  }, { onConflict: "unit_id,kit_id" });
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/units/${parsed.unitId}`);
+}
+
+export async function removeKitFromUnit(formData: FormData) {
+  const parsed = z.object({ unitId: z.string().uuid(), unitKitId: z.string().uuid() }).parse({ unitId: formData.get("unitId"), unitKitId: formData.get("unitKitId") });
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("unit_kits").delete().eq("id", parsed.unitKitId).eq("unit_id", parsed.unitId);
+  if (error) throw new Error(error.message);
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 

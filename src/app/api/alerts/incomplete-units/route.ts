@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const [{ data: units, error }, { data: crews }, discrepancies] = await Promise.all([
     supabase
       .from("units")
-      .select("id, name, unit_compartments(id), shift_archives(completed_compartments, total_compartments, completion_percentage)")
+      .select("id, name, unit_compartments(id), unit_kits(id), shift_archives(completed_compartments, total_compartments, completion_percentage)")
       .eq("status", "in_service")
       .is("deleted_at", null)
       .eq("shift_archives.shift_date", shiftDate)
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
   const crewMap = new Map((crews ?? []).map((crew) => [crew.unit_id, Boolean(crew.locked && crew.provider_names?.trim())]));
   const incompleteUnits = (units ?? []).map((unit) => {
     const archive = Array.isArray(unit.shift_archives) ? unit.shift_archives[0] : unit.shift_archives;
-    const total = (archive?.total_compartments ?? unit.unit_compartments?.length ?? 0) + 1;
+    const total = (archive?.total_compartments ?? ((unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0))) + 1;
     const completed = (archive?.completed_compartments ?? 0) + (crewMap.get(unit.id) ? 1 : 0);
     const percentage = total === 0 ? 0 : Math.round((completed / total) * 10000) / 100;
     return {
