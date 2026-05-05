@@ -52,7 +52,6 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
     id: compartment.id,
     name: compartment.name,
     sortOrder: compartment.sort_order ?? 0,
-    href: `/checkoff/${id}/${compartment.id}`,
     items: compartment.unit_compartment_items ?? [],
   }));
   const kits = (unit?.unit_kits ?? []).map((assignment: any) => {
@@ -61,7 +60,6 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
       id: assignment.id,
       name: kit?.name ?? "Shared kit",
       sortOrder: assignment.sort_order ?? 0,
-      href: `/checkoff/${id}/kit/${assignment.id}`,
       items: kit?.kit_items ?? [],
     };
   });
@@ -98,10 +96,10 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
             const dbStatus = checkMap.get(target.id);
             const status = dbStatus === "completed" ? "green" : dbStatus === "in_progress" ? "yellow" : "grey";
             return (
-              <Link key={target.id} aria-label={`${target.name}: ${status}`} className={`rounded-3xl border-2 p-5 ${statusStyles[status]}`} href={target.href} role="status">
+              <article key={target.id} aria-label={`${target.name}: ${status}`} className={`rounded-3xl border-2 p-5 ${statusStyles[status]}`} role="status">
                 <p className="text-xl font-black">{target.name}</p>
                 <p className="mt-2 text-sm font-bold uppercase tracking-[0.2em]">{status === "grey" ? "Not Started" : status === "yellow" ? "In Progress" : "Completed"}</p>
-              </Link>
+              </article>
             );
           })}
         </div>
