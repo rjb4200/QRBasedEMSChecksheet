@@ -19,10 +19,10 @@ The admin unit detail page renders two related forms side by side: assigning a s
 
 ## Decisions
 
-- Replace rigid nested fixed-width grid templates with a more flexible layout that stacks naturally when there is not enough width.
-- Prefer form-level vertical layout, or responsive grid columns that only become multi-column at widths where the controls actually fit.
+- Render the two kit action forms as vertically stacked cards instead of side-by-side to prevent any width-related overlap.
+- Use a simple single-column grid with consistent internal form layouts (`md:grid-cols-[minmax(0,1fr)_...]`) for each form.
 - Keep button labels (`Assign Kit`, `Clone`) and input placeholders unchanged to avoid retraining users.
-- Keep the two actions visually separated enough that admins can tell which button submits which form.
+- Keep the two actions visually separated in their own card containers.
 
 ## Risks / Trade-offs
 

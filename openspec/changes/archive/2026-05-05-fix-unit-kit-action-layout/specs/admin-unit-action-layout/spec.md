@@ -3,16 +3,12 @@
 ### Requirement: Kit action forms remain visually separated
 The system SHALL render the admin unit kit action forms without overlapping controls or ambiguous submit buttons.
 
-#### Scenario: Admin views kit action forms on desktop
-- **WHEN** an admin opens a unit detail page on a desktop-width viewport
-- **THEN** the Assign Kit controls SHALL remain inside the Assign Kit form area
-- **AND** the Create compartment from kit controls SHALL remain inside the Clone form area
+#### Scenario: Admin views kit action forms
+- **WHEN** an admin opens a unit detail page
+- **THEN** the kit action forms SHALL be rendered as vertically stacked cards
+- **AND** the Assign Kit form SHALL display in its own container
+- **AND** the Create compartment from kit form SHALL display in its own container below the Assign Kit form
 - **AND** controls from one form SHALL NOT overlap or cover controls from the other form
-
-#### Scenario: Admin views kit action forms on smaller screens
-- **WHEN** an admin opens a unit detail page on a tablet or mobile-width viewport
-- **THEN** the kit action forms SHALL stack or wrap cleanly
-- **AND** all inputs, selects, and buttons SHALL remain readable and tappable
 
 ### Requirement: Existing kit actions are preserved
 The system SHALL preserve existing kit assignment and clone-to-compartment behavior while fixing the layout.
