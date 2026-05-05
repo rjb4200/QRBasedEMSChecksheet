@@ -58,18 +58,18 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
           <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Import</button>
         </form>
 
-        <div className="grid gap-4 lg:grid-cols-2">
-          <form action={assignKitToUnit} className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm sm:grid-cols-[1fr_130px_auto]">
+        <div className="grid gap-4 xl:grid-cols-2">
+          <form action={assignKitToUnit} className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-[minmax(0,1fr)_130px] xl:grid-cols-[minmax(0,1fr)_130px_auto]">
             <input name="unitId" type="hidden" value={id} />
             <select className="rounded-2xl border border-slate-300 px-4 py-3" name="kitId" required>
               <option value="">Add kit to unit</option>
               {(kits ?? []).map((kit) => <option key={kit.id} value={kit.id}>{kit.name}</option>)}
             </select>
             <input className="rounded-2xl border border-slate-300 px-4 py-3" name="sortOrder" placeholder="Order" type="number" />
-            <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Assign Kit</button>
+            <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white md:col-span-2 xl:col-span-1" type="submit">Assign Kit</button>
           </form>
 
-          <form action={cloneKitToUnitCompartment} className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm sm:grid-cols-[1fr_1fr_130px_auto]">
+          <form action={cloneKitToUnitCompartment} className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_130px_auto]">
             <input name="unitId" type="hidden" value={id} />
             <select className="rounded-2xl border border-slate-300 px-4 py-3" name="kitId" required>
               <option value="">Create compartment from kit</option>
