@@ -15,7 +15,7 @@ export function QrScanner() {
       (decodedText) => {
         try {
           const url = new URL(decodedText, window.location.origin);
-          if (!url.pathname.startsWith("/checkoff/")) {
+          if (!url.pathname.startsWith("/checkoff/") && !url.pathname.startsWith("/q/")) {
             setError("This QR code is not a valid Winchester EMS checkoff code.");
             return;
           }

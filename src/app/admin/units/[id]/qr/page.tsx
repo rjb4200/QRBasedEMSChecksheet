@@ -1,6 +1,7 @@
 import QRCode from "qrcode";
 import { QrCodeGrid } from "./print-button";
 import { getAppOrigin } from "@/lib/app-url";
+import { getOrCreateQrTarget } from "@/lib/qr-targets";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
 export default async function UnitQrPage({ params }: { params: Promise<{ id: string }> }) {
@@ -14,16 +15,18 @@ export default async function UnitQrPage({ params }: { params: Promise<{ id: str
     .single();
   const appUrl = await getAppOrigin();
   const targets = [
-    ...(unit?.unit_compartments ?? []).map((compartment: any) => ({ id: compartment.id, name: compartment.name, sort_order: compartment.sort_order ?? 0, url: `${appUrl}/checkoff/${unit?.id}/${compartment.id}` })),
+    ...(unit?.unit_compartments ?? []).map((compartment: any) => ({ id: compartment.id, name: compartment.name, sort_order: compartment.sort_order ?? 0, type: "compartment" as const })),
     ...(unit?.unit_kits ?? []).map((assignment: any) => {
       const kit = Array.isArray(assignment.kits) ? assignment.kits[0] : assignment.kits;
-      return { id: assignment.id, name: `${kit?.name ?? "Shared Kit"} (Kit)`, sort_order: assignment.sort_order ?? 0, url: `${appUrl}/checkoff/${unit?.id}/kit/${assignment.id}` };
+      return { id: assignment.id, name: `${kit?.name ?? "Shared Kit"} (Kit)`, sort_order: assignment.sort_order ?? 0, type: "kit" as const };
     }),
   ].sort((a, b) => a.sort_order - b.sort_order);
   const codes = await Promise.all(targets.map(async (target) => {
-    const url = target.url;
+    const qrTarget = await getOrCreateQrTarget(supabase, target.type === "compartment" ? { unitId: id, compartmentId: target.id } : { unitId: id, unitKitId: target.id });
+    const url = `${appUrl}/q/${qrTarget.code}`;
     return {
       id: target.id,
+      code: qrTarget.code,
       name: target.name,
       url,
       dataUrl: await QRCode.toDataURL(url, { margin: 2, width: 320 }),

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 type QrCode = {
   id: string;
+  code: string;
   name: string;
   url: string;
   dataUrl: string;
@@ -81,10 +82,11 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
           return (
             <article id={`qr-${code.id}`} key={code.id} className="qr-card break-inside-avoid rounded-3xl border border-slate-300 bg-white p-4 print:rounded-xl print:p-3">
               <button className="flex w-full items-center justify-between gap-4 text-left print:hidden" onClick={() => toggle(code.id)} type="button">
-                <span>
-                  <span className="block text-lg font-black">{code.name}</span>
-                  <span className="text-sm font-semibold text-slate-600">{unitName}</span>
-                </span>
+                  <span>
+                    <span className="block text-lg font-black">{code.name}</span>
+                    <span className="text-sm font-semibold text-slate-600">{unitName}</span>
+                    <span className="mt-1 block font-mono text-sm font-black text-red-700">{code.code}</span>
+                  </span>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700">{expanded ? "Collapse" : "Expand"}</span>
               </button>
 
@@ -92,6 +94,7 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
                 <img alt={`${unitName} ${code.name} QR code`} className="mx-auto h-56 w-56 print:h-40 print:w-40" src={code.dataUrl} />
                 <h2 className="mt-4 text-xl font-black print:text-base">{unitName}</h2>
                 <p className="font-semibold text-slate-700 print:text-sm">{code.name}</p>
+                <p className="mt-1 font-mono text-sm font-black text-red-700 print:text-xs">Code: {code.code}</p>
                 <p className="mt-2 break-all text-xs text-slate-500 print:hidden">{code.url}</p>
                 <PrintSingleQrButton targetId={`qr-${code.id}`} />
               </div>
