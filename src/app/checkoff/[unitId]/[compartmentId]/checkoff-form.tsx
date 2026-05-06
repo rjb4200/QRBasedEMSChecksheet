@@ -65,13 +65,13 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
 
         return (
           <div key={item.id} className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="text-lg font-black">{name}</h3>
+            <div className={item.input_type === "quantity" ? "grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start" : "flex items-start justify-between gap-4"}>
+              <div className="min-w-0">
+                <h3 className="break-words text-lg font-black leading-snug">{name}</h3>
                 <p className="text-sm text-slate-600">{itemMeta}</p>
               </div>
               {item.input_type === "quantity" ? (
-                <div className="flex items-center gap-3">
+                <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-start">
                   <button className="h-12 w-12 rounded-2xl bg-slate-200 text-2xl font-black" disabled={readOnly} onClick={() => setItemValue(item.id, Math.max(0, Number(value ?? 0) - 1))} type="button">-</button>
                   <span className="w-12 text-center text-2xl font-black">{Number(value ?? 0)}</span>
                   <button className="h-12 w-12 rounded-2xl bg-slate-950 text-2xl font-black text-white" disabled={readOnly} onClick={() => setItemValue(item.id, Number(value ?? 0) + 1)} type="button">+</button>
