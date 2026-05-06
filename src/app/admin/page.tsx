@@ -71,7 +71,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
                           <td className="p-3 font-black">{item.unitName}</td>
                           <td className="p-3 font-semibold">{item.compartmentName}</td>
                           <td className="p-3">{item.itemName}</td>
-                          <td className="p-3 capitalize text-red-700">{item.inputType === "checkbox" ? "Missing" : "Below par"}</td>
+                          <td className="p-3 capitalize text-red-700">{item.inputType === "checkbox" ? "Missing" : item.inputType === "condition" ? "Condition issue" : "Below par"}</td>
                           <td className="p-3 font-semibold">{item.actual} / {item.expected}</td>
                         </tr>
                       ))}

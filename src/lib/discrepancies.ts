@@ -9,9 +9,9 @@ export type CheckoffDiscrepancy = {
   compartmentName: string;
   itemId: string;
   itemName: string;
-  inputType: "quantity" | "checkbox";
-  expected: number | true;
-  actual: number | false;
+  inputType: "quantity" | "checkbox" | "condition";
+  expected: number | true | "OK";
+  actual: number | false | string;
 };
 
 type CheckRow = {
@@ -138,6 +138,15 @@ export async function getCheckoffDiscrepanciesForRange(from: string, to: string,
       if (item.input_type === "quantity" && item.par_level !== null && Number(value) < item.par_level) {
         discrepancies.push({ ...base, inputType: "quantity", expected: item.par_level, actual: Number(value) });
       }
+
+      if (item.input_type === "condition" && typeof value === "object" && value !== null && (value as { status?: string }).status !== "OK") {
+        discrepancies.push({
+          ...base,
+          inputType: "condition",
+          expected: "OK",
+          actual: (value as { status?: string }).status ?? "Unknown",
+        });
+      }
     }
   }
 
@@ -169,7 +178,7 @@ export function discrepancyRecordsToCsv(discrepancies: CheckoffDiscrepancy[]) {
       item.unitName,
       item.compartmentName,
       item.itemName,
-      item.inputType === "checkbox" ? "Missing" : "Below par",
+      item.inputType === "checkbox" ? "Missing" : item.inputType === "condition" ? "Condition issue" : "Below par",
       item.actual,
       item.expected,
     ].map(escapeCell).join(",")),

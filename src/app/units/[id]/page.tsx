@@ -33,6 +33,9 @@ function findPreviousExceptions(targets: { id: string; name: string; items?: Uni
     if (item.input_type === "quantity" && item.par_level !== null && Number(value) < item.par_level) {
       return [{ compartment: target.name, item: equipmentName(item) ?? "Unknown item", issue: `Below par (${value ?? "-"}/${item.par_level})` }];
     }
+    if (item.input_type === "condition" && typeof value === "object" && value !== null && (value as { status?: string }).status !== "OK") {
+      return [{ compartment: target.name, item: equipmentName(item) ?? "Unknown item", issue: `Condition: ${(value as { status?: string }).status ?? "Unknown"}` }];
+    }
     return [];
   }));
 }
