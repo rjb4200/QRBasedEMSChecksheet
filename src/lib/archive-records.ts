@@ -16,6 +16,8 @@ export type DailyUnitRecord = {
   unitId: string;
   unitName: string;
   unitStatus: string;
+  archived: boolean;
+  statusNote: string;
   archiveStatus: string;
   completedCompartments: number;
   totalCompartments: number;
@@ -53,6 +55,8 @@ type LedgerRow = {
   unit_name: string;
   unit_status: string;
   total_compartments: number;
+  archived: boolean | null;
+  status_note: string | null;
 };
 
 type ArchiveRow = {
@@ -186,7 +190,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
 
   let ledgerQuery = supabase
     .from("daily_unit_ledgers")
-    .select("id, shift_date, shift_period, unit_id, unit_name, unit_status, total_compartments")
+    .select("id, shift_date, shift_period, unit_id, unit_name, unit_status, total_compartments, archived, status_note")
     .gte("shift_date", range.from)
     .lte("shift_date", range.to)
     .order("shift_date", { ascending: false })
@@ -267,6 +271,8 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
           unitId: ledger.unit_id,
           unitName: ledger.unit_name,
           unitStatus: ledger.unit_status,
+          archived: Boolean(ledger.archived),
+          statusNote: ledger.status_note ?? "",
           archiveStatus: archive?.status ?? "no_record",
           completedCompartments,
           totalCompartments,
@@ -325,6 +331,8 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
         unitId: unit.id,
         unitName: unit.name,
         unitStatus: unit.status,
+        archived: false,
+        statusNote: "",
         archiveStatus: archive?.status ?? "no_record",
         completedCompartments,
         totalCompartments,
@@ -386,6 +394,8 @@ export function archiveRecordToCsv(records: DailyUnitRecord[]) {
     "Shift Period",
     "Unit",
     "Unit Status",
+    "Archived",
+    "Status Note",
     "Archive Status",
     "Completed Compartments",
     "Total Compartments",
@@ -414,6 +424,8 @@ export function archiveRecordToCsv(records: DailyUnitRecord[]) {
       record.shiftPeriod,
       record.unitName,
       record.unitStatus,
+      record.archived ? "yes" : "no",
+      record.statusNote,
       record.archiveStatus,
       record.completedCompartments,
       record.totalCompartments,

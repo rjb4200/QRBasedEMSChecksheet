@@ -64,11 +64,12 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                 <Link className="rounded-2xl border border-slate-300 px-4 py-2 text-center text-sm font-bold" href={`/admin/checksheets/print?date=${group.date}`}>Print Check Sheets</Link>
               </summary>
               <div className="overflow-x-auto border-t border-slate-200">
-                <table className="w-full min-w-[1100px] text-left text-sm">
+                <table className="w-full min-w-[1250px] text-left text-sm">
                   <thead className="bg-slate-950 text-white">
                     <tr>
                       <th className="p-4">Unit</th>
                       <th className="p-4">Unit Status</th>
+                      <th className="p-4">Snapshot</th>
                       <th className="p-4">Record Status</th>
                         <th className="p-4">Checks</th>
                         <th className="p-4">Completed</th>
@@ -85,13 +86,14 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                   <tbody>
                     {group.records.length === 0 ? (
                       <tr className="border-t border-slate-200">
-                        <td className="p-4 text-slate-500" colSpan={13}>No unit ledger was saved for this day.</td>
+                        <td className="p-4 text-slate-500" colSpan={14}>No unit ledger was saved for this day.</td>
                       </tr>
                     ) : null}
                     {group.records.map((record) => (
                       <tr key={`${record.date}-${record.unitId}`} className="border-t border-slate-200">
                         <td className="p-4 font-black">{record.unitName}</td>
                         <td className="p-4 capitalize text-slate-600">{record.unitStatus.replace("_", " ")}</td>
+                        <td className="p-4 text-slate-600">{[record.archived ? "Archived" : "", record.statusNote].filter(Boolean).join(" | ") || "-"}</td>
                         <td className="p-4 capitalize text-slate-600">{record.archiveStatus.replace("_", " ")}</td>
                         <td className="p-4 font-semibold">{record.totalCompartments}</td>
                         <td className="p-4 font-semibold">{record.completedCompartments}/{record.totalCompartments}</td>

@@ -14,6 +14,8 @@ type FleetUnit = {
   exceptionCount: number;
   hasComments: boolean;
   crewComplete: boolean;
+  archived?: boolean;
+  statusNote?: string | null;
 };
 
 function formatCompletionTime(value: string | null | undefined) {
@@ -37,7 +39,7 @@ function StatusBadge({ children, className, ariaLabel }: { children: ReactNode; 
 
 function getPrimaryBadge(unit: FleetUnit) {
   if (unit.status === "out_of_service") {
-    return { label: "Out of Service", className: "bg-slate-200 text-slate-700", ariaLabel: `${unit.name} is out of service` };
+    return { label: unit.archived ? "Archived" : "Out of Service", className: "bg-slate-200 text-slate-700", ariaLabel: `${unit.name} is ${unit.archived ? "archived" : "out of service"}` };
   }
 
   if (unit.total > 0 && unit.completed >= unit.total) {
@@ -77,6 +79,7 @@ export function FleetMatrix({ units }: { units: FleetUnit[]; admin?: boolean }) 
             </div>
             <div className="mt-4 flex flex-wrap gap-2" aria-label={`Operational status badges for ${unit.name}`}>
               <StatusBadge ariaLabel={primaryBadge.ariaLabel} className={primaryBadge.className}>{primaryBadge.label}</StatusBadge>
+              {unit.statusNote ? <StatusBadge ariaLabel={`${unit.name} status note: ${unit.statusNote}`} className="bg-slate-100 text-slate-700">{unit.statusNote}</StatusBadge> : null}
               {unit.exceptionCount > 0 ? <StatusBadge ariaLabel={`${unit.name} has ${unit.exceptionCount} exceptions`} className="bg-red-100 text-red-800">Exceptions: {unit.exceptionCount}</StatusBadge> : null}
               {unit.hasComments ? <StatusBadge ariaLabel={`${unit.name} has comments`} className="bg-slate-200 text-slate-700">Comments</StatusBadge> : null}
               {unit.status === "in_service" && !unit.crewComplete ? <StatusBadge ariaLabel={`${unit.name} crew information is missing`} className="bg-amber-100 text-amber-900">Crew Missing</StatusBadge> : null}

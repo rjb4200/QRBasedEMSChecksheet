@@ -10,6 +10,15 @@ type UnitRow = {
   unit_kits?: { id: string }[] | null;
 };
 
+type LedgerRow = {
+  unit_id: string;
+  unit_name: string;
+  unit_status: string;
+  total_compartments: number;
+  archived: boolean | null;
+  status_note: string | null;
+};
+
 type CheckRow = {
   unit_id: string;
   compartment_id: string | null;
@@ -93,8 +102,9 @@ function latestIso(values: Array<string | null | undefined>) {
 export async function getFleetStatus(supabase: SupabaseClient) {
   const shift = getCurrentShift();
 
-  const [{ data: units }, { data: checks }, { data: crews }, { data: comments }, { data: compartmentItems }, { data: kitItems }, { data: unitKits }] = await Promise.all([
+  const [{ data: units }, { data: ledgers }, { data: checks }, { data: crews }, { data: comments }, { data: compartmentItems }, { data: kitItems }, { data: unitKits }] = await Promise.all([
     supabase.from("units").select("id, name, unit_kind, status, unit_compartments(id), unit_kits(id)").is("deleted_at", null).order("name"),
+    supabase.from("daily_unit_ledgers").select("unit_id, unit_name, unit_status, total_compartments, archived, status_note").eq("shift_date", shift.shiftDate).eq("shift_period", shift.shiftPeriod).order("unit_name"),
     supabase.from("compartment_checks").select("unit_id, compartment_id, unit_kit_id, status, completed_at, updated_at, item_data").eq("shift_date", shift.shiftDate).eq("shift_period", shift.shiftPeriod),
     supabase.from("daily_unit_crews").select("unit_id, provider_names, locked, updated_at").eq("shift_date", shift.shiftDate).eq("shift_period", shift.shiftPeriod),
     supabase.from("daily_unit_comments").select("unit_id, comment").eq("shift_date", shift.shiftDate).eq("shift_period", shift.shiftPeriod),
@@ -104,6 +114,7 @@ export async function getFleetStatus(supabase: SupabaseClient) {
   ]);
 
   const unitRows = (units ?? []) as UnitRow[];
+  const ledgerRows = (ledgers ?? []) as LedgerRow[];
   const checkRows = (checks ?? []) as CheckRow[];
   const crewRows = (crews ?? []) as CrewRow[];
   const crewMap = new Map(crewRows.map((crew) => [crew.unit_id, crew]));
@@ -120,11 +131,34 @@ export async function getFleetStatus(supabase: SupabaseClient) {
     kitItemMap.set(item.kit_id, [...(kitItemMap.get(item.kit_id) ?? []), item]);
   }
 
-  return unitRows.map((unit) => {
+  const liveUnitMap = new Map(unitRows.map((unit) => [unit.id, unit]));
+  const ledgerUnitIds = new Set(ledgerRows.map((ledger) => ledger.unit_id));
+  const unitSources = ledgerRows.length > 0
+    ? [
+      ...ledgerRows.map((ledger) => {
+        const liveUnit = liveUnitMap.get(ledger.unit_id);
+        return {
+          id: ledger.unit_id,
+          name: ledger.unit_name,
+          unit_kind: liveUnit?.unit_kind ?? "Archived",
+          status: ledger.unit_status,
+          archived: Boolean(ledger.archived),
+          statusNote: ledger.status_note,
+          unit_compartments: liveUnit?.unit_compartments ?? [],
+          unit_kits: liveUnit?.unit_kits ?? [],
+          ledgerTotalCompartments: ledger.total_compartments,
+        };
+      }),
+      ...unitRows.filter((unit) => !ledgerUnitIds.has(unit.id)).map((unit) => ({ ...unit, archived: false, statusNote: null, ledgerTotalCompartments: null })),
+    ]
+    : unitRows.map((unit) => ({ ...unit, archived: false, statusNote: null, ledgerTotalCompartments: null }));
+
+  return unitSources.map((unit) => {
     const unitChecks = checkRows.filter((check) => check.unit_id === unit.id);
     const crew = crewMap.get(unit.id);
     const crewComplete = Boolean(crew?.locked && isNonBlank(crew.provider_names));
-    const total = (unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0) + 1;
+    const targetCount = unit.ledgerTotalCompartments ?? (unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0);
+    const total = targetCount + 1;
     const completedChecks = unitChecks.filter((check) => check.status === "completed");
     const completed = completedChecks.length + (crewComplete ? 1 : 0);
     const hasStarted = unitChecks.length > 0 || isNonBlank(crew?.provider_names);
@@ -148,6 +182,8 @@ export async function getFleetStatus(supabase: SupabaseClient) {
       exceptionCount,
       hasComments: commentUnitIds.has(unit.id),
       crewComplete,
+      archived: unit.archived,
+      statusNote: unit.statusNote,
       percentage: total === 0 ? 0 : Math.round((completed / total) * 100),
     };
   });

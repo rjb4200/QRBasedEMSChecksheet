@@ -104,6 +104,8 @@ Deno.serve(async () => {
     unit_name: unit.name,
     unit_status: unit.status,
     total_compartments: (unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0),
+    archived: false,
+    status_note: null,
   }));
 
   if (ledgerRows.length > 0) {

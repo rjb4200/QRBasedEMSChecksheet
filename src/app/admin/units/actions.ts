@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { upsertTodayUnitLedger } from "@/lib/daily-unit-ledgers";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
 type SupabaseAdmin = ReturnType<typeof createAdminClient>;
@@ -91,13 +92,16 @@ export async function createUnit(formData: FormData) {
 }
 
 export async function toggleUnitStatus(formData: FormData) {
-  const parsed = z.object({ id: z.string().uuid(), status: z.enum(["in_service", "out_of_service"]) }).parse({
+  const parsed = z.object({ id: z.string().uuid(), status: z.enum(["in_service", "out_of_service"]), statusNote: z.string().optional() }).parse({
     id: formData.get("id"),
     status: formData.get("status"),
+    statusNote: formData.get("status_note") || undefined,
   });
   const supabase = createAdminClient();
   const { error } = await supabase.from("units").update({ status: parsed.status }).eq("id", parsed.id);
   if (error) throw new Error(error.message);
+  await upsertTodayUnitLedger(supabase, parsed.id, { status: parsed.status, statusNote: parsed.status === "in_service" ? null : parsed.statusNote });
+  revalidatePath("/");
   revalidatePath("/admin/units");
   revalidatePath(`/admin/units/${parsed.id}`);
 }
@@ -107,6 +111,8 @@ export async function deleteUnit(formData: FormData) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("units").update({ deleted_at: new Date().toISOString(), status: "out_of_service" }).eq("id", id);
   if (error) throw new Error(error.message);
+  await upsertTodayUnitLedger(supabase, id, { status: "out_of_service", archived: true, statusNote: "Archived" });
+  revalidatePath("/");
   revalidatePath("/admin/units");
 }
 
