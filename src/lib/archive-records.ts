@@ -58,6 +58,14 @@ type ArchiveRow = {
   total_compartments: number | null;
 };
 
+type CheckRow = {
+  shift_date: string;
+  shift_period: string;
+  unit_id: string;
+  status: string;
+  units?: UnitRow | UnitRow[] | null;
+};
+
 type CrewRow = {
   shift_date: string;
   shift_period: string;
@@ -91,6 +99,18 @@ function eachDate(from: Date, to: Date) {
     dates.push(toDateInputValue(current));
   }
   return dates;
+}
+
+function getSingleRow<T>(row: T | T[] | null | undefined) {
+  return Array.isArray(row) ? row[0] : row;
+}
+
+function getBaseTargetCount(unit: UnitRow | undefined) {
+  return (unit?.unit_compartments?.length ?? 0) + (unit?.unit_kits?.length ?? 0);
+}
+
+function getCompletionPercentage(completedCompartments: number, totalCompartments: number) {
+  return totalCompartments === 0 ? 0 : Math.round((completedCompartments / totalCompartments) * 10000) / 100;
 }
 
 export function getDefaultArchiveRange(params: ArchiveSearchParams) {
@@ -135,7 +155,17 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
     ledgerQuery = ledgerQuery.eq("unit_id", params.unitId);
   }
 
-  const [{ data: units }, { data: ledgers }, { data: archives }, { data: crews }] = await Promise.all([
+  let checksQuery = supabase
+    .from("compartment_checks")
+    .select("shift_date, shift_period, unit_id, status, units(id, name, status, unit_compartments(id), unit_kits(id))")
+    .gte("shift_date", range.from)
+    .lte("shift_date", range.to);
+
+  if (params.unitId) {
+    checksQuery = checksQuery.eq("unit_id", params.unitId);
+  }
+
+  const [{ data: units }, { data: ledgers }, { data: archives }, { data: crews }, { data: checks }] = await Promise.all([
     unitsQuery,
     ledgerQuery,
     supabase
@@ -149,15 +179,19 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
       .select("shift_date, shift_period, unit_id, provider_names, locked")
       .gte("shift_date", range.from)
       .lte("shift_date", range.to),
+    checksQuery,
   ]);
 
   const unitRows = (units ?? []) as UnitRow[];
   const ledgerRows = (ledgers ?? []) as LedgerRow[];
   const archiveRows = (archives ?? []) as ArchiveRow[];
+  const checkRows = (checks ?? []) as CheckRow[];
   const archiveMap = new Map(archiveRows.map((archive) => [`${archive.unit_id}:${archive.shift_date}:${archive.shift_period}`, archive]));
   const crewMap = new Map(((crews ?? []) as CrewRow[]).map((crew) => [`${crew.unit_id}:${crew.shift_date}:${crew.shift_period}`, crew]));
+  const currentUnitMap = new Map(unitRows.map((unit) => [unit.id, unit]));
   const dates = eachDate(new Date(`${range.from}T00:00:00.000Z`), new Date(`${range.to}T00:00:00.000Z`)).reverse();
   const ledgerMap = new Map<string, LedgerRow[]>();
+  const checkMap = new Map<string, CheckRow[]>();
   const records: DailyUnitRecord[] = [];
 
   for (const ledger of ledgerRows) {
@@ -165,24 +199,79 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
     ledgerMap.set(key, [...(ledgerMap.get(key) ?? []), ledger]);
   }
 
+  for (const check of checkRows) {
+    const key = `${check.unit_id}:${check.shift_date}:${check.shift_period}`;
+    checkMap.set(key, [...(checkMap.get(key) ?? []), check]);
+  }
+
   for (const date of dates) {
-    for (const ledger of ledgerMap.get(`${date}:daily`) ?? []) {
-      const archive = archiveMap.get(`${ledger.unit_id}:${date}:daily`);
-      const crew = crewMap.get(`${ledger.unit_id}:${date}:daily`);
+    const ledgersForDate = ledgerMap.get(`${date}:daily`) ?? [];
+
+    if (ledgersForDate.length > 0) {
+      for (const ledger of ledgersForDate) {
+        const archive = archiveMap.get(`${ledger.unit_id}:${date}:daily`);
+        const crew = crewMap.get(`${ledger.unit_id}:${date}:daily`);
+        const crewLocked = Boolean(crew?.locked && crew.provider_names?.trim());
+        const baseTotal = archive?.total_compartments ?? ledger.total_compartments;
+        const baseCompleted = archive?.completed_compartments ?? 0;
+        const totalCompartments = baseTotal + 1;
+        const completedCompartments = baseCompleted + (crewLocked ? 1 : 0);
+        const completionPercentage = getCompletionPercentage(completedCompartments, totalCompartments);
+
+        records.push({
+          archiveId: archive?.id ?? null,
+          date,
+          shiftPeriod: archive?.shift_period ?? "daily",
+          unitId: ledger.unit_id,
+          unitName: ledger.unit_name,
+          unitStatus: ledger.unit_status,
+          archiveStatus: archive?.status ?? "no_record",
+          completedCompartments,
+          totalCompartments,
+          completionPercentage,
+          providerNames: crew?.provider_names ?? "",
+          crewLocked,
+          hasArchive: Boolean(archive),
+        });
+      }
+
+      continue;
+    }
+
+    const fallbackUnits = new Map<string, UnitRow>();
+
+    for (const unit of unitRows) {
+      fallbackUnits.set(unit.id, unit);
+    }
+
+    for (const check of checkRows.filter((row) => row.shift_date === date && row.shift_period === "daily")) {
+      const checkedUnit = getSingleRow(check.units);
+      fallbackUnits.set(check.unit_id, currentUnitMap.get(check.unit_id) ?? checkedUnit ?? {
+        id: check.unit_id,
+        name: "Unknown unit",
+        status: "unknown",
+      });
+    }
+
+    for (const unit of Array.from(fallbackUnits.values()).sort((a, b) => a.name.localeCompare(b.name))) {
+      const archive = archiveMap.get(`${unit.id}:${date}:daily`);
+      const crew = crewMap.get(`${unit.id}:${date}:daily`);
       const crewLocked = Boolean(crew?.locked && crew.provider_names?.trim());
-      const baseTotal = archive?.total_compartments ?? ledger.total_compartments;
-      const baseCompleted = archive?.completed_compartments ?? 0;
+      const checksForUnit = checkMap.get(`${unit.id}:${date}:daily`) ?? [];
+      const fallbackBaseTotal = getBaseTargetCount(unit) || checksForUnit.length;
+      const baseTotal = archive?.total_compartments ?? fallbackBaseTotal;
+      const baseCompleted = archive?.completed_compartments ?? checksForUnit.filter((check) => check.status === "completed").length;
       const totalCompartments = baseTotal + 1;
       const completedCompartments = baseCompleted + (crewLocked ? 1 : 0);
-      const completionPercentage = totalCompartments === 0 ? 0 : Math.round((completedCompartments / totalCompartments) * 10000) / 100;
+      const completionPercentage = getCompletionPercentage(completedCompartments, totalCompartments);
 
       records.push({
         archiveId: archive?.id ?? null,
         date,
         shiftPeriod: archive?.shift_period ?? "daily",
-        unitId: ledger.unit_id,
-        unitName: ledger.unit_name,
-        unitStatus: ledger.unit_status,
+        unitId: unit.id,
+        unitName: unit.name,
+        unitStatus: unit.status,
         archiveStatus: archive?.status ?? "no_record",
         completedCompartments,
         totalCompartments,
@@ -219,7 +308,7 @@ export function groupDailyUnitRecords(records: DailyUnitRecord[], dates?: string
 
     if (record.unitStatus === "in_service") {
       group.totalInServiceUnits += 1;
-      if (record.archiveStatus === "completed" || record.completionPercentage >= 100) {
+      if (record.completionPercentage > 95) {
         group.completedInServiceUnits += 1;
       }
     }

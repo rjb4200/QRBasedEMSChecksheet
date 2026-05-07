@@ -47,7 +47,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                   {group.records.map((record) => {
                     const bubbleColor = record.unitStatus !== "in_service"
                       ? "bg-slate-300 text-slate-700"
-                      : record.completionPercentage >= 100 || record.archiveStatus === "completed"
+                      : record.completionPercentage > 95
                         ? "bg-green-600 text-white"
                         : record.hasArchive
                           ? "bg-yellow-400 text-slate-950"

@@ -22,7 +22,7 @@ Deno.serve(async () => {
 
   const { data: units, error: unitsError } = await supabase
     .from("units")
-    .select("id, name, status, unit_compartments(id)")
+    .select("id, name, status, unit_compartments(id), unit_kits(id)")
     .is("deleted_at", null);
 
   if (unitsError) {
@@ -35,7 +35,7 @@ Deno.serve(async () => {
     unit_id: unit.id,
     unit_name: unit.name,
     unit_status: unit.status,
-    total_compartments: unit.unit_compartments?.length ?? 0,
+    total_compartments: (unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0),
   }));
 
   if (ledgerRows.length > 0) {
@@ -49,7 +49,7 @@ Deno.serve(async () => {
   }
 
   for (const unit of (units ?? []).filter((unit) => unit.status === "in_service")) {
-    const totalCompartments = unit.unit_compartments?.length ?? 0;
+    const totalCompartments = (unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0);
     const { data: checks, error: checksError } = await supabase
       .from("compartment_checks")
       .select("*")
@@ -66,7 +66,7 @@ Deno.serve(async () => {
     const status = partial > 0 || completed < totalCompartments ? "partially_complete" : "completed";
     const completionPercentage = totalCompartments === 0 ? 0 : Math.round((completed / totalCompartments) * 10000) / 100;
 
-    await supabase.from("shift_archives").upsert({
+    const { error: archiveError } = await supabase.from("shift_archives").upsert({
       shift_date: shiftDate,
       shift_period: shiftPeriod,
       unit_id: unit.id,
@@ -76,6 +76,10 @@ Deno.serve(async () => {
       total_compartments: totalCompartments,
       check_data: checks ?? [],
     }, { onConflict: "shift_date,shift_period,unit_id" });
+
+    if (archiveError) {
+      return Response.json({ error: archiveError.message }, { status: 500 });
+    }
 
     await supabase
       .from("compartment_checks")
