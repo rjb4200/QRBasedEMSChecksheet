@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { getDailyUnitRecords } from "@/lib/archive-records";
+import { formatDuration, getDailyUnitRecords } from "@/lib/archive-records";
+
+function formatTimestamp(value: string | null) {
+  return value ? new Date(value).toLocaleString("en-US", { timeZone: "America/New_York" }) : "Not recorded";
+}
 
 export default async function ArchivesPage({ searchParams }: { searchParams: Promise<{ unitId?: string; from?: string; to?: string }> }) {
   const params = await searchParams;
@@ -40,6 +44,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700">Daily Record</p>
                   <h2 className="mt-1 text-2xl font-black">{group.date}</h2>
+                  <p className="mt-1 text-xs font-bold uppercase text-slate-500">{group.records[0]?.shiftName ?? ""}</p>
                 </div>
                 <div className="text-3xl font-black text-slate-950">{group.completedInServiceUnits}/{group.totalInServiceUnits}</div>
                   <div className="flex flex-wrap gap-2" aria-label={`Unit statuses for ${group.date}`}>
@@ -59,7 +64,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                 <Link className="rounded-2xl border border-slate-300 px-4 py-2 text-center text-sm font-bold" href={`/admin/checksheets/print?date=${group.date}`}>Print Check Sheets</Link>
               </summary>
               <div className="overflow-x-auto border-t border-slate-200">
-                <table className="w-full min-w-[850px] text-left text-sm">
+                <table className="w-full min-w-[1100px] text-left text-sm">
                   <thead className="bg-slate-950 text-white">
                     <tr>
                       <th className="p-4">Unit</th>
@@ -69,13 +74,18 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                         <th className="p-4">Completed</th>
                         <th className="p-4">Completion</th>
                         <th className="p-4">Crew</th>
+                        <th className="p-4">Shift</th>
+                        <th className="p-4">Started</th>
+                        <th className="p-4">Submitted</th>
+                        <th className="p-4">Duration</th>
+                        <th className="p-4">Checked By</th>
                         <th className="p-4">Details</th>
                     </tr>
                   </thead>
                   <tbody>
                     {group.records.length === 0 ? (
                       <tr className="border-t border-slate-200">
-                        <td className="p-4 text-slate-500" colSpan={8}>No unit ledger was saved for this day.</td>
+                        <td className="p-4 text-slate-500" colSpan={13}>No unit ledger was saved for this day.</td>
                       </tr>
                     ) : null}
                     {group.records.map((record) => (
@@ -87,6 +97,11 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                         <td className="p-4 font-semibold">{record.completedCompartments}/{record.totalCompartments}</td>
                         <td className="p-4 font-semibold">{record.completionPercentage}%</td>
                         <td className="p-4 font-semibold">{record.crewLocked ? record.providerNames || "Locked" : "Not locked"}</td>
+                        <td className="p-4 font-semibold">{record.shiftName}</td>
+                        <td className="p-4 text-slate-600">{formatTimestamp(record.startedAt)}</td>
+                        <td className="p-4 text-slate-600">{formatTimestamp(record.submittedAt)}</td>
+                        <td className="p-4 font-semibold">{formatDuration(record.timeToCompleteSeconds) || "Not recorded"}</td>
+                        <td className="p-4 text-slate-600">{record.checkedByName || "Not recorded"}</td>
                         <td className="p-4">
                           {record.archiveId ? (
                             <Link className="rounded-2xl border border-slate-300 px-4 py-2 font-bold !text-pink-600 visited:!text-pink-600" href={`/admin/archives/${record.archiveId}`}>View</Link>

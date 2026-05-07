@@ -1,4 +1,5 @@
-import { getCurrentShift } from "@/lib/shifts";
+import { formatDuration } from "@/lib/archive-records";
+import { getCurrentShift, getShiftNameForDate } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
 export type ChecksheetItem = {
@@ -22,14 +23,22 @@ export type ChecksheetUnit = {
   name: string;
   status: string;
   providerNames: string;
+  comments: string;
   archiveStatus: string;
   completedCompartments: number;
   totalCompartments: number;
+  shiftName: string;
+  startedAt: string | null;
+  submittedAt: string | null;
+  timeToCompleteSeconds: number | null;
+  checkedByName: string;
   compartments: ChecksheetCompartment[];
 };
 
 export type DailyChecksheetDocument = {
   date: string;
+  operationalDate: string;
+  shiftName: string;
   shiftPeriod: string;
   generatedAt: string;
   units: ChecksheetUnit[];
@@ -78,7 +87,13 @@ type ArchiveRow = {
   status: string;
   completed_compartments: number | null;
   total_compartments: number | null;
+  operational_date: string | null;
+  started_at: string | null;
+  submitted_at: string | null;
+  time_to_complete_seconds: number | null;
   check_data: unknown;
+  shift_calendar?: { shift_name: string } | { shift_name: string }[] | null;
+  users?: { full_name: string | null; email: string | null } | { full_name: string | null; email: string | null }[] | null;
 };
 
 type LedgerRow = {
@@ -92,6 +107,11 @@ type CrewRow = {
   unit_id: string;
   provider_names: string;
   locked: boolean | null;
+};
+
+type CommentRow = {
+  unit_id: string;
+  comment: string | null;
 };
 
 function single<T>(value: T | T[] | null | undefined) {
@@ -125,11 +145,24 @@ export function formatChecksheetValue(value: unknown) {
   return String(value);
 }
 
+function getArchiveShiftName(archive: ArchiveRow | undefined, date: string) {
+  return single(archive?.shift_calendar)?.shift_name ?? getShiftNameForDate(archive?.operational_date ?? date);
+}
+
+function getArchiveCheckedBy(archive: ArchiveRow | undefined) {
+  const user = single(archive?.users);
+  return user?.full_name ?? user?.email ?? "";
+}
+
+export function formatChecksheetTimestamp(value: string | null) {
+  return value ? new Date(value).toLocaleString("en-US", { timeZone: "America/New_York" }) : "Not recorded";
+}
+
 export async function getDailyChecksheetDocument(date = getCurrentShift().shiftDate): Promise<DailyChecksheetDocument> {
   const supabase = createAdminClient();
   const requestedStart = new Date(`${date}T00:00:00.000Z`);
   const requestedEnd = new Date(`${date}T23:59:59.999Z`);
-  const [{ data: units }, { data: ledgers }, { data: archives }, { data: checks }, { data: crews }] = await Promise.all([
+  const [{ data: units }, { data: ledgers }, { data: archives }, { data: checks }, { data: crews }, { data: comments }] = await Promise.all([
     supabase
       .from("units")
       .select("id, name, status, created_at, deleted_at, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(name, kit_items(id, par_level, input_type, equipment_catalog(name))))")
@@ -142,7 +175,7 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
       .order("unit_name"),
     supabase
       .from("shift_archives")
-      .select("unit_id, status, completed_compartments, total_compartments, check_data")
+      .select("unit_id, status, completed_compartments, total_compartments, operational_date, started_at, submitted_at, time_to_complete_seconds, check_data, shift_calendar(shift_name), users(full_name, email)")
       .eq("shift_date", date)
       .eq("shift_period", "daily"),
     supabase
@@ -155,6 +188,11 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
       .select("unit_id, provider_names, locked")
       .eq("shift_date", date)
       .eq("shift_period", "daily"),
+    supabase
+      .from("daily_unit_comments")
+      .select("unit_id, comment")
+      .eq("shift_date", date)
+      .eq("shift_period", "daily"),
   ]);
 
   const unitRows = (units ?? []) as UnitRow[];
@@ -162,6 +200,7 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
   const ledgerRows = (ledgers ?? []) as LedgerRow[];
   const archiveMap = new Map(((archives ?? []) as ArchiveRow[]).map((archive) => [archive.unit_id, archive]));
   const crewMap = new Map(((crews ?? []) as CrewRow[]).map((crew) => [crew.unit_id, crew]));
+  const commentMap = new Map(((comments ?? []) as CommentRow[]).map((comment) => [comment.unit_id, comment.comment?.trim() ?? ""]));
   const currentCheckMap = new Map<string, CheckRow[]>();
 
   for (const check of (checks ?? []) as (CheckRow & { unit_id: string })[]) {
@@ -175,6 +214,8 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
 
   return {
     date,
+    operationalDate: date,
+    shiftName: getShiftNameForDate(date),
     shiftPeriod: "daily",
     generatedAt: new Date().toISOString(),
     units: unitSources.map((source) => {
@@ -195,9 +236,15 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
         name: source.name,
         status: source.status,
         providerNames: crewMap.get(source.id)?.provider_names ?? "",
+        comments: commentMap.get(source.id) ?? "",
         archiveStatus: archive?.status ?? (savedChecks.length > 0 ? "current" : "no_record"),
         completedCompartments: archive?.completed_compartments ?? savedChecks.filter((check) => check.status === "completed").length,
         totalCompartments: archive?.total_compartments ?? source.totalCompartments,
+        shiftName: getArchiveShiftName(archive, date),
+        startedAt: archive?.started_at ?? null,
+        submittedAt: archive?.submitted_at ?? null,
+        timeToCompleteSeconds: archive?.time_to_complete_seconds ?? null,
+        checkedByName: getArchiveCheckedBy(archive),
         compartments: targets.map((target) => {
           const check = checkMap.get(target.id);
           const itemData = check?.item_data ?? {};
@@ -225,7 +272,7 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
 }
 
 export function detailedChecksheetsCsv(documents: DailyChecksheetDocument[]) {
-  const headers = ["Date", "Unit", "Unit Status", "Crew Names", "Compartment", "Check Status", "Item", "Input Type", "Actual", "Expected", "Item Status", "Completed At"];
+  const headers = ["Date", "Shift", "Unit", "Unit Status", "Crew Names", "Comments", "Started At", "Submitted At", "Duration", "Checked By", "Compartment", "Check Status", "Item", "Input Type", "Actual", "Expected", "Item Status", "Completed At"];
   const escapeCell = (value: unknown) => {
     const text = String(value ?? "");
     return /[",\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
@@ -235,9 +282,15 @@ export function detailedChecksheetsCsv(documents: DailyChecksheetDocument[]) {
     headers.join(","),
     ...documents.flatMap((document) => document.units.flatMap((unit) => unit.compartments.flatMap((compartment) => compartment.items.map((item) => [
       document.date,
+      unit.shiftName,
       unit.name,
       unit.status,
       unit.providerNames,
+      unit.comments,
+      unit.startedAt,
+      unit.submittedAt,
+      formatDuration(unit.timeToCompleteSeconds),
+      unit.checkedByName,
       compartment.name,
       compartment.checkStatus,
       item.name,

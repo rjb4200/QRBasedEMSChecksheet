@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { getShiftNameForDate } from "@/lib/shifts";
 
 export type ArchiveSearchParams = {
   unitId?: string;
@@ -10,6 +11,8 @@ export type DailyUnitRecord = {
   archiveId: string | null;
   date: string;
   shiftPeriod: string;
+  operationalDate: string;
+  shiftName: string;
   unitId: string;
   unitName: string;
   unitStatus: string;
@@ -19,6 +22,11 @@ export type DailyUnitRecord = {
   completionPercentage: number;
   providerNames: string;
   crewLocked: boolean;
+  startedAt: string | null;
+  submittedAt: string | null;
+  lastActivityAt: string | null;
+  timeToCompleteSeconds: number | null;
+  checkedByName: string;
   hasArchive: boolean;
 };
 
@@ -56,6 +64,13 @@ type ArchiveRow = {
   completion_percentage: number | null;
   completed_compartments: number | null;
   total_compartments: number | null;
+  operational_date: string | null;
+  started_at: string | null;
+  submitted_at: string | null;
+  last_activity_at: string | null;
+  time_to_complete_seconds: number | null;
+  shift_calendar?: { shift_name: string } | { shift_name: string }[] | null;
+  users?: { full_name: string | null; email: string | null } | { full_name: string | null; email: string | null }[] | null;
   units?: { name: string } | { name: string }[] | null;
 };
 
@@ -109,6 +124,24 @@ function getSingleRow<T>(row: T | T[] | null | undefined) {
 
 function getCompletionPercentage(completedCompartments: number, totalCompartments: number) {
   return totalCompartments === 0 ? 0 : Math.round((completedCompartments / totalCompartments) * 10000) / 100;
+}
+
+export function formatDuration(seconds: number | null) {
+  if (seconds === null) return "";
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  if (minutes === 0) return `${remainingSeconds}s`;
+  if (remainingSeconds === 0) return `${minutes}m`;
+  return `${minutes}m ${remainingSeconds}s`;
+}
+
+function getArchiveShiftName(archive: ArchiveRow | undefined, date: string) {
+  return getSingleRow(archive?.shift_calendar)?.shift_name ?? getShiftNameForDate(archive?.operational_date ?? date);
+}
+
+function getArchiveCheckedBy(archive: ArchiveRow | undefined) {
+  const user = getSingleRow(archive?.users);
+  return user?.full_name ?? user?.email ?? "";
 }
 
 function setFallbackUnit(units: Map<string, UnitRow>, unitId: string, unitName: string | undefined) {
@@ -178,7 +211,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
     ledgerQuery,
     supabase
       .from("shift_archives")
-      .select("id, shift_date, shift_period, unit_id, status, completion_percentage, completed_compartments, total_compartments, units(name)")
+      .select("id, shift_date, shift_period, unit_id, status, completion_percentage, completed_compartments, total_compartments, operational_date, started_at, submitted_at, last_activity_at, time_to_complete_seconds, shift_calendar(shift_name), users(full_name, email), units(name)")
       .gte("shift_date", range.from)
       .lte("shift_date", range.to)
       .order("shift_date", { ascending: false }),
@@ -229,6 +262,8 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
           archiveId: archive?.id ?? null,
           date,
           shiftPeriod: archive?.shift_period ?? "daily",
+          operationalDate: archive?.operational_date ?? date,
+          shiftName: getArchiveShiftName(archive, date),
           unitId: ledger.unit_id,
           unitName: ledger.unit_name,
           unitStatus: ledger.unit_status,
@@ -238,6 +273,11 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
           completionPercentage,
           providerNames: crew?.provider_names ?? "",
           crewLocked,
+          startedAt: archive?.started_at ?? null,
+          submittedAt: archive?.submitted_at ?? null,
+          lastActivityAt: archive?.last_activity_at ?? null,
+          timeToCompleteSeconds: archive?.time_to_complete_seconds ?? null,
+          checkedByName: getArchiveCheckedBy(archive),
           hasArchive: Boolean(archive),
         });
       }
@@ -280,6 +320,8 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
         archiveId: archive?.id ?? null,
         date,
         shiftPeriod: archive?.shift_period ?? "daily",
+        operationalDate: archive?.operational_date ?? date,
+        shiftName: getArchiveShiftName(archive, date),
         unitId: unit.id,
         unitName: unit.name,
         unitStatus: unit.status,
@@ -289,6 +331,11 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
         completionPercentage,
         providerNames: crew?.provider_names ?? "",
         crewLocked,
+        startedAt: archive?.started_at ?? null,
+        submittedAt: archive?.submitted_at ?? null,
+        lastActivityAt: archive?.last_activity_at ?? null,
+        timeToCompleteSeconds: archive?.time_to_complete_seconds ?? null,
+        checkedByName: getArchiveCheckedBy(archive),
         hasArchive: Boolean(archive),
       });
     }
@@ -334,6 +381,8 @@ export function groupDailyUnitRecords(records: DailyUnitRecord[], dates?: string
 export function archiveRecordToCsv(records: DailyUnitRecord[]) {
   const headers = [
     "Date",
+    "Operational Date",
+    "Shift",
     "Shift Period",
     "Unit",
     "Unit Status",
@@ -343,6 +392,11 @@ export function archiveRecordToCsv(records: DailyUnitRecord[]) {
     "Completion Percentage",
     "Crew Names",
     "Crew Locked",
+    "Started At",
+    "Submitted At",
+    "Last Activity At",
+    "Duration",
+    "Checked By",
     "Archive ID",
   ];
 
@@ -355,6 +409,8 @@ export function archiveRecordToCsv(records: DailyUnitRecord[]) {
     headers.join(","),
     ...records.map((record) => [
       record.date,
+      record.operationalDate,
+      record.shiftName,
       record.shiftPeriod,
       record.unitName,
       record.unitStatus,
@@ -364,6 +420,11 @@ export function archiveRecordToCsv(records: DailyUnitRecord[]) {
       record.completionPercentage,
       record.providerNames,
       record.crewLocked ? "yes" : "no",
+      record.startedAt,
+      record.submittedAt,
+      record.lastActivityAt,
+      formatDuration(record.timeToCompleteSeconds),
+      record.checkedByName,
       record.archiveId,
     ].map(escapeCell).join(",")),
   ].join("\n");

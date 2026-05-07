@@ -1,5 +1,6 @@
 import PDFDocument from "pdfkit";
-import { formatChecksheetValue, getDailyChecksheetDocument, type DailyChecksheetDocument } from "@/lib/checksheet-documents";
+import { formatDuration } from "@/lib/archive-records";
+import { formatChecksheetTimestamp, formatChecksheetValue, getDailyChecksheetDocument, type DailyChecksheetDocument } from "@/lib/checksheet-documents";
 
 const PAGE_MARGIN = 24;
 const COLUMN_GAP = 10;
@@ -49,16 +50,20 @@ function renderUnitPage(doc: PDFKit.PDFDocument, document: DailyChecksheetDocume
   const contentWidth = pageWidth - PAGE_MARGIN * 2;
   const columnWidth = (contentWidth - COLUMN_GAP * (COLUMN_COUNT - 1)) / COLUMN_COUNT;
 
-  doc.font("Helvetica-Bold").fontSize(7).fillColor("#b91c1c").text("EMS DAILY CHECK SHEETS", PAGE_MARGIN, PAGE_MARGIN);
-  doc.font("Helvetica-Bold").fontSize(15).fillColor("black").text(`${unit.name} | ${document.date}`, PAGE_MARGIN, PAGE_MARGIN + 9);
-  doc.font("Helvetica").fontSize(6).fillColor("#475569").text(`${unit.status.replace("_", " ")} | ${unit.archiveStatus.replace("_", " ")}`, PAGE_MARGIN, PAGE_MARGIN + 27);
-  if (unit.providerNames) doc.font("Helvetica-Bold").fontSize(6).fillColor("black").text(`Crew: ${unit.providerNames}`, PAGE_MARGIN, PAGE_MARGIN + 36);
+  doc.font("Helvetica-Bold").fontSize(7).fillColor("#b91c1c").text("WINCHESTER FIRE DEPARTMENT", PAGE_MARGIN, PAGE_MARGIN);
+  doc.font("Helvetica-Bold").fontSize(15).fillColor("black").text("Daily Unit Checkoff", PAGE_MARGIN, PAGE_MARGIN + 9);
+  doc.font("Helvetica-Bold").fontSize(8).fillColor("black").text(`${unit.name} | ${document.date} | ${unit.shiftName}`, PAGE_MARGIN, PAGE_MARGIN + 27);
+  doc.font("Helvetica").fontSize(6).fillColor("#475569").text(`${unit.status.replace("_", " ")} | ${unit.archiveStatus.replace("_", " ")}`, PAGE_MARGIN, PAGE_MARGIN + 38);
+  if (unit.providerNames) doc.font("Helvetica-Bold").fontSize(6).fillColor("black").text(`Crew: ${unit.providerNames}`, PAGE_MARGIN, PAGE_MARGIN + 47);
+  doc.font("Helvetica").fontSize(6).fillColor("black").text(`Checked By: ${unit.checkedByName || "Not recorded"}`, PAGE_MARGIN, PAGE_MARGIN + 56);
+  doc.font("Helvetica").fontSize(6).fillColor("black").text(`Started: ${formatChecksheetTimestamp(unit.startedAt)} | Submitted: ${formatChecksheetTimestamp(unit.submittedAt)} | Duration: ${formatDuration(unit.timeToCompleteSeconds) || "Not recorded"}`, PAGE_MARGIN, PAGE_MARGIN + 65);
+  if (unit.comments) doc.font("Helvetica").fontSize(6).fillColor("black").text(`Comments: ${unit.comments}`, PAGE_MARGIN, PAGE_MARGIN + 74, { width: contentWidth * 0.65 });
   doc.font("Helvetica-Bold").fontSize(7).fillColor("black").text(`Generated ${new Date(document.generatedAt).toLocaleString()}`, pageWidth - PAGE_MARGIN - 150, PAGE_MARGIN, { width: 150, align: "right" });
   doc.font("Helvetica-Bold").fontSize(9).text(`${unit.completedCompartments}/${unit.totalCompartments}`, pageWidth - PAGE_MARGIN - 150, PAGE_MARGIN + 12, { width: 150, align: "right" });
 
-  doc.strokeColor("#0f172a").lineWidth(1).moveTo(PAGE_MARGIN, PAGE_MARGIN + 48).lineTo(pageWidth - PAGE_MARGIN, PAGE_MARGIN + 48).stroke();
+  doc.strokeColor("#0f172a").lineWidth(1).moveTo(PAGE_MARGIN, PAGE_MARGIN + 86).lineTo(pageWidth - PAGE_MARGIN, PAGE_MARGIN + 86).stroke();
 
-  const columnY = [PAGE_MARGIN + 58, PAGE_MARGIN + 58, PAGE_MARGIN + 58];
+  const columnY = [PAGE_MARGIN + 96, PAGE_MARGIN + 96, PAGE_MARGIN + 96];
   for (const compartment of unit.compartments) {
     let column = columnY.indexOf(Math.min(...columnY));
     if (columnY[column] > pageHeight - PAGE_MARGIN - 40) {

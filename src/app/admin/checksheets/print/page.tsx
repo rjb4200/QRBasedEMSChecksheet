@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PrintButton } from "./print-button";
-import { formatChecksheetValue, getDailyChecksheetDocument } from "@/lib/checksheet-documents";
+import { formatChecksheetTimestamp, formatChecksheetValue, getDailyChecksheetDocument } from "@/lib/checksheet-documents";
+import { formatDuration } from "@/lib/archive-records";
 import { getCurrentShift } from "@/lib/shifts";
 
 export default async function PrintChecksheetsPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
@@ -30,10 +31,14 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
                   <header className="mb-3 border-b-2 border-slate-950 pb-2 print:mb-1 print:pb-1">
                     <div className="flex items-end justify-between gap-4">
                       <div>
-                        <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 print:text-[7pt]">EMS Daily Check Sheets</p>
-                        <h1 className="text-3xl font-black print:text-[15pt]">{unit.name} | {document.date}</h1>
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 print:text-[7pt]">Winchester Fire Department</p>
+                        <h1 className="text-3xl font-black print:text-[15pt]">Daily Unit Checkoff</h1>
+                        <p className="text-lg font-black print:text-[9pt]">{unit.name} | {document.date} | {unit.shiftName}</p>
                         <p className="text-xs font-bold uppercase text-slate-600 print:text-[6pt]">{unit.status.replace("_", " ")} | {unit.archiveStatus.replace("_", " ")}</p>
                         {unit.providerNames ? <p className="mt-0.5 text-xs font-bold print:text-[6pt]">Crew: {unit.providerNames}</p> : null}
+                        <p className="mt-0.5 text-xs font-bold print:text-[6pt]">Checked By: {unit.checkedByName || "Not recorded"}</p>
+                        <p className="mt-0.5 text-xs font-bold print:text-[6pt]">Started: {formatChecksheetTimestamp(unit.startedAt)} | Submitted: {formatChecksheetTimestamp(unit.submittedAt)} | Duration: {formatDuration(unit.timeToCompleteSeconds) || "Not recorded"}</p>
+                        {unit.comments ? <p className="mt-0.5 text-xs font-bold print:text-[6pt]">Comments: {unit.comments}</p> : null}
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold print:text-[7pt]">Generated {new Date(document.generatedAt).toLocaleString()}</p>
