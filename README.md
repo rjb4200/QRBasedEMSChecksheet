@@ -23,6 +23,7 @@ Mobile-first EMS vehicle checkoff application for QR-based compartment inspectio
 - Supabase PostgreSQL/Auth/Storage
 - QR code generation with `qrcode`
 - Camera scanning with `html5-qrcode`
+- Daily email delivery with Resend
 
 ## Getting Started
 
@@ -50,7 +51,17 @@ Required variables:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Variable | Public anon or publishable Supabase key. |
 | `NEXT_PUBLIC_APP_URL` | Variable | Deployed app URL; QR codes use this value. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Secret | Server-only key for admin actions and public checkoff writes. |
-| `N8N_BASE_URL` | Variable or Secret | Optional n8n endpoint if alerts are enabled. |
+| `RESEND_API_KEY` | Secret | Server-only Resend API key for daily reports. |
+| `RESEND_FROM_EMAIL` | Variable | Verified sender address for daily reports. |
+| `DAILY_REPORT_TIMEZONE` | Variable | Timezone for the daily report, usually `America/New_York`. |
+| `CRON_SECRET` | Secret | Bearer token required by the daily report cron endpoint. |
+
+Optional variables:
+
+| Name | Cloudflare Type | Notes |
+| --- | --- | --- |
+| `DAILY_REPORT_REPLY_TO` | Variable | Optional reply-to address for daily reports. |
+| `DAILY_REPORT_SUBJECT_PREFIX` | Variable | Optional subject prefix, such as `[Test]`. |
 
 ### Run Development Server
 
@@ -111,13 +122,66 @@ The QR page supports:
 - Configure the same environment variables in your hosting provider.
 - `NEXT_PUBLIC_APP_URL` should match the deployed application URL so QR codes point to the correct host.
 - Keep Supabase service role keys out of client code and public repositories.
+- Configure the scheduler to call `/api/cron/daily-email-report` daily at 1000 with `Authorization: Bearer {CRON_SECRET}`.
+
+## Daily Email Reports
+
+The app owns daily report delivery through Resend. Reports are sent to admin users with a valid email address and `receives_daily_report` enabled on the Admin Users page.
+
+Daily reports include:
+
+- Unchecked in-service units
+- Submitted exceptions
+- A PDF attachment with all unit check sheets for the report date
+
+### Resend Setup
+
+1. Create a Resend account.
+2. Verify the sending domain in Resend.
+3. Add the required DNS records for domain verification, SPF, and DKIM.
+4. Create a production API key.
+5. Add `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `DAILY_REPORT_TIMEZONE`, and `CRON_SECRET` to production environment variables.
+6. Add report recipient emails on `/admin/users`.
+
+### Manual Cron Test
+
+Use a protected request to test the daily report endpoint:
+
+```bash
+curl -X POST https://your-app-domain.com/api/cron/daily-email-report \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+Add `?force=true` only for authorized manual re-sends after a successful run.
+
+### Scheduler Setup
+
+Configure your host to call the cron endpoint at 1000 local time.
+
+For Vercel Cron, add a cron entry similar to:
+
+```json
+{
+  "crons": [
+    { "path": "/api/cron/daily-email-report", "schedule": "0 10 * * *" }
+  ]
+}
+```
+
+For Cloudflare Workers Cron Triggers, use:
+
+```text
+0 10 * * *
+```
+
+The scheduled caller must send `Authorization: Bearer {CRON_SECRET}`. If the platform cannot attach headers directly, use a small scheduled worker or job wrapper that calls the app endpoint with the header.
 
 ### Cloudflare Deployment
 
 Set these in Cloudflare Pages or Workers before deploying:
 
-- Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_APP_URL`, `N8N_BASE_URL`
-- Secrets: `SUPABASE_SERVICE_ROLE_KEY`
+- Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_APP_URL`, `RESEND_FROM_EMAIL`, `DAILY_REPORT_TIMEZONE`
+- Secrets: `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CRON_SECRET`
 
 For Cloudflare Pages, use **Settings > Environment variables** and add values for both **Production** and **Preview** as needed.
 
@@ -125,6 +189,8 @@ If using Wrangler, set the service role key as a secret:
 
 ```bash
 wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+wrangler secret put RESEND_API_KEY
+wrangler secret put CRON_SECRET
 ```
 
 Then configure the public variables in your Cloudflare project settings. Do not put `SUPABASE_SERVICE_ROLE_KEY` in `NEXT_PUBLIC_*` variables.

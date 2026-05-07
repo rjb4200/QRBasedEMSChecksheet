@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 interface AdminUser {
   id: string;
   username: string;
+  email: string | null;
+  receives_daily_report: boolean;
   created_at: string;
   updated_at?: string;
 }
@@ -32,10 +34,14 @@ export default function AdminUsersPage() {
 
   const [newUsername, setNewUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newReceivesDailyReport, setNewReceivesDailyReport] = useState(true);
   const [isAddingUser, setIsAddingUser] = useState(false);
 
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [newPasswordForEdit, setNewPasswordForEdit] = useState("");
+  const [emailForEdit, setEmailForEdit] = useState("");
+  const [receivesDailyReportForEdit, setReceivesDailyReportForEdit] = useState(true);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
@@ -69,7 +75,12 @@ export default function AdminUsersPage() {
       const res = await fetch("/api/admin-users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: newUsername, password: newPassword }),
+        body: JSON.stringify({
+          username: newUsername,
+          password: newPassword,
+          email: newEmail,
+          receivesDailyReport: newReceivesDailyReport,
+        }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -77,6 +88,8 @@ export default function AdminUsersPage() {
       setSuccess("User created successfully");
       setNewUsername("");
       setNewPassword("");
+      setNewEmail("");
+      setNewReceivesDailyReport(true);
       fetchUsers();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create user");
@@ -94,14 +107,19 @@ export default function AdminUsersPage() {
       const res = await fetch(`/api/admin-users/${editingUserId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: newPasswordForEdit }),
+        body: JSON.stringify({
+          password: newPasswordForEdit || undefined,
+          email: emailForEdit,
+          receivesDailyReport: receivesDailyReportForEdit,
+        }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
 
-      setSuccess("Password updated successfully");
-      setEditingUserId("");
+      setSuccess("User updated successfully");
+      setEditingUserId(null);
       setNewPasswordForEdit("");
+      setEmailForEdit("");
       fetchUsers();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update password");
@@ -206,6 +224,25 @@ export default function AdminUsersPage() {
                 Min 8 chars, uppercase, lowercase, number, special char
               </span>
             </label>
+            <label className="grid gap-2 text-sm font-bold text-slate-700">
+              Email for Daily Reports
+              <input
+                className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-950 outline-none ring-red-500 focus:ring-4"
+                type="email"
+                placeholder="name@example.com"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+              />
+            </label>
+            <label className="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700">
+              <input
+                className="h-4 w-4 accent-red-700"
+                type="checkbox"
+                checked={newReceivesDailyReport}
+                onChange={(e) => setNewReceivesDailyReport(e.target.checked)}
+              />
+              Receives daily report
+            </label>
             <button
               className="w-full rounded-xl bg-red-700 px-5 py-3 font-bold text-white disabled:opacity-50"
               type="submit"
@@ -229,44 +266,71 @@ export default function AdminUsersPage() {
                 >
                   <div>
                     <p className="font-bold text-slate-950">{user.username}</p>
+                    <p className="text-sm text-slate-600">{user.email || "No report email"}</p>
+                    <p className="text-xs font-bold uppercase tracking-[0.15em] text-slate-500">
+                      {user.receives_daily_report ? "Daily report enabled" : "Daily report disabled"}
+                    </p>
                     <p className="text-sm text-slate-500">Created {formatDate(user.created_at)}</p>
                   </div>
                   <div className="flex gap-2">
                     {editingUserId === user.id ? (
-                      <form onSubmit={handleChangePassword} className="flex items-center gap-2">
+                      <form onSubmit={handleChangePassword} className="grid gap-2 sm:min-w-64">
                         <input
-                          className="w-32 rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                          className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
                           type="password"
-                          placeholder="New password"
+                          placeholder="New password (optional)"
                           value={newPasswordForEdit}
                           onChange={(e) => setNewPasswordForEdit(e.target.value)}
-                          required
                         />
-                        <button
-                          className="rounded-xl bg-red-700 px-3 py-2 text-sm font-bold text-white"
-                          type="submit"
-                          disabled={isChangingPassword}
-                        >
-                          Save
-                        </button>
-                        <button
-                          type="button"
-                          className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700"
-                          onClick={() => {
-                            setEditingUserId(null);
-                            setNewPasswordForEdit("");
-                          }}
-                        >
-                          Cancel
-                        </button>
+                        <input
+                          className="rounded-xl border border-slate-300 px-3 py-2 text-sm"
+                          type="email"
+                          placeholder="Report email"
+                          value={emailForEdit}
+                          onChange={(e) => setEmailForEdit(e.target.value)}
+                        />
+                        <label className="flex items-center gap-2 text-xs font-bold text-slate-700">
+                          <input
+                            className="h-4 w-4 accent-red-700"
+                            type="checkbox"
+                            checked={receivesDailyReportForEdit}
+                            onChange={(e) => setReceivesDailyReportForEdit(e.target.checked)}
+                          />
+                          Receives daily report
+                        </label>
+                        <div className="flex gap-2">
+                          <button
+                            className="rounded-xl bg-red-700 px-3 py-2 text-sm font-bold text-white"
+                            type="submit"
+                            disabled={isChangingPassword}
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700"
+                            onClick={() => {
+                              setEditingUserId(null);
+                              setNewPasswordForEdit("");
+                              setEmailForEdit("");
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </form>
                     ) : (
                       <>
                         <button
                           className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
-                          onClick={() => setEditingUserId(user.id)}
+                          onClick={() => {
+                            setEditingUserId(user.id);
+                            setNewPasswordForEdit("");
+                            setEmailForEdit(user.email ?? "");
+                            setReceivesDailyReportForEdit(user.receives_daily_report);
+                          }}
                         >
-                          Change Password
+                          Edit
                         </button>
                         <button
                           className="rounded-xl border border-red-300 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50"

@@ -4,9 +4,9 @@ import { createAdminClient } from "@/lib/supabase/server-admin";
 export type ChecksheetItem = {
   name: string;
   inputType: string;
-  expected: number | null;
+  expected: number | string | null;
   actual: unknown;
-  status: "ok" | "missing" | "below_par" | "not_recorded";
+  status: "ok" | "missing" | "below_par" | "condition_issue" | "not_recorded";
 };
 
 export type ChecksheetCompartment = {
@@ -102,12 +102,27 @@ function itemStatus(item: UnitItemRow, actual: unknown): ChecksheetItem["status"
   if (actual === undefined || actual === null || actual === "") return "not_recorded";
   if (item.input_type === "checkbox") return actual === false ? "missing" : "ok";
   if (item.input_type === "quantity" && item.par_level !== null) return Number(actual) < item.par_level ? "below_par" : "ok";
+  if (item.input_type === "condition" && typeof actual === "object" && actual !== null) {
+    return (actual as { status?: string }).status === "OK" ? "ok" : "condition_issue";
+  }
   return "ok";
 }
 
 function itemExpected(item: UnitItemRow) {
   if (item.input_type === "quantity") return item.par_level;
+  if (item.input_type === "condition") return "OK";
   return null;
+}
+
+export function formatChecksheetValue(value: unknown) {
+  if (value === true) return "Yes";
+  if (value === false) return "No";
+  if (value === undefined || value === null || value === "") return "-";
+  if (typeof value === "object") {
+    const condition = value as { status?: string; value?: string };
+    return condition.value ? `${condition.status ?? "Unknown"}: ${condition.value}` : condition.status ?? "Unknown";
+  }
+  return String(value);
 }
 
 export async function getDailyChecksheetDocument(date = getCurrentShift().shiftDate): Promise<DailyChecksheetDocument> {

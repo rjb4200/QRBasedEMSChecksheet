@@ -10,7 +10,7 @@ type IncompleteUnit = {
 export function buildMissedCheckoffEmail(units: IncompleteUnit[], discrepancies: CheckoffDiscrepancy[] = []) {
   const lines = units.map((unit) => `${unit.unitName}: ${unit.completedCompartments} of ${unit.totalCompartments} compartments completed (${unit.completionPercentage}%)`);
   const discrepancyLines = discrepancies.map((item) => {
-    const issue = item.inputType === "checkbox" ? "missing" : `below par (${item.actual}/${item.expected})`;
+    const issue = item.inputType === "checkbox" ? "missing" : item.inputType === "condition" ? `condition issue (${item.actual}/${item.expected})` : `below par (${item.actual}/${item.expected})`;
     return `${item.unitName} - ${item.compartmentName} - ${item.itemName}: ${issue}`;
   });
 
@@ -21,7 +21,7 @@ export function buildMissedCheckoffEmail(units: IncompleteUnit[], discrepancies:
       "",
       ...(lines.length > 0 ? lines : ["None"]),
       "",
-      "Submitted missing or below-par items:",
+      "Submitted exceptions:",
       "",
       ...(discrepancyLines.length > 0 ? discrepancyLines : ["None"]),
       "",

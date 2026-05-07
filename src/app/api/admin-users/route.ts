@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { isValidEmail, normalizeOptionalEmail } from "@/lib/email/validation";
 import { hashPassword, validatePasswordStrength, isValidUsername } from "@/lib/auth/password";
 
 export async function GET() {
@@ -8,7 +9,7 @@ export async function GET() {
 
     const { data: users, error } = await supabase
       .from("admin_users")
-      .select("id, username, created_at, updated_at")
+      .select("id, username, email, receives_daily_report, created_at, updated_at")
       .order("created_at", { ascending: true });
 
     if (error) {
@@ -24,7 +25,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, password } = await request.json();
+    const { username, password, email: rawEmail, receivesDailyReport } = await request.json();
 
     if (!username || !password) {
       return NextResponse.json({ error: "Username and password are required" }, { status: 400 });
@@ -40,6 +41,11 @@ export async function POST(request: NextRequest) {
     const passwordValidation = validatePasswordStrength(password);
     if (!passwordValidation.valid) {
       return NextResponse.json({ error: passwordValidation.errors.join(". ") }, { status: 400 });
+    }
+
+    const email = normalizeOptionalEmail(rawEmail);
+    if (email && !isValidEmail(email)) {
+      return NextResponse.json({ error: "Email address is invalid" }, { status: 400 });
     }
 
     const supabase = createAdminClient();
@@ -58,8 +64,13 @@ export async function POST(request: NextRequest) {
 
     const { data: user, error } = await supabase
       .from("admin_users")
-      .insert({ username, password_hash: passwordHash })
-      .select("id, username, created_at")
+      .insert({
+        username,
+        password_hash: passwordHash,
+        email,
+        receives_daily_report: receivesDailyReport !== false,
+      })
+      .select("id, username, email, receives_daily_report, created_at")
       .single();
 
     if (error) {

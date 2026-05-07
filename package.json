@@ -15,15 +15,18 @@
     "bcryptjs": "^3.0.3",
     "html5-qrcode": "^2.3.8",
     "next": "latest",
+    "pdfkit": "^0.18.0",
     "qrcode": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "resend": "^6.12.3",
     "zod": "latest"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "latest",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "latest",
+    "@types/pdfkit": "^0.17.6",
     "@types/qrcode": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",

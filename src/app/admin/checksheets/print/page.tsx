@@ -1,14 +1,7 @@
 import Link from "next/link";
 import { PrintButton } from "./print-button";
-import { getDailyChecksheetDocument } from "@/lib/checksheet-documents";
+import { formatChecksheetValue, getDailyChecksheetDocument } from "@/lib/checksheet-documents";
 import { getCurrentShift } from "@/lib/shifts";
-
-function formatValue(value: unknown) {
-  if (value === true) return "Yes";
-  if (value === false) return "No";
-  if (value === undefined || value === null || value === "") return "-";
-  return String(value);
-}
 
 export default async function PrintChecksheetsPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
   const params = await searchParams;
@@ -68,8 +61,8 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
                               {compartment.items.map((item) => (
                                 <tr key={`${compartment.id}-${item.name}`} className={item.status === "ok" ? "" : "exception-row font-bold text-red-700"}>
                                   <td className="w-[58%] pr-1 align-top">{item.name}</td>
-                                  <td className="w-[18%] pr-1 align-top">{formatValue(item.actual)}</td>
-                                  <td className="w-[24%] align-top">{item.expected === null ? "" : `Par ${formatValue(item.expected)}`}</td>
+                                  <td className="w-[18%] pr-1 align-top">{formatChecksheetValue(item.actual)}</td>
+                                  <td className="w-[24%] align-top">{item.expected === null ? "" : `Par ${formatChecksheetValue(item.expected)}`}</td>
                                 </tr>
                               ))}
                             </tbody>

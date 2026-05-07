@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { isValidEmail, normalizeOptionalEmail } from "@/lib/email/validation";
 import { hashPassword, validatePasswordStrength } from "@/lib/auth/password";
 
 interface RouteParams {
@@ -9,15 +10,39 @@ interface RouteParams {
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    const { password } = await request.json();
+    const { password, email: rawEmail, receivesDailyReport } = await request.json();
 
-    if (!password) {
-      return NextResponse.json({ error: "Password is required" }, { status: 400 });
+    if (password !== undefined && typeof password !== "string") {
+      return NextResponse.json({ error: "Password must be a string" }, { status: 400 });
     }
 
-    const passwordValidation = validatePasswordStrength(password);
-    if (!passwordValidation.valid) {
-      return NextResponse.json({ error: passwordValidation.errors.join(". ") }, { status: 400 });
+    if (password) {
+      const passwordValidation = validatePasswordStrength(password);
+      if (!passwordValidation.valid) {
+        return NextResponse.json({ error: passwordValidation.errors.join(". ") }, { status: 400 });
+      }
+    }
+
+    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+
+    if (password) {
+      updates.password_hash = await hashPassword(password);
+    }
+
+    if (rawEmail !== undefined) {
+      const email = normalizeOptionalEmail(rawEmail);
+      if (email && !isValidEmail(email)) {
+        return NextResponse.json({ error: "Email address is invalid" }, { status: 400 });
+      }
+      updates.email = email;
+    }
+
+    if (receivesDailyReport !== undefined) {
+      updates.receives_daily_report = receivesDailyReport === true;
+    }
+
+    if (Object.keys(updates).length === 1) {
+      return NextResponse.json({ error: "No updates provided" }, { status: 400 });
     }
 
     const supabase = createAdminClient();
@@ -32,11 +57,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const passwordHash = await hashPassword(password);
-
     const { error } = await supabase
       .from("admin_users")
-      .update({ password_hash: passwordHash, updated_at: new Date().toISOString() })
+      .update(updates)
       .eq("id", id);
 
     if (error) {
