@@ -4,6 +4,9 @@ import { formatChecksheetTimestamp, formatChecksheetValue, getDailyChecksheetDoc
 import { formatDuration } from "@/lib/archive-records";
 import { getCurrentShift } from "@/lib/shifts";
 
+const WFD_LOGO_SRC = "/images/WFD_Logo_1848.jpg";
+const CITY_SEAL_SRC = "/images/City of winchester Seal.png";
+
 export default async function PrintChecksheetsPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
   const params = await searchParams;
   const date = params.date ?? getCurrentShift().shiftDate;
@@ -30,17 +33,21 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
                 <td className="block p-0 print:table-cell">
                   <header className="mb-3 border-b-2 border-slate-950 pb-2 print:mb-1 print:pb-1">
                     <div className="flex items-end justify-between gap-4">
-                      <div>
+                      <div className="flex min-w-0 items-start gap-3">
+                        <img alt="Winchester Fire Department logo" className="h-14 w-14 shrink-0 object-contain print:h-10 print:w-10" src={WFD_LOGO_SRC} />
+                        <div>
                         <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 print:text-[7pt]">Winchester Fire Department</p>
-                        <h1 className="text-3xl font-black print:text-[15pt]">Daily Unit Checkoff</h1>
+                        <h1 className="text-3xl font-black print:text-[15pt]">EMS Equipment Check Sheet</h1>
                         <p className="text-lg font-black print:text-[9pt]">{unit.name} | {document.date} | {unit.shiftName}</p>
                         <p className="text-xs font-bold uppercase text-slate-600 print:text-[6pt]">{unit.status.replace("_", " ")} | {unit.archiveStatus.replace("_", " ")}</p>
                         {unit.providerNames ? <p className="mt-0.5 text-xs font-bold print:text-[6pt]">Crew: {unit.providerNames}</p> : null}
                         <p className="mt-0.5 text-xs font-bold print:text-[6pt]">Checked By: {unit.checkedByName || "Not recorded"}</p>
                         <p className="mt-0.5 text-xs font-bold print:text-[6pt]">Started: {formatChecksheetTimestamp(unit.startedAt)} | Submitted: {formatChecksheetTimestamp(unit.submittedAt)} | Duration: {formatDuration(unit.timeToCompleteSeconds) || "Not recorded"}</p>
                         {unit.comments ? <p className="mt-0.5 text-xs font-bold print:text-[6pt]">Comments: {unit.comments}</p> : null}
+                        </div>
                       </div>
                       <div className="text-right">
+                        <img alt="City of Winchester seal" className="ml-auto mb-1 h-10 w-10 object-contain opacity-70 print:h-8 print:w-8" src={CITY_SEAL_SRC} />
                         <p className="text-sm font-bold print:text-[7pt]">Generated {new Date(document.generatedAt).toLocaleString()}</p>
                         <p className="text-lg font-black print:text-[9pt]">{unit.completedCompartments}/{unit.totalCompartments}</p>
                       </div>

@@ -1,13 +1,22 @@
 import { Suspense } from "react";
 import { signInAdmin } from "@/lib/auth/actions";
 
+const WFD_LOGO_SRC = "/images/WFD_Logo_1848.jpg";
+
 function LoginContent({ searchParams }: { searchParams: { error?: string; next?: string } }) {
   return (
     <main className="min-h-screen bg-slate-950 px-5 py-10 text-white">
       <section className="mx-auto flex min-h-[80vh] w-full max-w-md flex-col justify-center">
         <div className="rounded-[2rem] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-red-300">Winchester EMS</p>
-          <h1 className="mt-4 text-4xl font-black tracking-tight">Sign in</h1>
+          <div className="flex items-center gap-4">
+            <img alt="Winchester Fire Department logo" className="h-16 w-16 rounded-2xl bg-white object-contain p-1 shadow-lg" src={WFD_LOGO_SRC} />
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-red-300">Winchester Fire Department</p>
+              <h1 className="mt-1 text-3xl font-black tracking-tight">qrCheckoff</h1>
+              <p className="text-sm font-bold text-slate-300">Equipment Check System</p>
+            </div>
+          </div>
+          <h2 className="mt-6 text-3xl font-black tracking-tight">Sign in</h2>
           <p className="mt-3 text-sm leading-6 text-slate-300">
             Enter the admin username and password. Your session is saved in a browser cookie so you stay signed in.
           </p>
@@ -44,6 +53,7 @@ function LoginContent({ searchParams }: { searchParams: { error?: string; next?:
               Sign In
             </button>
           </form>
+          <p className="mt-5 text-center text-xs font-semibold text-slate-400">City of Winchester, Kentucky</p>
         </div>
       </section>
     </main>

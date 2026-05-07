@@ -3,14 +3,18 @@ import type { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Winchester EMS Checkoff",
+  title: "qrCheckoff | Winchester Fire Department",
   description: "QR-driven EMS asset and compliance tracker for Winchester Fire-EMS.",
-  applicationName: "EMS Checkoff",
+  applicationName: "qrCheckoff",
   manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/icon.jpg",
+    apple: "/icon.jpg",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "EMS Checkoff",
+    title: "qrCheckoff",
   },
 };
 

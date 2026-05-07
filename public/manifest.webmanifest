@@ -1,6 +1,6 @@
 {
-  "name": "Winchester EMS Checkoff",
-  "short_name": "EMS Checkoff",
+  "name": "qrCheckoff | Winchester Fire Department",
+  "short_name": "qrCheckoff",
   "description": "QR-driven EMS asset and compliance tracker for Winchester Fire-EMS.",
   "start_url": "/",
   "scope": "/",
@@ -9,6 +9,12 @@
   "theme_color": "#b91c1c",
   "orientation": "portrait-primary",
   "icons": [
+    {
+      "src": "/images/WFD_Logo_1848.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
     {
       "src": "/icons/icon.svg",
       "sizes": "any",

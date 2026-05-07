@@ -3,6 +3,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ADMIN_COOKIE_NAME, verifyAdminSession } from "@/lib/auth/admin-session";
 
+const WFD_LOGO_SRC = "/images/WFD_Logo_1848.jpg";
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const adminSession = await verifyAdminSession((await cookies()).get(ADMIN_COOKIE_NAME)?.value);
 
@@ -14,8 +16,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="min-h-screen bg-slate-100 text-slate-950">
       <header className="border-b border-slate-200 bg-white px-5 py-4 print:hidden">
         <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Link className="text-sm font-black uppercase tracking-[0.25em] text-red-700" href="/admin">
-            Admin Dashboard
+          <Link className="flex items-center gap-3 text-slate-950" href="/admin">
+            <img alt="Winchester Fire Department logo" className="h-10 w-10 rounded-xl object-contain" src={WFD_LOGO_SRC} />
+            <span>
+              <span className="block text-sm font-black uppercase tracking-[0.2em] text-red-700">qrCheckoff</span>
+              <span className="block text-xs font-bold text-slate-500">Winchester Fire Department</span>
+            </span>
           </Link>
           <nav className="flex flex-wrap gap-2">
             <Link className="rounded-2xl border border-slate-300 bg-white px-4 py-3 font-bold text-slate-950 shadow-sm" href="/admin">Fleet</Link>

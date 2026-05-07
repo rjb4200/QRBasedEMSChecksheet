@@ -1,10 +1,23 @@
 import PDFDocument from "pdfkit";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import { formatDuration } from "@/lib/archive-records";
 import { formatChecksheetTimestamp, formatChecksheetValue, getDailyChecksheetDocument, type DailyChecksheetDocument } from "@/lib/checksheet-documents";
 
 const PAGE_MARGIN = 24;
 const COLUMN_GAP = 10;
 const COLUMN_COUNT = 3;
+const WFD_LOGO_PATH = path.join(process.cwd(), "public", "images", "WFD_Logo_1848.jpg");
+const CITY_SEAL_PATH = path.join(process.cwd(), "public", "images", "City of winchester Seal.png");
+
+function drawImageIfPresent(doc: PDFKit.PDFDocument, imagePath: string, x: number, y: number, options: { width?: number; height?: number }) {
+  if (!existsSync(imagePath)) return;
+  try {
+    doc.image(imagePath, x, y, options);
+  } catch {
+    // Text headers remain complete if an image asset cannot be embedded.
+  }
+}
 
 function collectPdfBuffer(document: PDFKit.PDFDocument) {
   return new Promise<Buffer>((resolve, reject) => {
@@ -50,14 +63,17 @@ function renderUnitPage(doc: PDFKit.PDFDocument, document: DailyChecksheetDocume
   const contentWidth = pageWidth - PAGE_MARGIN * 2;
   const columnWidth = (contentWidth - COLUMN_GAP * (COLUMN_COUNT - 1)) / COLUMN_COUNT;
 
-  doc.font("Helvetica-Bold").fontSize(7).fillColor("#b91c1c").text("WINCHESTER FIRE DEPARTMENT", PAGE_MARGIN, PAGE_MARGIN);
-  doc.font("Helvetica-Bold").fontSize(15).fillColor("black").text("Daily Unit Checkoff", PAGE_MARGIN, PAGE_MARGIN + 9);
-  doc.font("Helvetica-Bold").fontSize(8).fillColor("black").text(`${unit.name} | ${document.date} | ${unit.shiftName}`, PAGE_MARGIN, PAGE_MARGIN + 27);
-  doc.font("Helvetica").fontSize(6).fillColor("#475569").text(`${unit.status.replace("_", " ")} | ${unit.archiveStatus.replace("_", " ")}`, PAGE_MARGIN, PAGE_MARGIN + 38);
-  if (unit.providerNames) doc.font("Helvetica-Bold").fontSize(6).fillColor("black").text(`Crew: ${unit.providerNames}`, PAGE_MARGIN, PAGE_MARGIN + 47);
-  doc.font("Helvetica").fontSize(6).fillColor("black").text(`Checked By: ${unit.checkedByName || "Not recorded"}`, PAGE_MARGIN, PAGE_MARGIN + 56);
-  doc.font("Helvetica").fontSize(6).fillColor("black").text(`Started: ${formatChecksheetTimestamp(unit.startedAt)} | Submitted: ${formatChecksheetTimestamp(unit.submittedAt)} | Duration: ${formatDuration(unit.timeToCompleteSeconds) || "Not recorded"}`, PAGE_MARGIN, PAGE_MARGIN + 65);
-  if (unit.comments) doc.font("Helvetica").fontSize(6).fillColor("black").text(`Comments: ${unit.comments}`, PAGE_MARGIN, PAGE_MARGIN + 74, { width: contentWidth * 0.65 });
+  drawImageIfPresent(doc, WFD_LOGO_PATH, PAGE_MARGIN, PAGE_MARGIN, { width: 34, height: 34 });
+  const headerX = PAGE_MARGIN + 42;
+  doc.font("Helvetica-Bold").fontSize(7).fillColor("#b91c1c").text("WINCHESTER FIRE DEPARTMENT", headerX, PAGE_MARGIN);
+  doc.font("Helvetica-Bold").fontSize(15).fillColor("black").text("EMS Equipment Check Sheet", headerX, PAGE_MARGIN + 9);
+  doc.font("Helvetica-Bold").fontSize(8).fillColor("black").text(`${unit.name} | ${document.date} | ${unit.shiftName}`, headerX, PAGE_MARGIN + 27);
+  doc.font("Helvetica").fontSize(6).fillColor("#475569").text(`${unit.status.replace("_", " ")} | ${unit.archiveStatus.replace("_", " ")}`, headerX, PAGE_MARGIN + 38);
+  if (unit.providerNames) doc.font("Helvetica-Bold").fontSize(6).fillColor("black").text(`Crew: ${unit.providerNames}`, headerX, PAGE_MARGIN + 47);
+  doc.font("Helvetica").fontSize(6).fillColor("black").text(`Checked By: ${unit.checkedByName || "Not recorded"}`, headerX, PAGE_MARGIN + 56);
+  doc.font("Helvetica").fontSize(6).fillColor("black").text(`Started: ${formatChecksheetTimestamp(unit.startedAt)} | Submitted: ${formatChecksheetTimestamp(unit.submittedAt)} | Duration: ${formatDuration(unit.timeToCompleteSeconds) || "Not recorded"}`, headerX, PAGE_MARGIN + 65);
+  if (unit.comments) doc.font("Helvetica").fontSize(6).fillColor("black").text(`Comments: ${unit.comments}`, headerX, PAGE_MARGIN + 74, { width: contentWidth * 0.62 });
+  drawImageIfPresent(doc, CITY_SEAL_PATH, pageWidth - PAGE_MARGIN - 26, PAGE_MARGIN + 26, { width: 24, height: 24 });
   doc.font("Helvetica-Bold").fontSize(7).fillColor("black").text(`Generated ${new Date(document.generatedAt).toLocaleString()}`, pageWidth - PAGE_MARGIN - 150, PAGE_MARGIN, { width: 150, align: "right" });
   doc.font("Helvetica-Bold").fontSize(9).text(`${unit.completedCompartments}/${unit.totalCompartments}`, pageWidth - PAGE_MARGIN - 150, PAGE_MARGIN + 12, { width: 150, align: "right" });
 
