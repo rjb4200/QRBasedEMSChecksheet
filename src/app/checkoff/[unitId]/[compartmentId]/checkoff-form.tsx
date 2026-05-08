@@ -113,7 +113,7 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
                   <h3 className={`break-words text-lg font-black leading-snug ${needsAttention && item.input_type !== "quantity" ? "text-red-700" : ""}`}>{name}</h3>
                   {item.input_type === "quantity" ? <ParLabel needsAttention={needsAttention} parLevel={item.par_level} /> : null}
                   {needsAttention && item.input_type !== "quantity" ? <WarningLabel>{warningLabel}</WarningLabel> : null}
-                  {isMissing && item.input_type === "quantity" ? <WarningLabel>Missing</WarningLabel> : null}
+                  {needsAttention && item.input_type === "quantity" ? <WarningLabel>{warningLabel}</WarningLabel> : null}
                 </div>
                 <p className="mt-1 text-sm text-slate-600">{itemMeta}</p>
               </div>
