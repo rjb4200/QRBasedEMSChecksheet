@@ -13,6 +13,31 @@ function isAuthorized(request: NextRequest) {
   return request.headers.get("authorization") === `Bearer ${secret}`;
 }
 
+function dailyReportSendHour() {
+  const configured = Number(process.env.DAILY_REPORT_SEND_HOUR ?? 10);
+  if (!Number.isInteger(configured) || configured < 0 || configured > 23) {
+    throw new Error("DAILY_REPORT_SEND_HOUR must be an hour from 0 to 23");
+  }
+  return configured;
+}
+
+function currentLocalHour() {
+  const timeZone = process.env.DAILY_REPORT_TIMEZONE || "America/New_York";
+  const hour = new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    hour12: false,
+    hourCycle: "h23",
+    timeZone,
+  }).format(new Date());
+  return Number(hour);
+}
+
+function isScheduledGetOutsideSendHour(request: NextRequest) {
+  if (request.method !== "GET") return false;
+  if (request.nextUrl.searchParams.has("date") || request.nextUrl.searchParams.get("force") === "true") return false;
+  return currentLocalHour() !== dailyReportSendHour();
+}
+
 async function recordRun({
   reportDate,
   recipientCount,
@@ -55,6 +80,10 @@ export async function POST(request: NextRequest) {
   try {
     if (!isAuthorized(request)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (isScheduledGetOutsideSendHour(request)) {
+      return NextResponse.json({ status: "skipped", reason: "outside_send_hour" });
     }
 
     const force = request.nextUrl.searchParams.get("force") === "true";

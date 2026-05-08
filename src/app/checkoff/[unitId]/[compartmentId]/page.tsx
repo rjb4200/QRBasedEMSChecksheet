@@ -16,6 +16,19 @@ function dateDaysAgo(shiftDate: string, days: number) {
   return date.toISOString().slice(0, 10);
 }
 
+function carriedForwardItemData(
+  current: Record<string, unknown>,
+  previous: Record<string, unknown>,
+  status?: string | null,
+) {
+  if (Object.keys(current).length === 0) return previous;
+  if (status !== "in_progress") return {};
+
+  return Object.fromEntries(
+    Object.entries(current).filter(([key, value]) => JSON.stringify(value) === JSON.stringify(previous[key])),
+  );
+}
+
 async function getRecentCompletedCompartmentData(
   supabase: ReturnType<typeof createAdminClient>,
   unitId: string,
@@ -73,6 +86,7 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
   const hasCurrentItemData = Object.keys(currentItemData).length > 0;
   const recentCompletedData = await getRecentCompletedCompartmentData(supabase, unitId, compartmentId, currentShift);
   const initialItemData = hasCurrentItemData ? currentItemData : recentCompletedData;
+  const carriedForwardData = carriedForwardItemData(currentItemData, recentCompletedData, check?.status);
 
   if (!ownedByOther && !readOnly && check?.status !== "completed") {
     const payload = {
@@ -125,6 +139,7 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
         </div>
         <CheckoffForm
           compartmentId={compartmentId}
+          carriedForwardData={carriedForwardData}
           initialData={initialItemData}
           items={compartment.unit_compartment_items ?? []}
           groups={compartment.unit_compartment_item_groups ?? []}

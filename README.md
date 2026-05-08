@@ -55,6 +55,7 @@ Required variables:
 | `RESEND_FROM_EMAIL` | Variable | Verified sender address for daily reports. |
 | `DAILY_REPORT_TIMEZONE` | Variable | Timezone for the daily report, usually `America/New_York`. |
 | `CRON_SECRET` | Secret | Bearer token required by the daily report cron endpoint. |
+| `DAILY_REPORT_SEND_HOUR` | Variable | Local 24-hour clock hour for automatic daily reports. Defaults to `10`. |
 
 Optional variables:
 
@@ -140,7 +141,7 @@ Daily reports include:
 2. Verify the sending domain in Resend.
 3. Add the required DNS records for domain verification, SPF, and DKIM.
 4. Create a production API key.
-5. Add `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `DAILY_REPORT_TIMEZONE`, and `CRON_SECRET` to production environment variables.
+5. Add `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `DAILY_REPORT_TIMEZONE`, `DAILY_REPORT_SEND_HOUR`, and `CRON_SECRET` to production environment variables.
 6. Add report recipient emails on `/admin/users`.
 
 ### Manual Cron Test
@@ -156,14 +157,14 @@ Add `?force=true` only for authorized manual re-sends after a successful run.
 
 ### Scheduler Setup
 
-Configure your host to call the cron endpoint at 1000 local time.
+Configure your host to call the cron endpoint. The endpoint sends only during `DAILY_REPORT_SEND_HOUR` in `DAILY_REPORT_TIMEZONE` for scheduled `GET` requests, so an hourly scheduler is safe and handles daylight saving time changes.
 
 For Vercel Cron, add a cron entry similar to:
 
 ```json
 {
   "crons": [
-    { "path": "/api/cron/daily-email-report", "schedule": "0 10 * * *" }
+    { "path": "/api/cron/daily-email-report", "schedule": "0 * * * *" }
   ]
 }
 ```
@@ -171,7 +172,7 @@ For Vercel Cron, add a cron entry similar to:
 For Cloudflare Workers Cron Triggers, use:
 
 ```text
-0 10 * * *
+0 * * * *
 ```
 
 The scheduled caller must send `Authorization: Bearer {CRON_SECRET}`. If the platform cannot attach headers directly, use a small scheduled worker or job wrapper that calls the app endpoint with the header.
