@@ -73,6 +73,7 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
   const hasCurrentItemData = Object.keys(currentItemData).length > 0;
   const recentCompletedData = await getRecentCompletedCompartmentData(supabase, unitId, compartmentId, currentShift);
   const initialItemData = hasCurrentItemData ? currentItemData : recentCompletedData;
+  const carriedForwardData = hasCurrentItemData ? {} : recentCompletedData;
 
   if (!ownedByOther && !readOnly && check?.status !== "completed") {
     const payload = {
@@ -125,6 +126,7 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
         </div>
         <CheckoffForm
           compartmentId={compartmentId}
+          carriedForwardData={carriedForwardData}
           initialData={initialItemData}
           items={compartment.unit_compartment_items ?? []}
           groups={compartment.unit_compartment_item_groups ?? []}

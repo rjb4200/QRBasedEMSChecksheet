@@ -21,6 +21,7 @@ type Props = {
   groups?: ItemGroup[];
   initialData: Record<string, unknown>;
   previousData: Record<string, unknown>;
+  carriedForwardData?: Record<string, unknown>;
   readOnly?: boolean;
 };
 
@@ -28,7 +29,44 @@ function equipmentName(item: CheckoffItem) {
   return Array.isArray(item.equipment_catalog) ? item.equipment_catalog[0]?.name : item.equipment_catalog?.name;
 }
 
-export function CheckoffForm({ unitId, compartmentId, targetType = "compartment", items, groups = [], initialData, previousData, readOnly = false }: Props) {
+function isMissingValue(value: unknown) {
+  return value === undefined || value === null || value === "";
+}
+
+function conditionStatus(value: unknown) {
+  return typeof value === "object" && value !== null && "status" in value ? String(value.status) : null;
+}
+
+function carriedForwardIsMissing(item: CheckoffItem, value: unknown, isCarriedForward: boolean) {
+  if (!isCarriedForward) return false;
+  if (item.input_type === "checkbox") return value === false || isMissingValue(value);
+  if (item.input_type === "condition") return isMissingValue(value) || conditionStatus(value) === null;
+  return isMissingValue(value);
+}
+
+function carriedForwardNeedsAttention(item: CheckoffItem, value: unknown, isCarriedForward: boolean) {
+  if (!isCarriedForward) return false;
+  if (item.input_type === "checkbox") return value === false || isMissingValue(value);
+  if (item.input_type === "condition") return isMissingValue(value) || conditionStatus(value) !== "OK";
+  if (isMissingValue(value)) return true;
+  return item.input_type === "quantity" && item.par_level !== null && typeof value === "number" && value < item.par_level;
+}
+
+function WarningLabel({ children }: { children: string }) {
+  return <span className="inline-flex items-center rounded-full border border-red-600 bg-red-50 px-2 py-0.5 text-xs font-black text-red-700">{children}</span>;
+}
+
+function ParLabel({ parLevel, needsAttention }: { parLevel: number | null; needsAttention: boolean }) {
+  if (parLevel === null) return null;
+
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-black ${needsAttention ? "border-red-600 bg-red-50 text-red-700" : "border-slate-300 bg-slate-50 text-slate-600"}`}>
+      Par {parLevel}
+    </span>
+  );
+}
+
+export function CheckoffForm({ unitId, compartmentId, targetType = "compartment", items, groups = [], initialData, previousData, carriedForwardData = {}, readOnly = false }: Props) {
   const startTimeRef = useRef(Date.now());
   const [isPending, startTransition] = useTransition();
   const defaults = useMemo(() => Object.fromEntries(items.map((item) => {
@@ -38,6 +76,7 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
     return [item.id, { status: "OK", value: "" }];
   })), [initialData, items]);
   const [values, setValues] = useState<Record<string, unknown>>(defaults);
+  const [touchedItemIds, setTouchedItemIds] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
     if (readOnly) return;
@@ -51,6 +90,7 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
 
   function setItemValue(id: string, value: unknown) {
     setValues((current) => ({ ...current, [id]: value }));
+    setTouchedItemIds((current) => new Set(current).add(id));
   }
 
   const sections = useMemo(() => groupItems(items, groups, { hideEmptyGroups: true }), [groups, items]);
@@ -59,16 +99,23 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
         const name = equipmentName(item) ?? "Unnamed item";
         const value = values[item.id];
         const prev = previousData[item.id] ?? "-";
-        const itemMeta = item.input_type === "checkbox"
-          ? `Prev: ${typeof prev === "object" ? JSON.stringify(prev) : String(prev)}`
-          : `Par: ${item.par_level ?? "-"} | Prev: ${typeof prev === "object" ? JSON.stringify(prev) : String(prev)}`;
+        const isCarriedForward = carriedForwardData[item.id] !== undefined && !touchedItemIds.has(item.id);
+        const needsAttention = carriedForwardNeedsAttention(item, value, isCarriedForward);
+        const isMissing = carriedForwardIsMissing(item, value, isCarriedForward);
+        const itemMeta = `Prev: ${typeof prev === "object" ? JSON.stringify(prev) : String(prev)}`;
+        const warningLabel = isMissing ? "Missing" : "Needs Check";
 
         return (
-          <div key={item.id} className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div key={item.id} className={`rounded-3xl border bg-white p-4 shadow-sm ${isMissing || (needsAttention && item.input_type !== "quantity") ? "border-red-300 ring-1 ring-red-100" : "border-slate-200"}`}>
             <div className={item.input_type === "quantity" ? "grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start" : "flex items-start justify-between gap-4"}>
               <div className="min-w-0">
-                <h3 className="break-words text-lg font-black leading-snug">{name}</h3>
-                <p className="text-sm text-slate-600">{itemMeta}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className={`break-words text-lg font-black leading-snug ${needsAttention && item.input_type !== "quantity" ? "text-red-700" : ""}`}>{name}</h3>
+                  {item.input_type === "quantity" ? <ParLabel needsAttention={needsAttention} parLevel={item.par_level} /> : null}
+                  {needsAttention && item.input_type !== "quantity" ? <WarningLabel>{warningLabel}</WarningLabel> : null}
+                  {isMissing && item.input_type === "quantity" ? <WarningLabel>Missing</WarningLabel> : null}
+                </div>
+                <p className="mt-1 text-sm text-slate-600">{itemMeta}</p>
               </div>
               {item.input_type === "quantity" ? (
                 <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-start">

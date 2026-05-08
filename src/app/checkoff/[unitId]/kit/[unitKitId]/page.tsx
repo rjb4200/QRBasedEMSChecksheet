@@ -57,6 +57,11 @@ export default async function KitCheckoffPage({ params, searchParams }: { params
   const previousCheck = Array.isArray(previousArchive?.check_data)
     ? previousArchive.check_data.find((item) => item.unit_kit_id === unitKitId)
     : null;
+  const currentItemData = (check?.item_data ?? {}) as Record<string, unknown>;
+  const hasCurrentItemData = Object.keys(currentItemData).length > 0;
+  const previousItemData = (previousCheck?.item_data ?? {}) as Record<string, unknown>;
+  const initialItemData = hasCurrentItemData ? currentItemData : previousItemData;
+  const carriedForwardData = hasCurrentItemData ? {} : previousItemData;
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-6 text-slate-950">
@@ -69,10 +74,11 @@ export default async function KitCheckoffPage({ params, searchParams }: { params
         </div>
         <CheckoffForm
           compartmentId={unitKitId}
-          initialData={(check?.item_data ?? {}) as Record<string, unknown>}
+          carriedForwardData={carriedForwardData}
+          initialData={initialItemData}
           items={kit.kit_items ?? []}
           groups={kit.kit_item_groups ?? []}
-          previousData={(previousCheck?.item_data ?? {}) as Record<string, unknown>}
+          previousData={previousItemData}
           readOnly={readOnly}
           targetType="kit"
           unitId={unitId}
