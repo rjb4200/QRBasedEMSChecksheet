@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CrewNameLock } from "./crew-name-lock";
 import { ShiftResetWarning } from "./shift-reset-warning";
+import { saveDailyUnitComment } from "./actions";
 import { getCurrentShift, getPreviousShift, getShiftLabel } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
@@ -45,11 +46,12 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   const supabase = createAdminClient();
   const currentShift = getCurrentShift();
   const previousShift = getPreviousShift();
-  const [{ data: unit }, { data: checks }, { data: previousArchive }, { data: crew }] = await Promise.all([
+  const [{ data: unit }, { data: checks }, { data: previousArchive }, { data: crew }, { data: comment }] = await Promise.all([
     supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(id, name, kit_items(id, par_level, input_type, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
     supabase.from("compartment_checks").select("compartment_id, unit_kit_id, status").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
     supabase.from("shift_archives").select("completed_compartments, total_compartments, completion_percentage, check_data").eq("unit_id", id).eq("shift_date", previousShift.shiftDate).eq("shift_period", previousShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_crews").select("provider_names, locked").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
+    supabase.from("daily_unit_comments").select("comment").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
   ]);
   const compartments = (unit?.unit_compartments ?? []).map((compartment: any) => ({
     id: compartment.id,
@@ -125,6 +127,27 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
             {previousArchive ? `${previousArchive.completed_compartments} of ${previousArchive.total_compartments} done (${previousArchive.completion_percentage}%)` : "No previous shift archive found"}
           </p>
         </div>
+
+        <form action={saveDailyUnitComment} className="rounded-3xl bg-white p-5 shadow-sm">
+          <input name="unitId" type="hidden" value={id} />
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-700">Daily Unit Comments</p>
+            <h2 className="mt-1 text-2xl font-black">Unit Comments</h2>
+            <p className="mt-2 text-sm text-slate-600">Optional notes for this unit checkoff. Only saved comments will appear on records and printed checksheets.</p>
+          </div>
+          <textarea
+            className="mt-4 min-h-32 w-full rounded-2xl border border-slate-300 px-4 py-3 text-base outline-none ring-red-500 focus:ring-4"
+            defaultValue={comment?.comment ?? ""}
+            maxLength={2000}
+            name="comment"
+            placeholder="Add daily unit notes..."
+          />
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Save Comment</button>
+            <button className="rounded-2xl border border-slate-300 px-5 py-3 font-bold text-slate-700" name="intent" type="submit" value="clear">Clear Comment</button>
+            <span className="text-xs font-semibold text-slate-500">Maximum 2,000 characters.</span>
+          </div>
+        </form>
       </section>
     </main>
   );

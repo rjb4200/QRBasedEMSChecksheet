@@ -9,6 +9,13 @@ export default async function ArchiveDetailPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const supabase = await createClient();
   const { data: archive } = await supabase.from("shift_archives").select("*, units(name), shift_calendar(shift_name), users(full_name, email)").eq("id", id).single();
+  const { data: comment } = archive ? await supabase
+    .from("daily_unit_comments")
+    .select("comment")
+    .eq("unit_id", archive.unit_id)
+    .eq("shift_date", archive.shift_date)
+    .eq("shift_period", archive.shift_period)
+    .maybeSingle() : { data: null };
   const unit = Array.isArray(archive?.units) ? archive?.units[0] : archive?.units;
   const shift = Array.isArray(archive?.shift_calendar) ? archive?.shift_calendar[0] : archive?.shift_calendar;
   const checkedBy = Array.isArray(archive?.users) ? archive?.users[0] : archive?.users;
@@ -30,6 +37,12 @@ export default async function ArchiveDetailPage({ params }: { params: Promise<{ 
           <div><p className="text-xs font-black uppercase text-slate-500">Checked By</p><p className="font-bold">{checkedBy?.full_name ?? checkedBy?.email ?? "Not recorded"}</p></div>
           <div><p className="text-xs font-black uppercase text-slate-500">Operational Date</p><p className="font-bold">{archive?.operational_date ?? archive?.shift_date ?? "Not recorded"}</p></div>
         </section>
+        {comment?.comment?.trim() ? (
+          <section className="rounded-3xl bg-white p-5 shadow-sm">
+            <p className="text-xs font-black uppercase text-slate-500">Unit Comments</p>
+            <p className="mt-2 whitespace-pre-wrap font-semibold text-slate-700">{comment.comment.trim()}</p>
+          </section>
+        ) : null}
         <section className="rounded-3xl bg-white p-5 shadow-sm">
           <h2 className="text-2xl font-black">Compartment Data</h2>
           <pre className="mt-4 overflow-auto rounded-2xl bg-slate-950 p-4 text-xs text-white">{JSON.stringify(checks, null, 2)}</pre>

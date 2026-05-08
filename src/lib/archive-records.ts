@@ -23,6 +23,7 @@ export type DailyUnitRecord = {
   totalCompartments: number;
   completionPercentage: number;
   providerNames: string;
+  comments: string;
   crewLocked: boolean;
   startedAt: string | null;
   submittedAt: string | null;
@@ -93,6 +94,13 @@ type CrewRow = {
   provider_names: string | null;
   locked: boolean | null;
   units?: { name: string } | { name: string }[] | null;
+};
+
+type CommentRow = {
+  shift_date: string;
+  shift_period: string;
+  unit_id: string;
+  comment: string | null;
 };
 
 function toDateInputValue(date: Date) {
@@ -210,7 +218,17 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
     checksQuery = checksQuery.eq("unit_id", params.unitId);
   }
 
-  const [{ data: units }, { data: ledgers }, { data: archives }, { data: crews }, { data: checks }] = await Promise.all([
+  let commentsQuery = supabase
+    .from("daily_unit_comments")
+    .select("shift_date, shift_period, unit_id, comment")
+    .gte("shift_date", range.from)
+    .lte("shift_date", range.to);
+
+  if (params.unitId) {
+    commentsQuery = commentsQuery.eq("unit_id", params.unitId);
+  }
+
+  const [{ data: units }, { data: ledgers }, { data: archives }, { data: crews }, { data: checks }, { data: comments }] = await Promise.all([
     unitsQuery,
     ledgerQuery,
     supabase
@@ -225,6 +243,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
       .gte("shift_date", range.from)
       .lte("shift_date", range.to),
     checksQuery,
+    commentsQuery,
   ]);
 
   const unitRows = (units ?? []) as UnitRow[];
@@ -233,6 +252,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
   const checkRows = (checks ?? []) as CheckRow[];
   const archiveMap = new Map(archiveRows.map((archive) => [`${archive.unit_id}:${archive.shift_date}:${archive.shift_period}`, archive]));
   const crewMap = new Map(((crews ?? []) as CrewRow[]).map((crew) => [`${crew.unit_id}:${crew.shift_date}:${crew.shift_period}`, crew]));
+  const commentMap = new Map(((comments ?? []) as CommentRow[]).map((comment) => [`${comment.unit_id}:${comment.shift_date}:${comment.shift_period}`, comment.comment?.trim() ?? ""]));
   const dates = eachDate(new Date(`${range.from}T00:00:00.000Z`), new Date(`${range.to}T00:00:00.000Z`)).reverse();
   const ledgerMap = new Map<string, LedgerRow[]>();
   const checkMap = new Map<string, CheckRow[]>();
@@ -255,6 +275,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
       for (const ledger of ledgersForDate) {
         const archive = archiveMap.get(`${ledger.unit_id}:${date}:daily`);
         const crew = crewMap.get(`${ledger.unit_id}:${date}:daily`);
+        const comments = commentMap.get(`${ledger.unit_id}:${date}:daily`) ?? "";
         const crewLocked = Boolean(crew?.locked && crew.provider_names?.trim());
         const baseTotal = archive?.total_compartments ?? ledger.total_compartments;
         const baseCompleted = archive?.completed_compartments ?? 0;
@@ -278,6 +299,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
           totalCompartments,
           completionPercentage,
           providerNames: crew?.provider_names ?? "",
+          comments,
           crewLocked,
           startedAt: archive?.started_at ?? null,
           submittedAt: archive?.submitted_at ?? null,
@@ -314,6 +336,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
     for (const unit of Array.from(fallbackUnits.values()).sort((a, b) => a.name.localeCompare(b.name))) {
       const archive = archiveMap.get(`${unit.id}:${date}:daily`);
       const crew = crewMap.get(`${unit.id}:${date}:daily`);
+      const comments = commentMap.get(`${unit.id}:${date}:daily`) ?? "";
       const crewLocked = Boolean(crew?.locked && crew.provider_names?.trim());
       const checksForUnit = checkMap.get(`${unit.id}:${date}:daily`) ?? [];
       const baseTotal = archive?.total_compartments ?? checksForUnit.length;
@@ -338,6 +361,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
         totalCompartments,
         completionPercentage,
         providerNames: crew?.provider_names ?? "",
+        comments,
         crewLocked,
         startedAt: archive?.started_at ?? null,
         submittedAt: archive?.submitted_at ?? null,
@@ -401,6 +425,7 @@ export function archiveRecordToCsv(records: DailyUnitRecord[]) {
     "Total Compartments",
     "Completion Percentage",
     "Crew Names",
+    "Comments",
     "Crew Locked",
     "Started At",
     "Submitted At",
@@ -431,6 +456,7 @@ export function archiveRecordToCsv(records: DailyUnitRecord[]) {
       record.totalCompartments,
       record.completionPercentage,
       record.providerNames,
+      record.comments,
       record.crewLocked ? "yes" : "no",
       record.startedAt,
       record.submittedAt,

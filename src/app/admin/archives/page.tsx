@@ -64,7 +64,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                 <Link className="rounded-2xl border border-slate-300 px-4 py-2 text-center text-sm font-bold" href={`/admin/checksheets/print?date=${group.date}`}>Print Check Sheets</Link>
               </summary>
               <div className="overflow-x-auto border-t border-slate-200">
-                <table className="w-full min-w-[1250px] text-left text-sm">
+                <table className="w-full min-w-[1350px] text-left text-sm">
                   <thead className="bg-slate-950 text-white">
                     <tr>
                       <th className="p-4">Unit</th>
@@ -75,6 +75,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                         <th className="p-4">Completed</th>
                         <th className="p-4">Completion</th>
                         <th className="p-4">Crew</th>
+                        <th className="p-4">Comments</th>
                         <th className="p-4">Shift</th>
                         <th className="p-4">Started</th>
                         <th className="p-4">Submitted</th>
@@ -86,7 +87,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                   <tbody>
                     {group.records.length === 0 ? (
                       <tr className="border-t border-slate-200">
-                        <td className="p-4 text-slate-500" colSpan={14}>No unit ledger was saved for this day.</td>
+                        <td className="p-4 text-slate-500" colSpan={15}>No unit ledger was saved for this day.</td>
                       </tr>
                     ) : null}
                     {group.records.map((record) => (
@@ -99,6 +100,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                         <td className="p-4 font-semibold">{record.completedCompartments}/{record.totalCompartments}</td>
                         <td className="p-4 font-semibold">{record.completionPercentage}%</td>
                         <td className="p-4 font-semibold">{record.crewLocked ? record.providerNames || "Locked" : "Not locked"}</td>
+                        <td className="max-w-xs whitespace-pre-wrap p-4 text-slate-600">{record.comments || "-"}</td>
                         <td className="p-4 font-semibold">{record.shiftName}</td>
                         <td className="p-4 text-slate-600">{formatTimestamp(record.startedAt)}</td>
                         <td className="p-4 text-slate-600">{formatTimestamp(record.submittedAt)}</td>
