@@ -99,6 +99,10 @@ function latestIso(values: Array<string | null | undefined>) {
   return new Date(Math.max(...timestamps)).toISOString();
 }
 
+function isFleetPanelVisibleUnit(unit: { archived: boolean; status: string }) {
+  return !unit.archived && (unit.status === "in_service" || unit.status === "out_of_service");
+}
+
 export async function getFleetStatus(supabase: SupabaseClient) {
   const shift = getCurrentShift();
 
@@ -153,7 +157,7 @@ export async function getFleetStatus(supabase: SupabaseClient) {
     ]
     : unitRows.map((unit) => ({ ...unit, archived: false, statusNote: null, ledgerTotalCompartments: null }));
 
-  return unitSources.map((unit) => {
+  return unitSources.filter(isFleetPanelVisibleUnit).map((unit) => {
     const unitChecks = checkRows.filter((check) => check.unit_id === unit.id);
     const crew = crewMap.get(unit.id);
     const crewComplete = Boolean(crew?.locked && isNonBlank(crew.provider_names));
