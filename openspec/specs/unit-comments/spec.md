@@ -1,0 +1,48 @@
+## Requirements
+
+### Requirement: Crew can add comments to daily checkoff
+The system SHALL allow crews to add text comments to their daily unit checkoff. Comments MUST be stored with the daily unit record and included in the daily ledger snapshot.
+
+#### Scenario: Crew adds comments during checkoff
+- **WHEN** a crew member enters text in the comments field on the unit checkoff page
+- **THEN** the comments SHALL be saved to the daily_units table
+- **AND** the comments SHALL appear in subsequent viewing of that day's checkoff
+
+#### Scenario: Crew leaves comments blank
+- **WHEN** a crew member does not enter any text in the comments field
+- **THEN** no comments data SHALL be stored for that day's checkoff
+
+### Requirement: Comments display conditionally on unit page
+The system SHALL display the comments section on the unit viewing page only when comments have been entered. The section MUST appear above the "Past exceptions" and "Previous shift" sections.
+
+#### Scenario: Display when comments exist
+- **WHEN** a user views a unit page that has comments stored
+- **THEN** the comments section SHALL be displayed
+- **AND** the comments text SHALL be visible
+
+#### Scenario: Hide when no comments exist
+- **WHEN** a user views a unit page that has no comments stored
+- **THEN** the comments section SHALL NOT be displayed
+- **AND** the page layout SHALL NOT show an empty comments section
+
+### Requirement: Comments appear in records view
+The system SHALL display comments in the supervisor records view when comments exist for the selected date range.
+
+#### Scenario: Records view shows comments
+- **WHEN** a supervisor views the records page for a date with units that have comments
+- **THEN** the comments SHALL be visible in the unit details within the records view
+
+#### Scenario: Records view hides empty comments
+- **WHEN** a supervisor views the records page for a date with units that have no comments
+- **THEN** no empty comments sections SHALL be displayed
+
+### Requirement: Comments included in print output
+The system SHALL include comments in the check sheet print output only when comments have been entered.
+
+#### Scenario: Print includes comments when present
+- **WHEN** a user generates a printout for a unit that has comments
+- **THEN** the comments SHALL appear in the printed document
+
+#### Scenario: Print excludes comments when blank
+- **WHEN** a user generates a printout for a unit that has no comments
+- **THEN** no comments section SHALL appear in the printed document
