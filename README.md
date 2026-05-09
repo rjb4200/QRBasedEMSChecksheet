@@ -1,18 +1,21 @@
 # QR-Based EMS Checksheet
 
-Mobile-first EMS vehicle checkoff application for QR-based compartment inspections, fleet readiness tracking, and admin-managed unit/equipment configuration.
+Mobile-first EMS vehicle checkoff application for QR-based compartment and shared-kit inspections, fleet readiness tracking, daily reporting, and admin-managed unit/equipment configuration.
 
 ## Features
 
 - Public crew checkoff workflow at `/units` with no login required.
-- QR codes route directly to compartment checkoff forms.
-- Admin dashboard for fleet status, records, units, equipment, and QR printing.
+- QR codes route directly to unit, compartment, and assigned-kit checkoff forms.
+- Admin dashboard for fleet status, records, units, equipment, kits, users, and QR printing.
 - Unit layouts can be created from scratch or copied from existing units.
+- Shared kits provide reusable equipment layouts that can be assigned to multiple units.
 - Equipment catalog with reusable items, input types, categories, and par levels.
 - Full-sheet and individual QR code printing.
+- Fleet print packet at `/admin/checksheets/print` with a compact three-column checksheet layout.
+- Daily email reports through Resend with unchecked units, submitted exceptions, and Fleet-print-aligned PDF attachments.
 - Supabase-backed PostgreSQL database, Auth, Storage, and Row Level Security.
 - Username/password admin login with supervisor access support through Supabase Auth roles.
-- Daily checkoff state, shift archive support, and completion status tracking.
+- Daily checkoff state, crew names, daily unit comments, shift archive support, and completion status tracking.
 
 ## Tech Stack
 
@@ -23,6 +26,7 @@ Mobile-first EMS vehicle checkoff application for QR-based compartment inspectio
 - Supabase PostgreSQL/Auth/Storage
 - QR code generation with `qrcode`
 - Camera scanning with `html5-qrcode`
+- PDF generation with `pdfkit`
 - Daily email delivery with Resend
 
 ## Getting Started
@@ -92,17 +96,27 @@ Key tables include:
 - `unit_compartments`
 - `unit_compartment_items`
 - `equipment_catalog`
+- `kits`
+- `kit_items`
+- `unit_kits`
 - `compartment_checks`
+- `shift_archives`
+- `daily_unit_ledgers`
+- `daily_unit_crews`
+- `daily_unit_comments`
+- `admin_users`
 - `users`
 - `user_roles`
+- `daily_email_report_runs`
 
 Admin server actions use `SUPABASE_SERVICE_ROLE_KEY`, so keep that key server-only.
 
 ## Access Model
 
-- Crew unit selection and compartment checkoffs are public.
+- Crew unit selection and compartment/kit checkoffs are public.
 - Admin routes require the configured username/password admin session.
 - Supervisor routes use Supabase authentication and `supervisor` role in `user_roles`.
+- Daily report delivery sends to admin users with a valid email address and daily-report opt-in enabled.
 
 ## QR Codes
 
@@ -116,14 +130,14 @@ The QR page supports:
 
 - Expand/collapse sections for large unit layouts.
 - Printing all QR codes for a unit.
-- Printing an individual compartment QR code.
+- Printing an individual compartment or assigned-kit QR code.
 
 ## Deployment Notes
 
 - Configure the same environment variables in your hosting provider.
 - `NEXT_PUBLIC_APP_URL` should match the deployed application URL so QR codes point to the correct host.
 - Keep Supabase service role keys out of client code and public repositories.
-- Configure the scheduler to call `/api/cron/daily-email-report` daily at 1000 with `Authorization: Bearer {CRON_SECRET}`.
+- Configure the scheduler to call `/api/cron/daily-email-report` daily at 1000 or hourly with `Authorization: Bearer {CRON_SECRET}`.
 
 ## Daily Email Reports
 
@@ -131,9 +145,10 @@ The app owns daily report delivery through Resend. Reports are sent to admin use
 
 Daily reports include:
 
-- Unchecked in-service units
-- Submitted exceptions
-- A PDF attachment with all unit check sheets for the report date
+- Unchecked in-service units.
+- Submitted exceptions.
+- A PDF attachment with all unit check sheets for the report date.
+- The PDF attachment is generated from the same checksheet document data used by the Fleet print packet and is formatted to match the compact three-column Fleet print layout.
 
 ### Resend Setup
 
@@ -142,7 +157,7 @@ Daily reports include:
 3. Add the required DNS records for domain verification, SPF, and DKIM.
 4. Create a production API key.
 5. Add `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `DAILY_REPORT_TIMEZONE`, `DAILY_REPORT_SEND_HOUR`, and `CRON_SECRET` to production environment variables.
-6. Add report recipient emails on `/admin/users`.
+6. Add report recipient emails on `/admin/users` and enable daily reports for the appropriate admins.
 
 ### Manual Cron Test
 
@@ -181,7 +196,7 @@ The scheduled caller must send `Authorization: Bearer {CRON_SECRET}`. If the pla
 
 Set these in Cloudflare Pages or Workers before deploying:
 
-- Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_APP_URL`, `RESEND_FROM_EMAIL`, `DAILY_REPORT_TIMEZONE`
+- Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_APP_URL`, `RESEND_FROM_EMAIL`, `DAILY_REPORT_TIMEZONE`, `DAILY_REPORT_SEND_HOUR`
 - Secrets: `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CRON_SECRET`
 
 For Cloudflare Pages, use **Settings > Environment variables** and add values for both **Production** and **Preview** as needed.
@@ -195,6 +210,12 @@ wrangler secret put CRON_SECRET
 ```
 
 Then configure the public variables in your Cloudflare project settings. Do not put `SUPABASE_SERVICE_ROLE_KEY` in `NEXT_PUBLIC_*` variables.
+
+## Documentation
+
+- `USERGUIDE.md` explains the crew checkoff workflow.
+- `ADMINGUIDE.md` explains admin workflows and system management.
+- A future `DATABASEGUIDE.md` is planned to document schema, stored data, and database optimization/maintenance details.
 
 ## License
 
