@@ -75,12 +75,12 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
         </button>
       </div>
 
-      <div className="grid gap-3 print:grid-cols-3 print:gap-3">
+      <div className="grid gap-3 print:grid-cols-2 print:gap-0">
         {codes.map((code) => {
           const expanded = expandedIds.has(code.id);
 
           return (
-            <article id={`qr-${code.id}`} key={code.id} className="qr-card break-inside-avoid rounded-3xl border border-slate-300 bg-white p-4 print:rounded-xl print:p-3">
+            <article id={`qr-${code.id}`} key={code.id} className="qr-card break-inside-avoid rounded-3xl border border-slate-300 bg-white p-4 print:rounded-none print:border-none print:p-1 print:w-[288px] print:h-[288px] print:mx-auto">
               <button className="flex w-full items-center justify-between gap-4 text-left print:hidden" onClick={() => toggle(code.id)} type="button">
                   <span>
                     <span className="block text-lg font-black">{code.name}</span>
@@ -91,10 +91,10 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
               </button>
 
               <div className={`${expanded ? "mt-4" : "hidden"} text-center print:mt-0 print:block`}>
-                <img alt={`${unitName} ${code.name} QR code`} className="mx-auto h-56 w-56 print:h-40 print:w-40" src={code.dataUrl} />
-                <h2 className="mt-4 text-xl font-black print:text-base">{unitName}</h2>
-                <p className="font-semibold text-slate-700 print:text-sm">{code.name}</p>
-                <p className="mt-1 font-mono text-sm font-black text-red-700 print:text-xs">Code: {code.code}</p>
+                <img alt={`${unitName} ${code.name} QR code`} className="mx-auto h-56 w-56 print:h-[216px] print:w-[216px]" src={code.dataUrl} />
+                <h2 className="mt-4 text-xl font-black print:text-xs print:mt-0.5">{unitName}</h2>
+                <p className="font-semibold text-slate-700 print:text-xs">{code.name}</p>
+                <p className="mt-1 font-mono text-sm font-black text-red-700 print:hidden">Code: {code.code}</p>
                 <p className="mt-2 break-all text-xs text-slate-500 print:hidden">{code.url}</p>
                 <PrintSingleQrButton targetId={`qr-${code.id}`} />
               </div>
