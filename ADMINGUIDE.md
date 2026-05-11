@@ -1,408 +1,368 @@
 # EMS Checksheet Admin Guide
 
-## Table of Contents
+This guide covers the day-to-day admin side of the QR-Based EMS Checksheet system.
 
-1. [Introduction](#introduction)
-2. [Admin Pages Overview](#admin-pages-overview)
-3. [Do's and Don'ts](#dos-and-donts)
-4. [Common Tasks](#common-tasks)
-5. [System Features](#system-features)
+The admin panel is used to manage units, compartments, shared kits, equipment, QR codes, check records, users, and fleet readiness.
 
----
+The system is designed to keep the crew workflow simple while giving supervisors and admins better visibility into fleet status and accountability.
 
-## Introduction
+## Admin Areas
 
-### What is the Admin Panel?
+### Fleet
 
-The admin panel is where you manage the EMS Checksheet system. This is where you configure units, equipment, compartments, and monitor fleet status.
+Route:
 
-### Who Can Access?
+```text
+/admin/fleet
+```
 
-Admin access is restricted to authorized personnel only. Access requires authentication through the User Management section.
+The Fleet page is the operational overview for the system.
 
-### Your Responsibilities
+From here you can quickly see:
 
-As an admin, you are responsible for:
-- Adding and configuring new units
-- Managing the equipment catalog
-- Building and organizing compartments
-- Building and assigning shared kits
-- Monitoring fleet readiness
-- Generating reports and printouts
+- which units are complete
+- which units still need checks
+- units with exceptions
+- below-par counts
+- comments
+- crew names
+- daily readiness status
 
----
+The Fleet page is intended to answer:
 
-## Admin Pages Overview
+```text
+What still needs attention right now?
+```
 
-### Fleet Page (`/admin/fleet`)
+### Units
 
-The Fleet page provides an overview of your entire fleet's status.
+Route:
 
-**Features:**
-- View all units and their current status
-- See completion percentages for each unit
-- Filter by status (all, ready, needs attention)
-- Quick access to individual unit checkoffs
-- Exception summary showing items below par
+```text
+/admin/units
+```
 
-**Status Indicators:**
-- **Ready** - Unit has been checked off and has no exceptions
-- **Incomplete** - Checkoff not finished for the day
-- **Has Exceptions** - Items are below par and need attention
+This is where units are created and managed.
 
----
+Typical tasks:
 
-### Units Page (`/admin/units`)
+- create units
+- edit unit names
+- configure compartments
+- assign shared kits
+- print QR codes
+- archive retired/OOS units
+- restore archived units
+- clone layouts from another unit
 
-The Units page is where you create and manage individual vehicles.
+Units can contain:
 
-**Features:**
-- Create new units with custom names
-- Configure compartments for each unit
-- Assign shared kits to units
-- Set up photos for visual identification
-- Archive units that are out of service (OOS)
-- View unit checkoff history
+- direct compartments
+- assigned shared kits
+- photos/logos
+- monthly check reminder dates
 
-**Unit Configuration Options:**
-- Unit name (e.g., "EC5", "Medic 1")
-- Status: Active or OOS (Out of Service)
-- Compartments with custom equipment assignments
-- Shared kits assigned by reference
+Archived units are preserved historically and can be restored later.
 
----
+### Kits
 
-### Kits Page (`/admin/kits`)
+Route:
 
-The Kits page is where you manage shared equipment layouts that can be assigned to multiple units.
+```text
+/admin/kits
+```
 
-**Features:**
-- Create reusable kits
-- Add equipment from the catalog to a kit
-- Edit kit name, description, sort order, active status, and photo
-- Copy an existing kit
-- Create a kit from an existing compartment
-- See which units currently use each kit
-- Prevent deleting kits that are still assigned to units
+Kits are reusable equipment layouts shared across multiple units.
 
-**Important:** Kits are shared. Editing a kit changes that kit everywhere it is assigned. Unit pages show assigned kits as read-only; use the Kits page to edit kit contents.
+Examples:
 
----
+- airway bag
+- narc box
+- monitor checks
+- cabinet layouts
+- supply bags
 
-### Checksheets Page (`/admin/checksheets`)
+Important:
 
-The Checksheets page displays completed checkoff records.
+Editing a shared kit updates it everywhere that kit is assigned.
 
-**Features:**
-- View all historical checkoffs by date
-- Filter by unit
-- See crew names who performed each checkoff
-- Review exceptions and comments
-- Print daily checksheets
-- Export historical records
+Use a compartment instead of a kit when a unit needs a custom one-off layout.
 
-**Print Options:**
-- Daily checksheet with current day's values
-- Historical records with date range selection
-
----
-
-### Equipment Catalog Page (`/admin/equipment`)
+The Kits page supports:
 
-The Equipment Catalog is where you define all equipment items used in checkoffs.
+- creating kits
+- editing kit items
+- assigning photos
+- cloning kits
+- creating kits from compartments
+- viewing attached units
 
-**Features:**
-- Add new equipment to the catalog
-- Edit equipment properties (name, par level, input type)
-- Delete equipment not in use
-- Search equipment by name
-- Filter by category
-
-**Equipment Properties:**
-- **Name** - Description of the item
-- **Default Par Level** - Standard quantity needed
-- **Input Type** - How the item is counted:
-  - *Quantity* - Use stepper to enter count
-  - *Checkbox* - Binary done/not-done
-  - *Condition* - Status selector (Good/Fair/Poor)
-- **Category** - Grouping (Medical, PPE, Tools, etc.)
+### Equipment Catalog
 
----
+Route:
 
-### User Management Page (`/admin/users`)
+```text
+/admin/equipment
+```
 
-The User Management page controls admin access to the system.
+The Equipment Catalog is the master item list used throughout the system.
 
-**Features:**
-- View list of admin users
-- Add new admin users
-- Remove admin access
-- Reset admin passwords
-
-**Important:** Only authorized personnel should have admin access. Each admin user should have their own account for accountability.
+Equipment items can include:
 
----
+- quantity inputs
+- checkbox items
+- condition/status items
 
-## Do's and Don'ts
+Equipment properties include:
 
-### DO:
+- item name
+- category
+- default par level
+- input type
+- active status
 
-- ✅ Complete admin tasks during your shift as needed
-- ✅ Keep equipment catalog up to date with current items
-- ✅ Verify compartment configurations are accurate
-- ✅ Configure each compartment independently for the unit it belongs to
-- ✅ Use Kits for shared layouts that should stay identical across units
-- ✅ Review fleet status regularly to catch issues
-- ✅ Generate and review printouts for accuracy
-- ✅ Archive units properly when they go out of service
-- ✅ Document any system changes or issues
-- ✅ Test new configurations before relying on them
+Try to avoid duplicate items with slightly different names.
 
-### DON'T:
+### Checksheets / Records
 
-- ❌ Delete equipment that is assigned to active compartments
-- ❌ Remove a unit's compartments without a backup plan
-- ❌ Edit a shared kit without understanding every unit it is assigned to
-- ❌ Create duplicate equipment with different names
-- ❌ Leave equipment in the catalog that is no longer used
-- ❌ Give admin access to unauthorized personnel
-- ❌ Make changes to production during active checkoffs if possible
-- ❌ Ignore fleet status warnings
-- ❌ Share admin credentials
+Route:
 
----
+```text
+/admin/checksheets
+```
 
-## Common Tasks
+This area contains completed check records.
 
-### Adding New Equipment to Catalog
+Admins can:
 
-1. Navigate to `/admin/equipment`
-2. Click "Add Equipment" button
-3. Enter equipment name (e.g., "N95 Masks")
-4. Set default par level (e.g., 20)
-5. Select input type:
-   - Quantity (for countable items)
-   - Checkbox (for binary items)
-   - Condition (for quality assessment)
-6. Optionally select a category
-7. Click Save
+- review historical checks
+- filter by unit/date
+- print records
+- review comments
+- review exceptions
+- generate daily print packets
 
-**Note:** If equipment with the same name already exists, it will update that entry instead of creating a duplicate.
+The printable fleet packet is formatted for compact operational printing.
 
----
+### Users
 
-### Creating a New Unit
+Route:
 
-1. Navigate to `/admin/units`
-2. Click "Add Unit" button
-3. Enter unit name (e.g., "EC6")
-4. Click Create
-5. Add compartments:
-   - Click "Add Compartment"
-   - Enter compartment name (e.g., "Driver Side", "Narc Box")
-   - Add equipment from catalog to compartment
-   - Set sort order for items
-6. Configure additional compartments as needed
-7. Save changes
+```text
+/admin/users
+```
 
-**Tip:** Start with a minimal compartment setup and add more as needed.
+This area controls admin access.
 
----
+Admins can:
 
-### Building Compartments with Equipment
+- create admin users
+- remove admin access
+- manage report recipients
+- enable/disable daily report emails
 
-1. Navigate to `/admin/units` and select your unit
-2. Click "Add Compartment" or select existing compartment
-3. In the compartment, click "Add Item"
-4. Search and select equipment from the catalog
-5. Repeat for all items needed in this compartment
-6. Drag items to reorder as needed
-7. Set subcategories to group related items
+Only authorized personnel should have admin access.
 
-**Important:** Compartments are independent. Updating one compartment does not update any other compartment.
+## Daily Workflow
 
----
+A normal admin/supervisor workflow usually looks like:
 
-### Creating and Assigning Kits
+1. Review the Fleet page.
+2. Identify incomplete units.
+3. Review exceptions/comments.
+4. Follow up on missing or below-par equipment.
+5. Print records if needed.
+6. Review daily email reports.
 
-1. Navigate to `/admin/kits`
-2. Create a new kit or copy an existing compartment into a kit
-3. Open the kit and add equipment from the catalog
-4. Set each kit item's par level and sort order as needed
-5. Return to `/admin/units` and open the unit
-6. Use "Add kit to unit" to assign the kit
-7. Assigned kits appear with compartments but are read-only on the unit page
+## Compartments vs Kits
 
-**Shared Behavior:**
-- The kit exists once in the database
-- Each unit assignment references the same kit
-- Editing kit equipment affects every assigned unit
-- Each unit assignment has its own QR code and checkoff state
+This is one of the most important concepts in the system.
 
----
+### Compartments
 
-### Cloning a Kit Into a Compartment
+Compartments belong only to one unit.
 
-Use cloning when a kit is a useful starting point but a unit needs a custom version.
+Changing a compartment only affects that unit.
 
-1. Navigate to `/admin/units` and select a unit
-2. Use "Create compartment from kit"
-3. Choose the kit
-4. Optionally enter a new compartment name and sort order
-5. Submit the form
+Good for:
 
-The new compartment is independent. Later kit edits do not affect it.
+- custom layouts
+- unit-specific storage
+- special equipment setups
 
----
+### Kits
 
-### Printing Daily Checksheets
+Kits are shared.
 
-1. Navigate to `/admin/checksheets`
-2. Select the unit from the dropdown
-3. Select date range (default: today)
-4. Click "Print Checksheet"
-5. A printable view will open
-6. Use browser print (Ctrl+P) to print
+Changing a kit affects every unit using that kit.
 
-**What's Included:**
-- Unit name and date
-- Each compartment with items
-- Par levels and actual counts
-- Any exceptions highlighted
-- Comments if present
+Good for:
 
----
+- standard bags
+- repeated cabinet layouts
+- monitor checks
+- common inventory groups
 
-### Printing Historical Records
+If you are unsure whether something should be a kit or compartment:
 
-1. Navigate to `/admin/checksheets`
-2. Select the unit
-3. Choose date range (start and end dates)
-4. Click "View Records"
-5. Review the historical data
-6. Click "Print" to generate a printable report
+```text
+If multiple units should stay identical, use a kit.
+If the layout is unique to one truck, use a compartment.
+```
 
-**Use Cases:**
-- Monthly compliance reports
-- Auditing purposes
-- Supervisor reviews
+## QR Codes
 
----
+Each unit, compartment, and assigned kit can have QR codes.
 
-## System Features
+QR pages are available from the unit detail pages.
 
-### Units Management
+QR codes allow crews to:
 
-**Configuration Options:**
-- Unit name and identification
-- Compartment structure
-- Shared kit assignments
-- Photo for visual identification
-- OOS (Out of Service) status
+- jump directly into the right unit
+- open the correct compartment
+- open the correct assigned kit
 
-**Archive Feature:**
-When a unit is taken out of service:
-1. Open the unit in `/admin/units`
-2. Click "Archive Unit"
-3. Confirm the action
-4. Unit moves to archived status
-5. Does not appear in active fleet views
+This reduces navigation time and helps tie the check to the physical truck layout.
 
-**Restoring Archived Units:**
-Archived units can be restored to active status through the same interface.
+## Exceptions
 
----
+Exceptions are generated when items are:
 
-### Fleet Overview
+- below par
+- missing
+- newly below par compared to previous checks
 
-The Fleet page shows a summary of all units:
+The goal is visibility, not punishment.
 
-- **Total Units** - Count of all active units
-- **Completion Rate** - Percentage of units checked off today
-- **Exception Count** - Total items below par across fleet
+Crews should enter actual counts even if an item is short.
 
-**Filtering:**
-- Show all units
-- Show only incomplete
-- Show only with exceptions
+The admin side exists so supervisors can quickly identify:
 
----
+- missing equipment
+- repeat shortages
+- incomplete checks
+- operational readiness problems
 
-### Checksheet Management
+## Daily Email Reports
 
-**Record Contents:**
-Each checksheet record contains:
-- Timestamp
-- Crew names
-- Compartment and kit item status
-- Actual counts vs par levels
-- Comments from crew
-- Completion status
+The system can send automatic daily reports through Resend.
 
-**Retention:**
-Records are kept indefinitely unless deleted by admin.
+Reports can include:
 
----
+- unchecked units
+- submitted exceptions
+- PDF fleet packet attachments
 
-### Export/Import Functionality
+Reports are sent to admin users with:
 
-**Export Unit Layout:**
-1. Navigate to `/admin/units`
-2. Select the unit
-3. Click "Export Layout"
-4. Download JSON file with compartment structure
+- a valid email address
+- daily report delivery enabled
 
-**Import Unit Layout:**
-1. Navigate to `/admin/units`
-2. Click "Import Layout"
-3. Select JSON file
-4. Confirm import
-5. Review and adjust as needed
+The cron endpoint is:
 
-**Use Cases:**
-- Backup unit configurations
-- Copy configuration to new unit
-- Share configurations between admins
+```text
+/api/cron/daily-email-report
+```
 
----
+## Printing
 
-### Archive and OOS Features
+The system supports:
 
-**OOS (Out of Service):**
-- Units can be marked OOS when not in active use
-- OOS units don't require daily checkoffs
-- OOS units appear in fleet with OOS badge
+- fleet print packets
+- individual checksheets
+- QR print pages
+- historical print records
 
-**Archive:**
-- Archiving removes unit from active view
-- Archived data is preserved
-- Can be restored anytime
+The print layouts are designed for compact operational use.
 
-**Workflow:**
-1. Unit goes out of service → Mark OOS
-2. Unit retired from fleet → Archive
-3. Unit returns to service → Restore from archive
+## Archiving Units
 
----
+Units that are retired or no longer operational can be archived.
+
+Archiving:
+
+- removes the unit from normal active views
+- preserves historical check records
+- preserves compartment and kit relationships
+- allows later restoration if needed
+
+Archive units instead of deleting them.
+
+## Comments and Crew Names
+
+Crew names and comments are part of the permanent daily record.
+
+Comments should be used for:
+
+- broken equipment
+- supply problems
+- unusual findings
+- operational concerns
+- explanations for shortages
+
+Keep comments factual and operational.
+
+## Recommended Practices
+
+### Do
+
+- Keep layouts standardized where possible.
+- Use kits for repeated layouts.
+- Review exceptions daily.
+- Archive units instead of deleting them.
+- Keep the equipment catalog clean.
+- Test QR codes after layout changes.
+- Print and review checks periodically.
+- Review daily report emails.
+
+### Don't
+
+- Delete equipment that is still assigned.
+- Create duplicate catalog items unnecessarily.
+- Edit a shared kit without understanding what units use it.
+- Ignore repeated shortages.
+- Give admin access to unauthorized users.
+- Make major configuration changes during active morning checks if avoidable.
+
+## Common Questions
+
+### Why are some fields already filled in during checks?
+
+The system can carry forward recent values to speed up daily checks.
+
+Crews still need to verify the actual inventory.
+
+### Why use QR codes instead of paper?
+
+The goal is to make the correct workflow easier while improving accountability and visibility.
+
+### What happens if a crew leaves an item below par?
+
+The exception remains visible for supervisor review and follow-up.
+
+### Can kits be edited from the unit page?
+
+Assigned kits are generally read-only from the unit page. Shared kit content is managed from `/admin/kits`.
+
+### Should old units be deleted?
+
+No. Archive them so historical records stay intact.
 
 ## Quick Reference
 
-### Common Admin URLs
-- Fleet: `/admin/fleet`
-- Units: `/admin/units`
-- Kits: `/admin/kits`
-- Checksheets: `/admin/checksheets`
-- Equipment: `/admin/equipment`
-- Users: `/admin/users`
+### Main Admin Routes
 
-### Daily Admin Checklist
-- [ ] Review fleet status
-- [ ] Check for new exceptions
-- [ ] Verify completed checkoffs
-- [ ] Address any equipment issues
+| Area | Route |
+| --- | --- |
+| Fleet | `/admin/fleet` |
+| Units | `/admin/units` |
+| Kits | `/admin/kits` |
+| Equipment | `/admin/equipment` |
+| Checksheets | `/admin/checksheets` |
+| Users | `/admin/users` |
 
 ---
 
-**Document Version:** 1.0
-**Last Updated:** May 2026
-**For System Support:** Contact technical support
+**Document Version:** 1.1  
+**Last Updated:** May 2026  
+**For Support:** Contact the system administrator or supervising officer.
