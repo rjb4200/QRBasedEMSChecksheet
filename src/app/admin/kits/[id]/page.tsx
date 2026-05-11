@@ -2,6 +2,7 @@ import Link from "next/link";
 import { addKitItem, createKitGroup, deleteKit, deleteKitGroup, deleteKitItem, updateKit, updateKitGroup, updateKitItem, uploadKitPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { groupItems } from "@/lib/item-groups";
+import { SaveButton } from "@/components/save-feedback";
 
 function equipmentName(item: any) {
   const equipment = Array.isArray(item.equipment_catalog) ? item.equipment_catalog[0] : item.equipment_catalog;
@@ -45,7 +46,7 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
                 <label className="grid gap-1 font-bold">Description<textarea className="rounded-2xl border border-slate-300 px-4 py-3 font-normal" defaultValue={kit.description ?? ""} name="description" rows={3} /></label>
                 <label className="grid gap-1 font-bold">Sort order<input className="rounded-2xl border border-slate-300 px-4 py-3 font-normal" defaultValue={kit.sort_order ?? 0} name="sortOrder" type="number" /></label>
                 <label className="flex items-center gap-2 font-bold"><input defaultChecked={kit.active} name="active" type="checkbox" /> Active</label>
-                <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Save Kit</button>
+                <SaveButton className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white">Save Kit</SaveButton>
               </form>
 
               <form action={uploadKitPhoto} className="grid gap-3 rounded-3xl bg-white p-5 shadow-sm">
@@ -89,7 +90,7 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
                     <input name="groupId" type="hidden" value={group.id} />
                     <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.name} name="name" />
                     <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.sort_order ?? 0} name="sortOrder" type="number" />
-                    <button className="rounded-xl border border-slate-300 px-3 py-2 font-bold" type="submit">Save</button>
+                    <SaveButton className="rounded-xl border border-slate-300 px-3 py-2 font-bold">Save</SaveButton>
                   </form>
                   <form action={deleteKitGroup}>
                     <input name="kitId" type="hidden" value={id} />
@@ -139,7 +140,7 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
                     <option value="">Ungrouped</option>
                     {groups.map((group: any) => <option key={group.id} value={group.id}>{group.name}</option>)}
                   </select>
-                  <button className="rounded-xl border border-slate-300 bg-white px-3 py-2 font-bold" type="submit">Save</button>
+                  <SaveButton className="rounded-xl border border-slate-300 bg-white px-3 py-2 font-bold">Save</SaveButton>
                 </form>
                 <form action={deleteKitItem}>
                   <input name="kitId" type="hidden" value={id} />

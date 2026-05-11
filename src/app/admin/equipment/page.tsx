@@ -1,5 +1,6 @@
 import { deleteEquipment, saveEquipment } from "./actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { SaveButton } from "@/components/save-feedback";
 
 const inputTypes = ["quantity", "checkbox", "condition"] as const;
 
@@ -48,7 +49,7 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
             {inputTypes.map((type) => <option key={type} value={type}>{type}</option>)}
           </select>
           <input className="rounded-2xl border border-slate-300 px-4 py-3" min="0" name="defaultParLevel" placeholder="Par" step="1" type="number" />
-          <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Add</button>
+          <SaveButton className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white">Add</SaveButton>
         </form>
 
         <div className="grid gap-3">
@@ -62,7 +63,7 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
                   {inputTypes.map((type) => <option key={type} value={type}>{type}</option>)}
                 </select>
                 <input className="rounded-2xl border border-slate-300 px-4 py-3" name="defaultParLevel" defaultValue={item.default_par_level ?? ""} min="0" step="1" type="number" />
-                <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" type="submit">Save</button>
+                <SaveButton className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950">Save</SaveButton>
               </form>
               <form action={deleteEquipment} className="lg:col-start-5">
                 <input name="id" type="hidden" value={item.id} />
