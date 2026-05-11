@@ -19,7 +19,7 @@
 ## 4. Verify and test
 
 - [x] 4.1 Run typecheck and build to ensure no errors
-- [ ] 4.2 Test Print / Save as PDF in Chrome — verify 2-column layout
-- [ ] 4.3 Measure label cell size in the generated PDF
-- [ ] 4.4 Verify individual "Print This QR" output is unchanged
-- [ ] 4.5 Commit and push
+- [x] 4.2 Test Print / Save as PDF in Chrome — verify 2-column layout
+- [x] 4.3 Measure label cell size in the generated PDF
+- [x] 4.4 Verify individual "Print This QR" output is unchanged
+- [x] 4.5 Commit and push
