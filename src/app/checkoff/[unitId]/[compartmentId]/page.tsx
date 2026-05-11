@@ -4,6 +4,8 @@ import { takeOverCheckoff } from "./actions";
 import { CheckoffForm } from "./checkoff-form";
 import { getCurrentShift, type ShiftPeriod } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { shouldShowMonthlyCheckReminder } from "@/lib/monthly-check";
+import { MonthlyCheckReminderBanner } from "@/components/monthly-check-banner";
 
 function isStale(lastActivityAt?: string | null) {
   if (!lastActivityAt) return false;
@@ -69,7 +71,7 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
 
   const currentShift = getCurrentShift();
   const [{ data: unit }, { data: compartment }, { data: check }] = await Promise.all([
-    supabase.from("units").select("id, name, status").eq("id", unitId).is("deleted_at", null).single(),
+    supabase.from("units").select("id, name, status, monthly_check_day").eq("id", unitId).is("deleted_at", null).single(),
     supabase.from("unit_compartments").select("id, name, photo_url, unit_compartment_item_groups(id, name, sort_order, created_at), unit_compartment_items(id, group_id, sort_order, par_level, input_type, equipment_catalog(name))").eq("id", compartmentId).eq("unit_id", unitId).single(),
     supabase.from("compartment_checks").select("*, users(full_name, email)").eq("unit_id", unitId).eq("compartment_id", compartmentId).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
   ]);
@@ -131,6 +133,7 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-6 text-slate-950">
       <section className="mx-auto max-w-3xl space-y-5">
+        {shouldShowMonthlyCheckReminder(unit?.monthly_check_day ?? null) ? <MonthlyCheckReminderBanner /> : null}
         <div className="rounded-3xl bg-white p-5 shadow-sm">
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">{unit.name}</p>
           <h1 className="mt-2 text-3xl font-black">{compartment.name}</h1>

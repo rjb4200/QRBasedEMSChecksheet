@@ -4,6 +4,8 @@ import { ShiftResetWarning } from "./shift-reset-warning";
 import { saveDailyUnitComment } from "./actions";
 import { getCurrentShift, getPreviousShift, getShiftLabel } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { shouldShowMonthlyCheckReminder } from "@/lib/monthly-check";
+import { MonthlyCheckReminderBanner } from "@/components/monthly-check-banner";
 
 const statusStyles = {
   grey: "border-slate-300 bg-slate-200 text-slate-800",
@@ -47,7 +49,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   const currentShift = getCurrentShift();
   const previousShift = getPreviousShift();
   const [{ data: unit }, { data: checks }, { data: previousArchive }, { data: crew }, { data: comment }] = await Promise.all([
-    supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(id, name, kit_items(id, par_level, input_type, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
+    supabase.from("units").select("id, name, status, monthly_check_day, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(id, name, kit_items(id, par_level, input_type, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
     supabase.from("compartment_checks").select("compartment_id, unit_kit_id, status").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
     supabase.from("shift_archives").select("completed_compartments, total_compartments, completion_percentage, check_data").eq("unit_id", id).eq("shift_date", previousShift.shiftDate).eq("shift_period", previousShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_crews").select("provider_names, locked").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
@@ -91,6 +93,8 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
         {unit?.status !== "in_service" ? (
           <div className="rounded-3xl border border-red-200 bg-red-50 p-5 font-bold text-red-800">This unit is out of service.</div>
         ) : null}
+
+        {shouldShowMonthlyCheckReminder(unit?.monthly_check_day ?? null) ? <MonthlyCheckReminderBanner /> : null}
 
         <ShiftResetWarning />
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { addUnitCompartment, addUnitItem, assignKitToUnit, cloneKitToUnitCompartment, createCompartmentGroup, deleteCompartmentGroup, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, removeKitFromUnit, toggleUnitStatus, updateCompartmentGroup, updateUnitItemGroup, uploadCompartmentPhoto } from "../actions";
+import { addUnitCompartment, addUnitItem, assignKitToUnit, cloneKitToUnitCompartment, createCompartmentGroup, deleteCompartmentGroup, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, removeKitFromUnit, toggleUnitStatus, updateCompartmentGroup, updateUnitItemGroup, updateUnitMonthlyCheckDay, uploadCompartmentPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { groupItems } from "@/lib/item-groups";
 
@@ -7,7 +7,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const supabase = await createAdminClient();
   const [{ data: unit }, { data: equipment }, { data: sourceCompartments }, { data: kits }] = await Promise.all([
-    supabase.from("units").select("id, name, status, unit_compartments(id, name, sort_order, photo_url, unit_compartment_item_groups(id, name, sort_order, created_at), unit_compartment_items(id, group_id, sort_order, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(id, name, description, photo_url, kit_item_groups(id, name, sort_order, created_at), kit_items(id, group_id, par_level, input_type, sort_order, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
+    supabase.from("units").select("id, name, status, monthly_check_day, unit_compartments(id, name, sort_order, photo_url, unit_compartment_item_groups(id, name, sort_order, created_at), unit_compartment_items(id, group_id, sort_order, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(id, name, description, photo_url, kit_item_groups(id, name, sort_order, created_at), kit_items(id, group_id, par_level, input_type, sort_order, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
     supabase.from("equipment_catalog").select("id, name, default_par_level, input_type").order("name"),
     supabase.from("unit_compartments").select("id, name, units(name)").order("name"),
     supabase.from("kits").select("id, name, active").eq("active", true).order("name"),
@@ -32,6 +32,14 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                 <input name="id" type="hidden" value={unit.id} />
                 <input name="status" type="hidden" value={unit.status === "in_service" ? "out_of_service" : "in_service"} />
                 <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" type="submit">Toggle Status</button>
+              </form>
+              <form action={updateUnitMonthlyCheckDay} className="flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2">
+                <input name="id" type="hidden" value={unit.id} />
+                <label className="text-sm font-bold text-slate-600">
+                  Monthly Check Day
+                  <input className="ml-2 w-16 rounded-xl border border-slate-300 px-2 py-1 text-center" defaultValue={unit.monthly_check_day ?? ""} max={31} min={1} name="monthlyCheckDay" placeholder="- -" type="number" />
+                </label>
+                <button className="rounded-xl bg-red-700 px-3 py-1 text-sm font-bold text-white" type="submit">Set</button>
               </form>
             </div>
           ) : null}

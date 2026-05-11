@@ -106,6 +106,23 @@ export async function toggleUnitStatus(formData: FormData) {
   revalidatePath(`/admin/units/${parsed.id}`);
 }
 
+export async function updateUnitMonthlyCheckDay(formData: FormData) {
+  const parsed = z.object({
+    id: z.string().uuid(),
+    monthlyCheckDay: z.preprocess(
+      (val) => (val === "" || val === null ? null : Number(val)),
+      z.number().int().min(1).max(31).nullable(),
+    ),
+  }).parse({
+    id: formData.get("id"),
+    monthlyCheckDay: formData.get("monthlyCheckDay") || null,
+  });
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("units").update({ monthly_check_day: parsed.monthlyCheckDay }).eq("id", parsed.id);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/units/${parsed.id}`);
+}
+
 export async function deleteUnit(formData: FormData) {
   const id = z.string().uuid().parse(formData.get("id"));
   const supabase = createAdminClient();
