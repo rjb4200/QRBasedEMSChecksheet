@@ -1,270 +1,219 @@
 # EMS Checksheet User Guide
 
-## Table of Contents
+This guide is for crews using the QR-based EMS Checksheet system to complete daily unit checks.
 
-1. [Introduction](#introduction)
-2. [Getting Started](#getting-started)
-3. [Daily Checkoff Workflow](#daily-checkoff-workflow)
-4. [Understanding Exceptions](#understanding-exceptions)
-5. [Do's and Don'ts](#dos-and-donts)
-6. [Crew Names and Locking](#crew-names-and-locking)
-7. [Adding Comments](#adding-comments)
-8. [FAQ](#faq)
+The system is meant to be simple: pick the unit, check the compartments and assigned kits, document what is actually on the truck, and lock the check when it is complete.
 
----
+## Quick Start
 
-## Introduction
+1. Open the units page or scan a QR code on the unit.
+2. Select the correct unit if you are not taken there automatically.
+3. Enter the crew names for the shift.
+4. Work through each compartment and assigned kit.
+5. Count what is actually present. Do not assume yesterday's count is still correct.
+6. Leave any below-par or missing counts as they are so the system can flag the exception.
+7. Add a unit comment if there is something a supervisor needs to know.
+8. Lock the checkoff when the unit is complete.
 
-### What is the EMS Checksheet System?
+## Accessing a Unit
 
-The EMS Checksheet System is a digital tool used to perform daily equipment checkoffs on EMS vehicles. Every day, crew members are responsible for verifying that all equipment is present, in working condition, and properly stocked according to par levels.
+Standard crew checkoffs do not require an admin login.
 
-**Purpose:**
-- Ensure all necessary medical equipment is available for patient care
-- Identify missing or damaged equipment before it's needed
-- Maintain accurate records of vehicle equipment status
-- Support supervisor oversight of fleet readiness
+You can access a unit in two ways:
 
-**Why It Matters:**
-A complete checkoff ensures that when you respond to an emergency, you have the equipment you need. Missing or depleted items can impact patient care and create liability issues.
+- Go to the main units page and choose the unit.
+- Scan a QR code on the vehicle.
 
----
+QR codes may open:
 
-## Getting Started
+- the unit check sheet
+- a specific compartment
+- an assigned kit
 
-### How to Access the System
+Use the QR code closest to the area you are checking when possible. It is faster and helps make sure the check is tied to the right physical location.
 
-1. **Web Access:** Open your browser and navigate to the unit checkoff page
-2. **QR Code Scanning:** Each vehicle has a QR code that links directly to that unit's checkoff page
+## What You Will See
 
-### Finding Your Unit
+Each unit page may include:
 
-1. On the main units page, locate your vehicle in the list
-2. Each unit shows its name and current checkoff status
-3. Tap on a unit or scan its QR code to begin a checkoff
+- crew name entry
+- compartments
+- assigned kits
+- completion status
+- exception summary
+- previous-shift values
+- comments
+- lock/complete controls
 
-### First Time Setup
-
-- No login required for standard crew checkoffs
-- The system automatically tracks which units have been checked
-- Your crew names will be saved for future checkoffs
-
----
+Compartments are unit-specific areas. Kits are shared layouts assigned to units. A kit may appear on more than one unit, but the checkoff record is still saved for the unit you are checking.
 
 ## Daily Checkoff Workflow
 
-Follow these steps to complete a proper daily checkoff:
+### 1. Confirm the Unit
 
-### Step 1: Access the Unit
+Before entering anything, make sure the page is for the correct unit.
 
-- Scan the QR code on your vehicle OR
-- Navigate to the units page and select your vehicle
+This matters most when scanning QR codes or moving between several trucks.
 
-### Step 2: Review Crew Names
+### 2. Enter Crew Names
 
-- Enter the names of all crew members on shift
-- Use the lock icon to save crew names
-- Crew names count toward completing the checkoff percentage
+Enter the crew members assigned to the unit for the shift.
 
-### Step 3: Check Each Compartment
+Lock or save the crew names when finished. Crew names help supervisors know who completed the check and are part of the daily checkoff record.
 
-The system displays all compartments for your vehicle. For each compartment:
+### 3. Check Compartments and Kits
 
-1. **Review the item list** - Each item shows its name and par level
-2. **Count actual inventory** - Verify the actual quantity on the vehicle
-3. **Mark as checked** - Ensure the checkbox is marked for each item
-4. **Adjust quantities** - If the count differs from par, adjust the number
+For each compartment or assigned kit:
 
-**Default Values:**
-- Items default to the values from the previous day's checkoff (within the last 7 days)
-- If no recent check exists, items default to par levels
+- review each item
+- count the actual quantity on the unit
+- check boxes only when the item is actually present or the task is actually done
+- update quantity fields if the count is different
+- submit or save the section before moving on
 
-### Step 4: Handle Exceptions
+Some fields may already be filled in from a recent previous check. Treat those as a starting point, not proof that the item is still there.
 
-If an item is below par or missing:
-- The system will flag it as an exception
-- Exceptions are shown in the exceptions panel
-- You do not need to fix exceptions - just document them by leaving the count as-is
+### 4. Handle Exceptions
 
-### Step 5: Add Comments (if needed)
+An exception is usually created when an item is below par or missing.
 
-If there are issues to communicate to supervisors:
-- Use the comments field at the bottom of the unit page
-- Comments appear on records and printouts
-- Leave blank if no additional information needed
+If the par for an item is 4 and you only find 2, enter 2. Do not change the count to 4 just to clear the exception.
 
-### Step 6: Complete the Checkoff
+The exception tells supervisors what needs attention.
 
-- Once all items are checked, tap the lock icon to complete
-- The checkoff is now saved and recorded for the day
-- Each unit must be checked off separately
+### 5. Add Comments When Needed
 
----
+Use the comment area for information that is not obvious from the item counts.
 
-## Understanding Exceptions
+Good comments include:
 
-### What is an Exception?
+- equipment damaged or not working
+- supply issue that needs follow-up
+- reason an item is below par
+- issue found during the check
+- anything that should carry forward to a supervisor review
 
-An exception occurs when the actual count of an item is **below its par level**. This indicates the item needs to be restocked or replaced.
+Keep comments factual and short.
 
-**Exception Types:**
+### 6. Lock the Checkoff
 
-| Status | Meaning | Badge Color |
-|--------|---------|--------------|
-| Below Par | Item count is less than required | Red badge with count |
-| New Exception | Exception not present in yesterday's check | Orange badge with count |
-| Missing | Item count is 0 | Red badge |
+When the unit is complete, use the lock/complete control.
 
-### How to Handle Exceptions
+A check is not considered finished just because some items were opened or edited. Locking the checkoff marks the unit as complete for the day.
 
-1. **Document, don't fix** - Adjust the count to match what you actually have
-2. **Exception stays visible** - The system tracks exceptions for supervisor review
-3. **New vs Existing** - New exceptions are flagged so supervisors know what just appeared
-4. **No action needed** - You don't need to restock during your shift; supervisors handle replenishment
+## Previous-Shift Values
 
-### Example
+The system may populate item values from a recent previous check.
 
-If the par level for "Oxygen Mask" is 4, but you only find 2:
-- Enter "2" in the count field
-- The system marks this as an exception
-- Supervisor will see it on the exceptions panel
+This saves time, but it does not replace the actual check. If a value is carried forward, verify it before moving on.
 
----
+If a carried-forward value is below par or missing, the system may highlight it so it is not overlooked.
+
+## Exceptions
+
+Exceptions are not a punishment. They are how the system shows that something needs attention.
+
+Common examples:
+
+| Exception | What it means |
+| --- | --- |
+| Below par | The count is less than the required par level. |
+| Missing | The item count is zero or the required item is not present. |
+| New exception | The issue was not present on the previous check. |
+
+When you find an exception:
+
+- enter the actual count
+- add a comment if it helps explain the problem
+- continue the checkoff
+
+Supervisors can review submitted exceptions from the admin side and daily reports.
+
+## Assigned Kits
+
+Some equipment groups are managed as shared kits.
+
+Examples may include bags, monitor checks, cabinet layouts, or other repeated equipment groups.
+
+Important points:
+
+- Check assigned kits the same way you check compartments.
+- A kit can be assigned to multiple units.
+- Your checkoff is saved for the unit you are checking.
+- Do not skip a kit just because it looks the same as another unit's kit.
+
+## QR Codes
+
+QR codes are there to make the check faster.
+
+Use them to jump directly to the unit, compartment, or kit you are checking.
+
+If a QR code is missing, damaged, or points to the wrong place, report it to a supervisor or admin.
 
 ## Do's and Don'ts
 
-### DO:
+### Do
 
-- ✅ Complete your checkoff early in the shift (before 10 AM when possible)
-- ✅ Count accurately - always count the actual items present
-- ✅ Use the crew names feature so supervisors know who checked the unit
-- ✅ Lock your checkoff when finished to mark it as complete
-- ✅ Leave comments if there's important information for supervisors
-- ✅ Check all compartments thoroughly - don't skip any
-- ✅ Report damaged or broken equipment through the comments field
-- ✅ Use the QR code for quick access to your unit
+- Complete the check early in the shift when possible.
+- Count what is actually on the unit.
+- Check every required compartment and assigned kit.
+- Use QR codes when they are available.
+- Enter crew names accurately.
+- Add comments for issues that need follow-up.
+- Lock the checkoff when finished.
 
-### DON'T:
+### Don't
 
-- ❌ Mark items as checked without actually counting them
-- ❌ Leave items unchecked hoping no one will notice
-- ❌ Complete someone else's checkoff for them
-- ❌ Guess at counts - always verify actual inventory
-- ❌ Skip compartments because "they're always fine"
-- ❌ Forget to lock your checkoff - unlocked checks don't count as complete
-- ❌ Leave equipment on the vehicle that you know is broken or unserviceable
-- ❌ Share your checkoff responsibilities with another crew unless they're actually present
+- Mark items checked without verifying them.
+- Change a count just to clear an exception.
+- Skip a compartment because it is usually fine.
+- Complete another crew's check unless you actually performed it.
+- Ignore damaged equipment.
+- Leave the unit unlocked when the check is finished.
 
----
+## Common Questions
 
-## Crew Names and Locking
+### Do I need an admin login to complete a unit check?
 
-### Entering Crew Names
+No. Standard crew checkoffs are public so they can be completed quickly from the unit page or QR codes.
 
-1. On the unit checkoff page, find the crew names section
-2. Enter the names of all crew members on this shift
-3. Tap the lock button to save crew names
+### What if I start a check and cannot finish it right away?
 
-**Why it matters:**
-- Supervisors need to know who performed each checkoff
-- Crew names contribute to the completion percentage
-- If something is found missing later, supervisors know who to follow up with
+Your progress may be saved, but the unit is not complete until the checkoff is locked. Come back and finish it before marking the unit complete.
 
-### Locking the Checkoff
+### What if yesterday's count is already filled in?
 
-The lock icon at the bottom of the page has two functions:
-1. **Saves crew names** - Crew names must be locked to count
-2. **Marks checkoff complete** - A locked checkoff is considered "done"
+Verify it. Previous values are a shortcut, not a substitute for checking the truck.
 
-**Important:** An unlocked checkoff is not considered complete. Even if all items are checked, you must lock to finalize.
+### What if an item is below par?
 
----
+Enter the actual count. The system will flag it as an exception for supervisor review.
 
-## Adding Comments
+### What if something is broken but still present?
 
-### When to Use Comments
+Count only usable equipment as available. Add a comment explaining the issue.
 
-The comments field is for communicating important information to supervisors that isn't captured by the standard checkoff items.
+### What if an item or compartment is wrong in the system?
 
-**Use comments to report:**
-- Damaged equipment that needs replacement
-- Equipment that was used since last checkoff
-- Any safety concerns or issues
-- Notes about why items are below par (e.g., "Last patient required use")
-- Requests for specific supplies
+Use the comment field or tell a supervisor/admin. The configuration can be updated from the admin side.
 
-**Don't use comments for:**
-- Routine information that's already tracked
-- Complaints about the system
-- Non-essential notes
+### Can I check multiple units at once?
 
-### How to Add Comments
+No. Each unit should be checked separately so the record is accurate.
 
-1. Scroll to the bottom of the unit checkoff page
-2. Enter your message in the comments field
-3. Comments are automatically saved with your checkoff
+## Quick Reference
 
-**Note:** Comments only appear on records and printouts if they contain text. If left blank, no comments section is shown.
+- Pick the unit.
+- Enter crew names.
+- Check every compartment and assigned kit.
+- Verify carried-forward values.
+- Record actual counts.
+- Leave true exceptions visible.
+- Add useful comments.
+- Lock the unit when complete.
 
 ---
 
-## FAQ
-
-### Q: What if I start a checkoff but can't finish it?
-
-**A:** You can leave and come back - your progress is saved. Just make sure to lock when you're actually done.
-
-### Q: What if I find equipment that's not in the system?
-
-**A:** Use the comments field to report it. Your supervisor can have it added to the system for future checkoffs.
-
-### Q: Do I need to check every single item every day?
-
-**A:** Yes. Every item in every compartment must be verified daily. This is a safety requirement.
-
-### Q: What happens if I don't complete my checkoff?
-
-**A:** Supervisors can see which units have incomplete checkoffs. Incomplete checkoffs affect your completion percentage and will be flagged.
-
-### Q: Can I check off multiple units at once?
-
-**A:** No. Each unit must be checked off separately to ensure accuracy.
-
-### Q: What if the previous crew didn't do their checkoff?
-
-**A:** Start with a complete checkoff from scratch. Don't assume items are present - always verify.
-
-### Q: Can I see yesterday's checkoff results?
-
-**A:** Yes, the "Previous Shift" section shows what was checked yesterday, including any exceptions.
-
-### Q: What if I'm not sure about a count?
-
-**A:** Count twice to be sure. It's better to document an accurate count than to guess.
-
-### Q: Do I need to report to my supervisor if I have exceptions?
-
-**A:** Not directly - the system automatically shows exceptions to supervisors in the records view. You can also use comments to provide context.
-
-### Q: What if I discover an item is broken during checkoff?
-
-**A:** Adjust the count to show what's actually usable, and add a comment explaining the damage. This will be visible to supervisors.
-
----
-
-## Quick Reference Checklist
-
-- [ ] Access unit via QR code or units page
-- [ ] Enter crew names
-- [ ] Lock crew names
-- [ ] Count each item in each compartment
-- [ ] Adjust counts to match actual inventory
-- [ ] Review exceptions panel
-- [ ] Add comments if needed
-- [ ] Lock the checkoff to complete
-
----
-
-**Document Version:** 1.0
-**Last Updated:** May 2026
-**For Support:** Contact your supervisor or system administrator
+**Document Version:** 1.1  
+**Last Updated:** May 2026  
+**For Support:** Contact your supervisor or system administrator.
