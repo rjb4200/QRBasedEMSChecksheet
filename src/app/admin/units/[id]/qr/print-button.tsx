@@ -75,7 +75,7 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
         </button>
       </div>
 
-      <div className="grid gap-3 print:grid-cols-2 print:gap-0">
+      <div className="grid gap-3 print:grid-cols-2 print:gap-0 print:mx-auto print:max-w-[576px]">
         {codes.map((code) => {
           const expanded = expandedIds.has(code.id);
 
