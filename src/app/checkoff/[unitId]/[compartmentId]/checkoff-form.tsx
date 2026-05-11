@@ -159,11 +159,11 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
       ))}
 
       {!readOnly ? (
-        <button className="w-full rounded-3xl bg-green-700 px-5 py-5 text-xl font-black text-white" disabled={isPending} onClick={() => {
+        <button className="w-full rounded-3xl bg-green-700 px-5 py-5 text-xl font-black text-white disabled:opacity-60" disabled={isPending} onClick={() => {
           const seconds = Math.round((Date.now() - startTimeRef.current) / 1000);
           startTransition(() => void submitCheckData(unitId, compartmentId, values, seconds, targetType));
         }} type="button">
-          Submit {targetType === "kit" ? "Kit" : "Compartment"}
+          {isPending ? "Saving..." : `Submit ${targetType === "kit" ? "Kit" : "Compartment"}`}
         </button>
       ) : null}
     </div>
