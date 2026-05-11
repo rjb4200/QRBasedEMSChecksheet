@@ -2,27 +2,28 @@
 
 This guide is for crews using the QR-based EMS Checksheet system to complete daily unit checks.
 
-The system is meant to be simple: pick the unit, check the compartments and assigned kits, document what is actually on the truck, and lock the check when it is complete.
+The system is meant to be simple: scan a QR code on the unit, confirm you are on the correct unit or section, check the compartments and assigned kits, and document what is actually on the truck.
 
 ## Quick Start
 
-1. Open the units page or scan a QR code on the unit.
-2. Select the correct unit if you are not taken there automatically.
+1. Start by scanning any QR code on the unit. Use your phone camera, a QR scanner app, or the scanner built into the checkoff software.
+2. Confirm the QR code opened the correct unit, compartment, or assigned kit.
 3. Enter the crew names for the shift.
 4. Work through each compartment and assigned kit.
 5. Count what is actually present. Do not assume yesterday's count is still correct.
 6. Leave any below-par or missing counts as they are so the system can flag the exception.
 7. Add a unit comment if there is something a supervisor needs to know.
-8. Lock the checkoff when the unit is complete.
+8. The unit is complete when the checkoff reaches 100%.
 
 ## Accessing a Unit
 
 Standard crew checkoffs do not require an admin login.
 
-You can access a unit in two ways:
+The normal way to start a check is by scanning a QR code on the unit. You can use:
 
-- Go to the main units page and choose the unit.
-- Scan a QR code on the vehicle.
+- your phone camera
+- a QR scanner app
+- the scanner built into the checkoff software
 
 QR codes may open:
 
@@ -30,36 +31,41 @@ QR codes may open:
 - a specific compartment
 - an assigned kit
 
-Use the QR code closest to the area you are checking when possible. It is faster and helps make sure the check is tied to the right physical location.
+Scanning a QR code starts or resumes the check for that unit or section. Use the QR code closest to the area you are checking when possible. It is faster and helps make sure the check is tied to the right physical location.
+
+If needed, you can still open the units page and choose the unit manually.
 
 ## What You Will See
 
 Each unit page may include:
 
-- crew name entry
+- crew name/signature area
 - compartments
 - assigned kits
 - completion status
 - exception summary
 - previous-shift values
 - comments
-- lock/complete controls
 
 Compartments are unit-specific areas. Kits are shared layouts assigned to units. A kit may appear on more than one unit, but the checkoff record is still saved for the unit you are checking.
 
 ## Daily Checkoff Workflow
 
-### 1. Confirm the Unit
+### 1. Scan a QR Code
 
-Before entering anything, make sure the page is for the correct unit.
+Start the check by scanning a QR code on the unit.
 
-This matters most when scanning QR codes or moving between several trucks.
+The code may take you to the unit page, a compartment, or a kit. Before entering anything, make sure the page is for the correct unit and section.
 
-### 2. Enter Crew Names
+This matters most when moving between several trucks.
+
+### 2. Enter Crew Names / Signatures
 
 Enter the crew members assigned to the unit for the shift.
 
-Lock or save the crew names when finished. Crew names help supervisors know who completed the check and are part of the daily checkoff record.
+The lock control is for the crew names/signature area. Use it to save or lock the crew information when it is correct.
+
+The unit itself is complete based on the checkoff reaching 100%. No extra lock action is needed to complete the unit once everything is checked.
 
 ### 3. Check Compartments and Kits
 
@@ -95,11 +101,11 @@ Good comments include:
 
 Keep comments factual and short.
 
-### 6. Lock the Checkoff
+### 6. Finish at 100%
 
-When the unit is complete, use the lock/complete control.
+The unit is complete when the checkoff reaches 100%.
 
-A check is not considered finished just because some items were opened or edited. Locking the checkoff marks the unit as complete for the day.
+There is no separate final lock action required for the unit after it reaches 100%. The lock is for the crew names/signature area, not the final unit completion status.
 
 ## Previous-Shift Values
 
@@ -144,9 +150,11 @@ Important points:
 
 ## QR Codes
 
-QR codes are there to make the check faster.
+QR codes are the primary way to start and move through the check.
 
-Use them to jump directly to the unit, compartment, or kit you are checking.
+Use your phone camera, a QR scanner app, or the scanner built into the checkoff software.
+
+Use QR codes to jump directly to the unit, compartment, or kit you are checking.
 
 If a QR code is missing, damaged, or points to the wrong place, report it to a supervisor or admin.
 
@@ -154,13 +162,13 @@ If a QR code is missing, damaged, or points to the wrong place, report it to a s
 
 ### Do
 
+- Start by scanning a QR code on the unit.
 - Complete the check early in the shift when possible.
 - Count what is actually on the unit.
 - Check every required compartment and assigned kit.
-- Use QR codes when they are available.
 - Enter crew names accurately.
 - Add comments for issues that need follow-up.
-- Lock the checkoff when finished.
+- Continue until the unit reaches 100%.
 
 ### Don't
 
@@ -169,17 +177,25 @@ If a QR code is missing, damaged, or points to the wrong place, report it to a s
 - Skip a compartment because it is usually fine.
 - Complete another crew's check unless you actually performed it.
 - Ignore damaged equipment.
-- Leave the unit unlocked when the check is finished.
+- Treat the crew-name/signature lock as the final unit completion step.
 
 ## Common Questions
 
 ### Do I need an admin login to complete a unit check?
 
-No. Standard crew checkoffs are public so they can be completed quickly from the unit page or QR codes.
+No. Standard crew checkoffs are public so they can be completed quickly from QR codes or the unit page.
+
+### What scanner should I use?
+
+Use any QR scanner that works for you. Your phone camera, a QR scanner app, or the scanner built into the checkoff software are all acceptable.
 
 ### What if I start a check and cannot finish it right away?
 
-Your progress may be saved, but the unit is not complete until the checkoff is locked. Come back and finish it before marking the unit complete.
+Your progress may be saved. Come back and continue until the unit reaches 100%.
+
+### What does the lock do?
+
+The lock is for the crew names/signature area. It saves or locks the crew information. The unit itself is complete when the checkoff reaches 100%.
 
 ### What if yesterday's count is already filled in?
 
@@ -203,17 +219,18 @@ No. Each unit should be checked separately so the record is accurate.
 
 ## Quick Reference
 
-- Pick the unit.
-- Enter crew names.
+- Scan a QR code on the unit.
+- Confirm the correct unit/section opened.
+- Enter crew names/signatures.
 - Check every compartment and assigned kit.
 - Verify carried-forward values.
 - Record actual counts.
 - Leave true exceptions visible.
 - Add useful comments.
-- Lock the unit when complete.
+- Finish when the unit reaches 100%.
 
 ---
 
-**Document Version:** 1.1  
+**Document Version:** 1.2  
 **Last Updated:** May 2026  
 **For Support:** Contact your supervisor or system administrator.
