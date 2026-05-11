@@ -29,6 +29,10 @@ export default async function UnitsPage() {
           ) : null}
         </div>
 
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center">
+          <Link className="font-bold text-white underline" href="/docs/user">View User Guide</Link>
+        </div>
+
         <div className="grid gap-4 sm:grid-cols-2">
           {(units ?? []).map((unit) => (
             <Link key={unit.id} className="rounded-3xl border border-white/10 bg-white/10 p-5 shadow-xl transition hover:bg-white/15" href={`/units/${unit.id}`}>

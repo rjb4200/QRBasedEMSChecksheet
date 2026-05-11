@@ -30,7 +30,10 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
 
         <section className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm">
           <p className="font-bold text-slate-700">Daily check sheets for {currentShift.shiftDate}</p>
-          <a className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" href={`/admin/checksheets/print?date=${currentShift.shiftDate}`}>Print Today's Check Sheets</a>
+          <div className="flex flex-wrap gap-2">
+            <a className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" href={`/admin/checksheets/print?date=${currentShift.shiftDate}`}>Print Today's Check Sheets</a>
+            <a className="rounded-2xl border border-slate-300 px-5 py-3 font-bold" href="/admin/docs">Admin Guide</a>
+          </div>
         </section>
 
         <section className="rounded-3xl bg-white p-5 shadow-sm">
