@@ -5,9 +5,16 @@ import { createAdminClient } from "@/lib/supabase/server-admin";
 function unitNames(assignments: any[] | null | undefined) {
   const names = (assignments ?? []).map((assignment) => {
     const unit = Array.isArray(assignment.units) ? assignment.units[0] : assignment.units;
-    return unit?.name;
-  }).filter(Boolean);
+    return unit;
+  }).filter((unit) => unit?.deleted_at == null).map((unit) => unit.name).filter(Boolean);
   return names.length === 0 ? "Not assigned" : names.join(", ");
+}
+
+function activeAssignmentCount(assignments: any[] | null | undefined) {
+  return (assignments ?? []).filter((assignment) => {
+    const unit = Array.isArray(assignment.units) ? assignment.units[0] : assignment.units;
+    return unit?.deleted_at == null;
+  }).length;
 }
 
 export default async function AdminKitsPage() {
@@ -15,7 +22,7 @@ export default async function AdminKitsPage() {
   const [{ data: kits }, { data: sourceCompartments }] = await Promise.all([
     supabase
       .from("kits")
-      .select("id, name, description, sort_order, active, unit_kits(id, units(name)), kit_items(id)")
+      .select("id, name, description, sort_order, active, unit_kits(id, units(name, deleted_at)), kit_items(id)")
       .order("sort_order")
       .order("name"),
     supabase.from("unit_compartments").select("id, name, units(name)").order("name"),
@@ -68,12 +75,12 @@ export default async function AdminKitsPage() {
                   <span className={`rounded-full px-3 py-1 text-xs font-black ${kit.active ? "bg-green-100 text-green-800" : "bg-slate-200 text-slate-700"}`}>{kit.active ? "Active" : "Inactive"}</span>
                 </div>
                 <p className="mt-3 text-sm font-bold">{kit.kit_items?.length ?? 0} items</p>
-                <p className="mt-1 text-sm text-slate-600">Assigned to: {unitNames(assignments)}</p>
+                <p className="mt-1 text-sm text-slate-600">Attached to {activeAssignmentCount(assignments)} unit{activeAssignmentCount(assignments) !== 1 ? "s" : ""}: {unitNames(assignments)}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link className="rounded-2xl bg-red-700 px-4 py-2 font-bold text-white" href={`/admin/kits/${kit.id}`}>Edit Kit</Link>
                   <form action={deleteKit}>
                     <input name="id" type="hidden" value={kit.id} />
-                    <button className="rounded-2xl border border-red-200 px-4 py-2 font-bold text-red-700 disabled:opacity-50" disabled={assignments.length > 0} type="submit">Delete</button>
+                    <button className="rounded-2xl border border-red-200 px-4 py-2 font-bold text-red-700 disabled:opacity-50" disabled={activeAssignmentCount(assignments) > 0} type="submit">Delete</button>
                   </form>
                 </div>
                 <form action={copyKit} className="mt-4 grid gap-2 rounded-2xl bg-slate-100 p-3">
