@@ -36,7 +36,7 @@ export default async function UnitQrPage({ params }: { params: Promise<{ id: str
   return (
     <main className="min-h-screen bg-white px-6 py-8 text-slate-950 print:px-0 print:py-0">
       <style>{`@page { size: letter; margin: 0.75in 0.25in 0.25in 0.25in; }`}</style>
-      <section className="mx-auto max-w-6xl space-y-6 print:max-w-none print:pt-[1in]">
+      <section className="mx-auto max-w-6xl space-y-6 print:max-w-none print:pt-[0.5in]">
         <div className="flex items-end justify-between gap-4 print:hidden">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">QR Codes</p>
