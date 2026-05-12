@@ -92,7 +92,7 @@ export default async function PrintDailyRecordPage({ searchParams }: { searchPar
                 <td className="p-2 align-top">
                   {record.exceptions.length === 0 ? "None" : record.exceptions.map((exception) => `${exception.targetName}: ${exception.itemName} - ${exception.issue} (${exception.actual}/${exception.expected})`).join("; ")}
                 </td>
-                <td className="max-w-[22rem] whitespace-pre-wrap p-2 align-top">{record.comments || "-"}</td>
+                <td className="max-w-[32rem] whitespace-pre-wrap p-2 align-top">{record.comments || "-"}</td>
                 <td className="p-2 align-top">{record.crewLocked ? record.providerNames || "Locked" : "Not locked"}</td>
               </tr>
             ))}

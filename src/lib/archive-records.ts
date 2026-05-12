@@ -99,6 +99,8 @@ type CheckRow = {
   compartment_id?: string | null;
   unit_kit_id?: string | null;
   status: string;
+  completed_at?: string | null;
+  updated_at?: string | null;
   item_data?: Record<string, unknown> | null;
   units?: UnitRow | UnitRow[] | null;
   unit_compartments?: { name: string } | { name: string }[] | null;
@@ -172,6 +174,11 @@ function getSingleRow<T>(row: T | T[] | null | undefined) {
 
 function getCompletionPercentage(completedCompartments: number, totalCompartments: number) {
   return totalCompartments === 0 ? 0 : Math.round((completedCompartments / totalCompartments) * 10000) / 100;
+}
+
+function latestCheckTimestamp(checks: CheckRow[]) {
+  const timestamps = checks.flatMap((check) => [check.completed_at, check.updated_at]).filter(Boolean).map((value) => new Date(value as string).getTime()).filter(Number.isFinite);
+  return timestamps.length > 0 ? new Date(Math.max(...timestamps)).toISOString() : null;
 }
 
 function getCheckStatus(record: { unitStatus: string; archived: boolean; completionPercentage: number; hasActivity: boolean }): DailyUnitCheckStatus {
@@ -264,6 +271,7 @@ export function buildLedgerBackedDailyUnitRecords({ date, ledgers, archives, cre
     const completionPercentage = getCompletionPercentage(completedCompartments, totalCompartments);
     const unitStatus = ledger.unit_status || unitStatusMap.get(ledger.unit_id) || "unknown";
     const exceptions = getCheckExceptions(unitChecks, itemMap);
+    const checkTimestamp = latestCheckTimestamp(unitChecks);
     const hasActivity = Boolean(archive || crewLocked || unitChecks.length > 0);
     const archived = Boolean(ledger.archived);
     const checkStatus = getCheckStatus({ unitStatus, archived, hasActivity, completionPercentage });
@@ -289,8 +297,8 @@ export function buildLedgerBackedDailyUnitRecords({ date, ledgers, archives, cre
       comments,
       crewLocked,
       startedAt: archive?.started_at ?? null,
-      submittedAt: archive?.submitted_at ?? null,
-      lastActivityAt: archive?.last_activity_at ?? null,
+      submittedAt: archive?.submitted_at ?? checkTimestamp,
+      lastActivityAt: archive?.last_activity_at ?? checkTimestamp,
       timeToCompleteSeconds: archive?.time_to_complete_seconds ?? null,
       checkedByName: getArchiveCheckedBy(archive),
       hasArchive: Boolean(archive),
@@ -332,7 +340,7 @@ export async function getLedgerBackedDailyUnitRecordsForDate(params: { date: str
 
   let checksQuery = supabase
     .from("compartment_checks")
-    .select("shift_date, shift_period, unit_id, compartment_id, unit_kit_id, status, item_data, unit_compartments(name), unit_kits(kits(name))")
+    .select("shift_date, shift_period, unit_id, compartment_id, unit_kit_id, status, completed_at, updated_at, item_data, unit_compartments(name), unit_kits(kits(name))")
     .eq("shift_date", params.date)
     .eq("shift_period", "daily");
 
