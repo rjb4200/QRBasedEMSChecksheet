@@ -69,11 +69,11 @@ export default async function PrintDailyRecordPage({ searchParams }: { searchPar
         <table className="mt-6 w-full table-fixed border-collapse text-left text-sm print:mt-3 print:text-[8pt]">
           <colgroup>
             <col style={{ width: "10%" }} />
-            <col style={{ width: "9%" }} />
-            <col style={{ width: "12%" }} />
-            <col style={{ width: "9%" }} />
-            <col style={{ width: "20%" }} />
-            <col style={{ width: "30%" }} />
+            <col style={{ width: "8%" }} />
+            <col style={{ width: "10%" }} />
+            <col style={{ width: "8%" }} />
+            <col style={{ width: "32%" }} />
+            <col style={{ width: "22%" }} />
             <col style={{ width: "10%" }} />
           </colgroup>
           <thead>
