@@ -66,7 +66,16 @@ export default async function PrintDailyRecordPage({ searchParams }: { searchPar
           </div>
         </header>
 
-        <table className="mt-6 w-full border-collapse text-left text-sm print:mt-3 print:text-[8pt]">
+        <table className="mt-6 w-full table-fixed border-collapse text-left text-sm print:mt-3 print:text-[8pt]">
+          <colgroup>
+            <col style={{ width: "10%" }} />
+            <col style={{ width: "9%" }} />
+            <col style={{ width: "12%" }} />
+            <col style={{ width: "9%" }} />
+            <col style={{ width: "20%" }} />
+            <col style={{ width: "30%" }} />
+            <col style={{ width: "10%" }} />
+          </colgroup>
           <thead>
             <tr className="border-b-2 border-slate-950">
               <th className="p-2 align-bottom">Unit</th>
@@ -92,7 +101,7 @@ export default async function PrintDailyRecordPage({ searchParams }: { searchPar
                 <td className="p-2 align-top">
                   {record.exceptions.length === 0 ? "None" : record.exceptions.map((exception) => `${exception.targetName}: ${exception.itemName} - ${exception.issue} (${exception.actual}/${exception.expected})`).join("; ")}
                 </td>
-                <td className="max-w-[32rem] whitespace-pre-wrap p-2 align-top">{record.comments || "-"}</td>
+                <td className="whitespace-pre-wrap p-2 align-top">{record.comments || "-"}</td>
                 <td className="p-2 align-top">{record.crewLocked ? record.providerNames || "Locked" : "Not locked"}</td>
               </tr>
             ))}
