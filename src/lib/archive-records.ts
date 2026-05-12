@@ -247,6 +247,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
   ]);
 
   const unitRows = (units ?? []) as UnitRow[];
+  const unitStatusMap = new Map(unitRows.map((u) => [u.id, u.status]));
   const ledgerRows = (ledgers ?? []) as LedgerRow[];
   const archiveRows = (archives ?? []) as ArchiveRow[];
   const checkRows = (checks ?? []) as CheckRow[];
@@ -291,7 +292,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
           shiftName: getArchiveShiftName(archive, date),
           unitId: ledger.unit_id,
           unitName: ledger.unit_name,
-          unitStatus: ledger.unit_status,
+          unitStatus: ledger.unit_status || unitStatusMap.get(ledger.unit_id) || "unknown",
           archived: Boolean(ledger.archived),
           statusNote: ledger.status_note ?? "",
           archiveStatus: archive?.status ?? "no_record",
