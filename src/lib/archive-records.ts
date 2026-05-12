@@ -46,6 +46,12 @@ export type DailyUnitRecord = {
   hasArchive: boolean;
 };
 
+export type DailyArchiveReport = {
+  date: string;
+  generatedAt: string;
+  records: DailyUnitRecord[];
+};
+
 export type DailyRecordGroup = {
   date: string;
   completedInServiceUnits: number;
