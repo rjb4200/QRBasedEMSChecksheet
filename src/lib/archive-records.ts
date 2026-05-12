@@ -156,12 +156,12 @@ function getArchiveCheckedBy(archive: ArchiveRow | undefined) {
   return user?.full_name ?? user?.email ?? "";
 }
 
-function setFallbackUnit(units: Map<string, UnitRow>, unitId: string, unitName: string | undefined) {
+function setFallbackUnit(units: Map<string, UnitRow>, unitId: string, unitName: string | undefined, unitStatus?: string) {
   if (!units.has(unitId)) {
     units.set(unitId, {
       id: unitId,
       name: unitName ?? "Unknown unit",
-      status: "unknown",
+      status: unitStatus ?? "unknown",
     });
   }
 }
@@ -321,17 +321,17 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
 
     for (const check of checksForDate) {
       const checkedUnit = getSingleRow(check.units);
-      setFallbackUnit(fallbackUnits, check.unit_id, checkedUnit?.name);
+      setFallbackUnit(fallbackUnits, check.unit_id, checkedUnit?.name, unitStatusMap.get(check.unit_id));
     }
 
     for (const archive of archivesForDate) {
       const archivedUnit = getSingleRow(archive.units);
-      setFallbackUnit(fallbackUnits, archive.unit_id, archivedUnit?.name);
+      setFallbackUnit(fallbackUnits, archive.unit_id, archivedUnit?.name, unitStatusMap.get(archive.unit_id));
     }
 
     for (const crew of crewsForDate) {
       const crewUnit = getSingleRow(crew.units);
-      setFallbackUnit(fallbackUnits, crew.unit_id, crewUnit?.name);
+      setFallbackUnit(fallbackUnits, crew.unit_id, crewUnit?.name, unitStatusMap.get(crew.unit_id));
     }
 
     for (const unit of Array.from(fallbackUnits.values()).sort((a, b) => a.name.localeCompare(b.name))) {
