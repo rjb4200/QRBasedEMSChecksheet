@@ -4,10 +4,13 @@ import { Html5QrcodeScanner } from "html5-qrcode";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 
+const PERMISSION_INIT_KEY = "qrCheckoff.cameraPermissionInitialized";
+
 export function QrScanner() {
   const id = useId().replace(/:/g, "");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const permissionInitialized = typeof window !== "undefined" && localStorage.getItem(PERMISSION_INIT_KEY) === "true";
 
   useEffect(() => {
     const scanner = new Html5QrcodeScanner(id, { fps: 10, qrbox: { width: 260, height: 260 } }, false);
@@ -19,6 +22,7 @@ export function QrScanner() {
             setError("This QR code is not a valid Winchester EMS checkoff code.");
             return;
           }
+          localStorage.setItem(PERMISSION_INIT_KEY, "true");
           scanner.clear().finally(() => router.push(url.pathname));
         } catch {
           setError("This QR code could not be read as a checkoff URL.");
@@ -27,10 +31,17 @@ export function QrScanner() {
       () => undefined,
     );
 
+    if (permissionInitialized) {
+      setTimeout(() => {
+        const button = document.querySelector(`#${id} button`);
+        if (button instanceof HTMLButtonElement) button.click();
+      }, 300);
+    }
+
     return () => {
       scanner.clear().catch(() => undefined);
     };
-  }, [id, router]);
+  }, [id, permissionInitialized, router]);
 
   return (
     <div className="space-y-4">
