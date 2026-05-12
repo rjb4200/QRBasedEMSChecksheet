@@ -13,8 +13,8 @@ const statusLabels: Record<DailyUnitCheckStatus, string> = {
   not_required: "Not required",
 };
 
-function formatTimestamp(value: string | null) {
-  return value ? new Date(value).toLocaleString("en-US", { timeZone: "America/New_York" }) : "Not recorded";
+function formatTimeOnly(value: string | null) {
+  return value ? new Date(value).toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit", second: "2-digit" }) : "Not recorded";
 }
 
 export default async function PrintDailyRecordPage({ searchParams }: { searchParams: Promise<{ date?: string; unitId?: string }> }) {
@@ -95,7 +95,7 @@ export default async function PrintDailyRecordPage({ searchParams }: { searchPar
                 <td className="p-2 align-top capitalize">{record.unitStatus.replaceAll("_", " ")}{record.archived ? " / archived" : ""}</td>
                 <td className="p-2 align-top font-bold">
                   {statusLabels[record.checkStatus]}
-                  {record.checkStatus === "checked" ? <><br /><span className="font-normal">{formatTimestamp(record.submittedAt)}</span></> : null}
+                  {record.checkStatus === "checked" ? <><br /><span className="font-normal">{formatTimeOnly(record.submittedAt)}</span></> : null}
                 </td>
                 <td className="p-2 align-top font-bold">{record.completedCompartments}/{record.totalCompartments}<br />{record.completionPercentage}%</td>
                 <td className="p-2 align-top">

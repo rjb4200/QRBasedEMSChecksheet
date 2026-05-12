@@ -46,8 +46,8 @@ function collectPdfBuffer(document: PDFKit.PDFDocument) {
   });
 }
 
-function formatTimestamp(value: string | null) {
-  return value ? new Date(value).toLocaleString("en-US", { timeZone: "America/New_York" }) : "Not recorded";
+function formatTimeOnly(value: string | null) {
+  return value ? new Date(value).toLocaleString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit", second: "2-digit" }) : "Not recorded";
 }
 
 function truncateText(text: string, maxLen: number) {
@@ -117,7 +117,7 @@ export async function generateDailyChecksheetsPdf(date: string) {
     }
 
     const statusText = record.checkStatus === "checked"
-      ? `Checked\n${formatTimestamp(record.submittedAt)}`
+      ? `Checked\n${formatTimeOnly(record.submittedAt)}`
       : STATUS_LABELS[record.checkStatus] || record.checkStatus;
 
     const exceptionsText = record.exceptions.length === 0
