@@ -1,4 +1,5 @@
 import { getCurrentShift } from "@/lib/shifts";
+import { refreshDailyUnitLedgers } from "@/lib/daily-unit-ledgers";
 type SupabaseClient = any;
 
 type UnitRow = {
@@ -105,6 +106,7 @@ function isFleetPanelVisibleUnit(unit: { archived: boolean; status: string }) {
 
 export async function getFleetStatus(supabase: SupabaseClient) {
   const shift = getCurrentShift();
+  await refreshDailyUnitLedgers(supabase, shift);
 
   const [{ data: units }, { data: ledgers }, { data: checks }, { data: crews }, { data: comments }, { data: compartmentItems }, { data: kitItems }, { data: unitKits }] = await Promise.all([
     supabase.from("units").select("id, name, unit_kind, status, unit_compartments(id), unit_kits(id)").is("deleted_at", null).order("name"),

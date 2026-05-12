@@ -1,5 +1,6 @@
 import { formatDuration } from "@/lib/archive-records";
 import { getCurrentShift, getShiftNameForDate } from "@/lib/shifts";
+import { refreshDailyUnitLedgers } from "@/lib/daily-unit-ledgers";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
 export type ChecksheetItem = {
@@ -160,6 +161,12 @@ export function formatChecksheetTimestamp(value: string | null) {
 
 export async function getDailyChecksheetDocument(date = getCurrentShift().shiftDate): Promise<DailyChecksheetDocument> {
   const supabase = createAdminClient();
+  const currentShift = getCurrentShift();
+
+  if (date === currentShift.shiftDate) {
+    await refreshDailyUnitLedgers(supabase, currentShift);
+  }
+
   const requestedStart = new Date(`${date}T00:00:00.000Z`);
   const requestedEnd = new Date(`${date}T23:59:59.999Z`);
   const [{ data: units }, { data: ledgers }, { data: archives }, { data: checks }, { data: crews }, { data: comments }] = await Promise.all([

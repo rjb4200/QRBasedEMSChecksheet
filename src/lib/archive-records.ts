@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/server-admin";
-import { getShiftNameForDate } from "@/lib/shifts";
+import { refreshDailyUnitLedgers } from "@/lib/daily-unit-ledgers";
+import { getCurrentShift, getShiftNameForDate } from "@/lib/shifts";
 
 export type ArchiveSearchParams = {
   unitId?: string;
@@ -186,6 +187,12 @@ export function getDefaultArchiveRange(params: ArchiveSearchParams) {
 export async function getDailyUnitRecords(params: ArchiveSearchParams) {
   const range = getDefaultArchiveRange(params);
   const supabase = createAdminClient();
+  const currentShift = getCurrentShift();
+
+  if (range.from <= currentShift.shiftDate && currentShift.shiftDate <= range.to) {
+    await refreshDailyUnitLedgers(supabase, currentShift);
+  }
+
   let unitsQuery = supabase
     .from("units")
     .select("id, name, status, unit_compartments(id), unit_kits(id)")

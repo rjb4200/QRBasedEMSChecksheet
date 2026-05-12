@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { upsertTodayUnitLedger } from "@/lib/daily-unit-ledgers";
+import { refreshDailyUnitLedgers, upsertTodayUnitLedger } from "@/lib/daily-unit-ledgers";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
 type SupabaseAdmin = ReturnType<typeof createAdminClient>;
@@ -88,6 +88,8 @@ export async function createUnit(formData: FormData) {
     }
   }
 
+  await refreshDailyUnitLedgers(supabase);
+
   redirect(`/admin/units/${unit.id}`);
 }
 
@@ -142,6 +144,7 @@ export async function addUnitCompartment(formData: FormData) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("unit_compartments").upsert({ unit_id: parsed.unitId, name: parsed.name, sort_order: parsed.sortOrder }, { onConflict: "unit_id,name" });
   if (error) throw new Error(error.message);
+  await upsertTodayUnitLedger(supabase, parsed.unitId);
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
@@ -249,6 +252,7 @@ export async function assignKitToUnit(formData: FormData) {
     sort_order: parsed.sortOrder,
   }, { onConflict: "unit_id,kit_id" });
   if (error) throw new Error(error.message);
+  await upsertTodayUnitLedger(supabase, parsed.unitId);
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
@@ -257,6 +261,7 @@ export async function removeKitFromUnit(formData: FormData) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("unit_kits").delete().eq("id", parsed.unitKitId).eq("unit_id", parsed.unitId);
   if (error) throw new Error(error.message);
+  await upsertTodayUnitLedger(supabase, parsed.unitId);
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
@@ -265,6 +270,7 @@ export async function deleteUnitCompartment(formData: FormData) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("unit_compartments").delete().eq("id", parsed.id);
   if (error) throw new Error(error.message);
+  await upsertTodayUnitLedger(supabase, parsed.unitId);
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
