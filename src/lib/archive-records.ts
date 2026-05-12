@@ -2,6 +2,16 @@ import { createAdminClient } from "@/lib/supabase/server-admin";
 import { refreshDailyUnitLedgers } from "@/lib/daily-unit-ledgers";
 import { getCurrentShift, getShiftNameForDate } from "@/lib/shifts";
 
+export type DailyUnitCheckStatus = "checked" | "incomplete" | "not_started" | "not_required";
+
+export type DailyUnitException = {
+  targetName: string;
+  itemName: string;
+  issue: string;
+  actual: string;
+  expected: string;
+};
+
 export type ArchiveSearchParams = {
   unitId?: string;
   from?: string;
@@ -20,9 +30,11 @@ export type DailyUnitRecord = {
   archived: boolean;
   statusNote: string;
   archiveStatus: string;
+  checkStatus: DailyUnitCheckStatus;
   completedCompartments: number;
   totalCompartments: number;
   completionPercentage: number;
+  exceptions: DailyUnitException[];
   providerNames: string;
   comments: string;
   crewLocked: boolean;
@@ -84,8 +96,20 @@ type CheckRow = {
   shift_date: string;
   shift_period: string;
   unit_id: string;
+  compartment_id?: string | null;
+  unit_kit_id?: string | null;
   status: string;
+  item_data?: Record<string, unknown> | null;
   units?: UnitRow | UnitRow[] | null;
+  unit_compartments?: { name: string } | { name: string }[] | null;
+  unit_kits?: { kits: { name: string } | { name: string }[] | null } | { kits: { name: string } | { name: string }[] | null }[] | null;
+};
+
+type ItemRow = {
+  id: string;
+  par_level: number | null;
+  input_type: "quantity" | "checkbox" | "condition";
+  equipment_catalog: { name: string } | { name: string }[] | null;
 };
 
 type CrewRow = {
@@ -111,6 +135,7 @@ type DailyRecordReadModelInput = {
   crews: CrewRow[];
   checks: CheckRow[];
   comments: CommentRow[];
+  itemMap?: Map<string, ItemRow>;
   unitStatusMap?: Map<string, string>;
 };
 
@@ -149,6 +174,12 @@ function getCompletionPercentage(completedCompartments: number, totalCompartment
   return totalCompartments === 0 ? 0 : Math.round((completedCompartments / totalCompartments) * 10000) / 100;
 }
 
+function getCheckStatus(record: { unitStatus: string; archived: boolean; completionPercentage: number; hasActivity: boolean }): DailyUnitCheckStatus {
+  if (record.archived || record.unitStatus !== "in_service") return "not_required";
+  if (record.completionPercentage > 95) return "checked";
+  return record.hasActivity ? "incomplete" : "not_started";
+}
+
 export function formatDuration(seconds: number | null) {
   if (seconds === null) return "";
   const minutes = Math.floor(seconds / 60);
@@ -177,7 +208,38 @@ function setFallbackUnit(units: Map<string, UnitRow>, unitId: string, unitName: 
   }
 }
 
-export function buildLedgerBackedDailyUnitRecords({ date, ledgers, archives, crews, checks, comments, unitStatusMap = new Map() }: DailyRecordReadModelInput) {
+function getCheckExceptions(checks: CheckRow[], itemMap: Map<string, ItemRow>) {
+  const exceptions: DailyUnitException[] = [];
+
+  for (const check of checks) {
+    const compartment = getSingleRow(check.unit_compartments);
+    const unitKit = getSingleRow(check.unit_kits);
+    const kit = getSingleRow(unitKit?.kits);
+    const targetName = compartment?.name ?? (kit?.name ? `${kit.name} (Kit)` : "Unknown target");
+
+    for (const [itemId, value] of Object.entries(check.item_data ?? {})) {
+      const item = itemMap.get(itemId);
+      const equipment = getSingleRow(item?.equipment_catalog);
+      const itemName = equipment?.name ?? "Unknown item";
+
+      if (item?.input_type === "checkbox" && value === false) {
+        exceptions.push({ targetName, itemName, issue: "Missing", actual: "No", expected: "Yes" });
+      }
+
+      if (item?.input_type === "quantity" && item.par_level !== null && Number(value) < item.par_level) {
+        exceptions.push({ targetName, itemName, issue: "Below par", actual: String(value), expected: String(item.par_level) });
+      }
+
+      if (item?.input_type === "condition" && typeof value === "object" && value !== null && (value as { status?: string }).status !== "OK") {
+        exceptions.push({ targetName, itemName, issue: "Condition issue", actual: (value as { status?: string }).status ?? "Unknown", expected: "OK" });
+      }
+    }
+  }
+
+  return exceptions;
+}
+
+export function buildLedgerBackedDailyUnitRecords({ date, ledgers, archives, crews, checks, comments, itemMap = new Map(), unitStatusMap = new Map() }: DailyRecordReadModelInput) {
   const archiveMap = new Map(archives.map((archive) => [`${archive.unit_id}:${archive.shift_date}:${archive.shift_period}`, archive]));
   const crewMap = new Map(crews.map((crew) => [`${crew.unit_id}:${crew.shift_date}:${crew.shift_period}`, crew]));
   const commentMap = new Map(comments.map((comment) => [`${comment.unit_id}:${comment.shift_date}:${comment.shift_period}`, comment.comment?.trim() ?? ""]));
@@ -200,6 +262,11 @@ export function buildLedgerBackedDailyUnitRecords({ date, ledgers, archives, cre
     const totalCompartments = baseTotal + 1;
     const completedCompartments = baseCompleted + (crewLocked ? 1 : 0);
     const completionPercentage = getCompletionPercentage(completedCompartments, totalCompartments);
+    const unitStatus = ledger.unit_status || unitStatusMap.get(ledger.unit_id) || "unknown";
+    const exceptions = getCheckExceptions(unitChecks, itemMap);
+    const hasActivity = Boolean(archive || crewLocked || unitChecks.length > 0);
+    const archived = Boolean(ledger.archived);
+    const checkStatus = getCheckStatus({ unitStatus, archived, hasActivity, completionPercentage });
 
     return {
       archiveId: archive?.id ?? null,
@@ -209,13 +276,15 @@ export function buildLedgerBackedDailyUnitRecords({ date, ledgers, archives, cre
       shiftName: getArchiveShiftName(archive, date),
       unitId: ledger.unit_id,
       unitName: ledger.unit_name,
-      unitStatus: ledger.unit_status || unitStatusMap.get(ledger.unit_id) || "unknown",
-      archived: Boolean(ledger.archived),
+      unitStatus,
+      archived,
       statusNote: ledger.status_note ?? "",
       archiveStatus: archive?.status ?? (unitChecks.length > 0 ? "current" : "no_record"),
+      checkStatus,
       completedCompartments,
       totalCompartments,
       completionPercentage,
+      exceptions,
       providerNames: crew?.provider_names ?? "",
       comments,
       crewLocked,
@@ -263,7 +332,7 @@ export async function getLedgerBackedDailyUnitRecordsForDate(params: { date: str
 
   let checksQuery = supabase
     .from("compartment_checks")
-    .select("shift_date, shift_period, unit_id, status")
+    .select("shift_date, shift_period, unit_id, compartment_id, unit_kit_id, status, item_data, unit_compartments(name), unit_kits(kits(name))")
     .eq("shift_date", params.date)
     .eq("shift_period", "daily");
 
@@ -293,13 +362,16 @@ export async function getLedgerBackedDailyUnitRecordsForDate(params: { date: str
     archivesQuery = archivesQuery.eq("unit_id", params.unitId);
   }
 
-  const [{ data: ledgers }, { data: archives }, { data: crews }, { data: checks }, { data: comments }] = await Promise.all([
+  const [{ data: ledgers }, { data: archives }, { data: crews }, { data: checks }, { data: comments }, { data: compartmentItems }, { data: kitItems }] = await Promise.all([
     ledgerQuery,
     archivesQuery,
     crewsQuery,
     checksQuery,
     commentsQuery,
+    supabase.from("unit_compartment_items").select("id, par_level, input_type, equipment_catalog(name)"),
+    supabase.from("kit_items").select("id, par_level, input_type, equipment_catalog(name)"),
   ]);
+  const itemMap = new Map([...(compartmentItems ?? []), ...(kitItems ?? [])].map((item) => [item.id, item as ItemRow]));
 
   return buildLedgerBackedDailyUnitRecords({
     date: params.date,
@@ -308,6 +380,7 @@ export async function getLedgerBackedDailyUnitRecordsForDate(params: { date: str
     crews: (crews ?? []) as CrewRow[],
     checks: (checks ?? []) as CheckRow[],
     comments: (comments ?? []) as CommentRow[],
+    itemMap,
   });
 }
 
@@ -475,9 +548,11 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
         archived: false,
         statusNote: "",
         archiveStatus: archive?.status ?? "no_record",
+        checkStatus: unit.status === "in_service" ? (completionPercentage > 95 ? "checked" : checksForUnit.length > 0 || crewLocked || archive ? "incomplete" : "not_started") : "not_required",
         completedCompartments,
         totalCompartments,
         completionPercentage,
+        exceptions: [],
         providerNames: crew?.provider_names ?? "",
         comments,
         crewLocked,
