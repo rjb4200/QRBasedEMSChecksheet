@@ -27,7 +27,7 @@
 
 - [ ] 4.1 Update CSV export fields to include readiness state and exception details while preserving existing historical fields.
 - [x] 4.2 Verify print/checksheet links still target the selected date and do not imply missing units were checked.
-- [ ] 4.3 Confirm downstream consumers display saved crew names and comments only when present.
+- [x] 4.3 Confirm downstream consumers display saved crew names and comments only when present.
 
 ## 5. Ledger Snapshot Coverage
 

@@ -50,7 +50,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
           </select>
           <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={selectedDate} name="date" type="date" />
           <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Filter</button>
-          <Link className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-950" href={`/admin/checksheets/print?date=${selectedDate}`}>Print Daily Sheets</Link>
+          <Link className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-950" href={`/admin/archives/print?date=${selectedDate}`}>Print Daily Record</Link>
         </form>
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm">
           <p className="font-semibold text-slate-700">Showing {records.length} unit records for {selectedDate}</p>
@@ -110,7 +110,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
               {record.comments ? <div className="mt-4 whitespace-pre-wrap rounded-2xl bg-slate-100 p-3 text-sm text-slate-700"><p className="mb-1 font-black text-slate-950">Comments</p>{record.comments}</div> : null}
               <div className="mt-4 flex flex-wrap gap-2">
                 {record.archiveId ? <Link className="rounded-2xl border border-slate-300 px-4 py-2 font-bold !text-pink-600 visited:!text-pink-600" href={`/admin/archives/${record.archiveId}`}>View</Link> : <span className="rounded-2xl border border-slate-200 px-4 py-2 font-bold text-slate-400">No archive</span>}
-                <Link className="rounded-2xl bg-red-700 px-4 py-2 font-bold text-white" href={`/admin/checksheets/print?date=${record.date}`}>Print</Link>
+                <Link className="rounded-2xl bg-red-700 px-4 py-2 font-bold text-white" href={`/admin/archives/print?date=${record.date}`}>Print</Link>
               </div>
             </article>
           ))}
