@@ -1,9 +1,9 @@
 ## 1. Data Model And Queries
 
-- [ ] 1.1 Audit Records data dependencies in `src/lib/archive-records.ts`, archive exports, print links, and related admin routes.
+- [x] 1.1 Audit Records data dependencies in `src/lib/archive-records.ts`, archive exports, print links, and related admin routes.
 - [ ] 1.2 Update the Records query shape to load one selected operational date by default while preserving any required export/range entry points.
-- [ ] 1.3 Make ledger rows the authoritative unit inclusion source whenever `daily_unit_ledgers` exists for the selected date.
-- [ ] 1.4 Add date-specific enrichment for archive metadata, check rows, exceptions, daily crew names, and daily unit comments keyed by unit/date/shift period.
+- [x] 1.3 Make ledger rows the authoritative unit inclusion source whenever `daily_unit_ledgers` exists for the selected date.
+- [x] 1.4 Add date-specific enrichment for archive metadata, check rows, exceptions, daily crew names, and daily unit comments keyed by unit/date/shift period.
 - [ ] 1.5 Keep missing-ledger fallback reconstruction limited to date-specific checks, archives, crews, and comments.
 
 ## 2. Readiness Classification
