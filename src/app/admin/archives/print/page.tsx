@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { PrintButton } from "../../checksheets/print/print-button";
-import { formatDuration, getDailyUnitRecords, type DailyUnitCheckStatus } from "@/lib/archive-records";
+import { getDailyUnitRecords, type DailyUnitCheckStatus } from "@/lib/archive-records";
 import { getCurrentShift } from "@/lib/shifts";
 
 const statusLabels: Record<DailyUnitCheckStatus, string> = {
@@ -69,28 +69,24 @@ export default async function PrintDailyRecordPage({ searchParams }: { searchPar
               <th className="p-1 align-bottom">Exceptions</th>
               <th className="p-1 align-bottom">Crew</th>
               <th className="p-1 align-bottom">Comments</th>
-              <th className="p-1 align-bottom">Timing</th>
             </tr>
           </thead>
           <tbody>
-            {records.length === 0 ? <tr><td className="p-2 text-slate-500" colSpan={8}>No daily ledger records were found for this date.</td></tr> : null}
+            {records.length === 0 ? <tr><td className="p-2 text-slate-500" colSpan={7}>No daily ledger records were found for this date.</td></tr> : null}
             {records.map((record) => (
               <tr key={`${record.date}-${record.unitId}`} className="break-inside-avoid border-b border-slate-300">
                 <td className="p-1 align-top font-black">{record.unitName}</td>
                 <td className="p-1 align-top capitalize">{record.unitStatus.replaceAll("_", " ")}{record.archived ? " / archived" : ""}</td>
-                <td className="p-1 align-top font-bold">{statusLabels[record.checkStatus]}</td>
+                <td className="p-1 align-top font-bold">
+                  {statusLabels[record.checkStatus]}
+                  {record.checkStatus === "checked" ? <><br /><span className="font-normal">{formatTimestamp(record.submittedAt)}</span></> : null}
+                </td>
                 <td className="p-1 align-top font-bold">{record.completedCompartments}/{record.totalCompartments}<br />{record.completionPercentage}%</td>
                 <td className="p-1 align-top">
                   {record.exceptions.length === 0 ? "None" : record.exceptions.map((exception) => `${exception.targetName}: ${exception.itemName} - ${exception.issue} (${exception.actual}/${exception.expected})`).join("; ")}
                 </td>
                 <td className="p-1 align-top">{record.crewLocked ? record.providerNames || "Locked" : "Not locked"}</td>
-                <td className="max-w-[12rem] whitespace-pre-wrap p-1 align-top">{record.comments || "-"}</td>
-                <td className="p-1 align-top">
-                  <span className="font-bold">Checked by:</span> {record.checkedByName || "Not recorded"}<br />
-                  <span className="font-bold">Started:</span> {formatTimestamp(record.startedAt)}<br />
-                  <span className="font-bold">Submitted:</span> {formatTimestamp(record.submittedAt)}<br />
-                  <span className="font-bold">Duration:</span> {formatDuration(record.timeToCompleteSeconds) || "Not recorded"}
-                </td>
+                <td className="max-w-[22rem] whitespace-pre-wrap p-1 align-top">{record.comments || "-"}</td>
               </tr>
             ))}
           </tbody>
