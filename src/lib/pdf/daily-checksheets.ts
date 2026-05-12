@@ -91,15 +91,38 @@ export async function generateDailyChecksheetsPdf(date: string) {
   pdf.font("Helvetica-Bold").fontSize(14).fillColor("black").text("Daily Unit Readiness Ledger", PAGE_MARGIN + 40, PAGE_MARGIN + 12);
   pdf.font("Helvetica-Bold").fontSize(8).fillColor("#475569").text(`Operational Date: ${date} | ${shiftName}`, PAGE_MARGIN + 40, PAGE_MARGIN + 28);
 
+  const totalExceptions = records.reduce((count, record) => count + record.exceptions.length, 0);
   drawImageIfPresent(pdf, CITY_SEAL_PATH, pageWidth - PAGE_MARGIN - 28, PAGE_MARGIN, { width: 28, height: 28 });
   pdf.font("Helvetica-Bold").fontSize(7).fillColor("black").text(`Generated ${new Date().toLocaleString()}`, pageWidth - PAGE_MARGIN - 160, PAGE_MARGIN, { width: 128, align: "right" });
+  pdf.font("Helvetica-Bold").fontSize(6).fillColor("#475569").text(`${records.length} units | ${totalExceptions} exceptions`, pageWidth - PAGE_MARGIN - 160, PAGE_MARGIN + 12, { width: 128, align: "right" });
 
-  // Column layout
-  const colWidths = [0.12, 0.08, 0.13, 0.09, 0.32, 0.16, 0.10];
+  // Summary grid
+  const summary = records.reduce((counts, record) => {
+    counts[record.checkStatus] += 1;
+    return counts;
+  }, { checked: 0, incomplete: 0, not_started: 0, not_required: 0 });
+  const summaryItems = [
+    { label: "Checked", count: summary.checked },
+    { label: "Incomplete", count: summary.incomplete },
+    { label: "Not Started", count: summary.not_started },
+    { label: "Not Required", count: summary.not_required },
+    { label: "Exceptions", count: totalExceptions },
+  ];
+  const gridWidth = contentWidth / 5;
+  const summaryY = PAGE_MARGIN + 48;
+  for (let i = 0; i < summaryItems.length; i++) {
+    const sx = PAGE_MARGIN + i * gridWidth;
+    pdf.rect(sx, summaryY, gridWidth, 24).strokeColor("#cbd5e1").lineWidth(0.5).stroke();
+    pdf.font("Helvetica-Bold").fontSize(8).fillColor("black").text(summaryItems[i].label, sx + 4, summaryY + 2, { width: gridWidth - 8, align: "center" });
+    pdf.font("Helvetica-Bold").fontSize(10).fillColor("black").text(String(summaryItems[i].count), sx + 4, summaryY + 10, { width: gridWidth - 8, align: "center" });
+  }
+
+  // Column layout (matching print page)
+  const colWidths = [0.10, 0.08, 0.10, 0.08, 0.32, 0.22, 0.10];
   const colX = colWidths.map((w, i) => PAGE_MARGIN + colWidths.slice(0, i).reduce((sum, pw) => sum + pw * contentWidth, 0));
   const columns = colX.map((x, i) => ({ x, width: colWidths[i] * contentWidth }));
 
-  let y = PAGE_MARGIN + 56;
+  let y = summaryY + 30;
   const headerHeight = 18;
   const rowHeight = 16;
   const maxY = pdf.page.height - PAGE_MARGIN;
