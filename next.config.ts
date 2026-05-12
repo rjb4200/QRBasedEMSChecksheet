@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
     "/*": [
       "./USERGUIDE.md",
       "./ADMINGUIDE.md",
+      "./node_modules/pdfkit/js/data/**/*",
+    ],
+    "/api/cron/daily-email-report": [
+      "./node_modules/pdfkit/js/data/**/*",
     ],
   },
 };
