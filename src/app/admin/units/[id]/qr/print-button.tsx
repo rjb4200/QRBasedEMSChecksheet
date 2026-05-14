@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 type QrCode = {
   id: string;
@@ -38,6 +38,30 @@ export function PrintSingleQrButton({ targetId }: { targetId: string }) {
       type="button"
     >
       Print This QR
+    </button>
+  );
+}
+
+function CopyUrlButton({ url }: { url: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API unavailable.
+    }
+  }, [url]);
+
+  return (
+    <button
+      className="rounded-2xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50"
+      onClick={(event) => { event.stopPropagation(); void handleCopy(); }}
+      type="button"
+    >
+      {copied ? "Copied" : "Copy URL"}
     </button>
   );
 }
@@ -95,7 +119,10 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
                 <h2 className="mt-4 text-xl font-black print:text-xs print:mt-0.5">{unitName}</h2>
                 <p className="font-semibold text-slate-700 print:text-xs">{code.name}</p>
                 <p className="mt-1 font-mono text-sm font-black text-red-700 print:hidden">Code: {code.code}</p>
-                <p className="mt-2 break-all text-xs text-slate-500 print:hidden">{code.url}</p>
+                <div className="mt-2 flex items-center justify-center gap-2 print:hidden">
+                  <p className="break-all text-xs text-slate-500">{code.url}</p>
+                  <CopyUrlButton url={code.url} />
+                </div>
                 <PrintSingleQrButton targetId={`qr-${code.id}`} />
               </div>
             </article>

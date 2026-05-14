@@ -45,6 +45,18 @@ export default async function UnitQrPage({ params }: { params: Promise<{ id: str
           </div>
         </div>
 
+        <div className="rounded-3xl border border-blue-200 bg-blue-50 p-5 text-blue-950 print:hidden">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-700">NFC Tag Setup</p>
+          <p className="mt-2 text-sm font-semibold">Use NFC tags for one-tap compartment access — no camera needed. Works with gloves and in low light.</p>
+          <ul className="mt-2 list-disc pl-5 text-sm text-blue-900">
+            <li className="mt-1">Use <strong>NTAG216 anti-metal NFC tags</strong> (30mm+ diameter).</li>
+            <li className="mt-1">Apply the tag under each QR label. Anti-metal tags are required for apparatus compartments.</li>
+            <li className="mt-1">Use an NFC writer app (like NFC Tools) to program each tag with the URL shown below.</li>
+            <li className="mt-1">Copy the URL using the <strong>Copy URL</strong> button next to each QR code, then paste into your NFC writer.</li>
+            <li className="mt-1">Layering: anti-metal NFC tag → QR label → clear protective overlay.</li>
+          </ul>
+        </div>
+
         <QrCodeGrid codes={codes} unitName={unit?.name ?? "Unit"} />
       </section>
     </main>
