@@ -94,7 +94,6 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
         {sectionComments && sectionComments.length > 0 ? (
           <div className="rounded-3xl bg-white p-5 shadow-sm">
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-700">Section Comments</p>
-            <h2 className="mt-1 text-2xl font-black">Compartment & Kit Notes</h2>
             <ul className="mt-4 space-y-3">
               {sectionComments.map((sectionComment) => (
                 <li key={sectionComment.id} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
@@ -110,8 +109,6 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
           <input name="unitId" type="hidden" value={id} />
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-700">Daily Unit Comments</p>
-            <h2 className="mt-1 text-2xl font-black">Unit Comments</h2>
-            <p className="mt-2 text-sm text-slate-600">Optional notes for this unit checkoff. Only saved comments will appear on records and printed checksheets.</p>
           </div>
           <textarea
             className="mt-4 min-h-32 w-full rounded-2xl border border-slate-300 px-4 py-3 text-base outline-none ring-red-500 focus:ring-4"

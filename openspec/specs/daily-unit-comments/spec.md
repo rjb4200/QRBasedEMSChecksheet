@@ -13,13 +13,13 @@ The system SHALL save optional Daily Unit Comments by unit, shift date, and shif
 - **THEN** previously saved daily comments SHALL remain associated with the historical unit/date record
 
 ### Requirement: Daily unit comment editor appears on unit checksheets
-Each unit checksheet SHALL include one optional Daily Unit Comments editor.
+Each unit checksheet SHALL include one optional Daily Unit Comments editor. The editor SHALL use a single "Daily Unit Comments" label with no supporting subtitle or helper paragraph.
 
 #### Scenario: User views unit checksheet
 - **WHEN** a user views a unit checksheet
 - **THEN** the page SHALL show a `Daily Unit Comments` section after compartments and kits
-- **AND** the section SHALL include helper text explaining that only saved comments appear on records and printed checksheets
 - **AND** the section SHALL include a multiline text area and save action
+- **AND** the section SHALL NOT display a "Unit Comments" subtitle or an "Optional notes..." helper paragraph
 
 ### Requirement: Blank comments are not persisted or displayed
 The system SHALL trim comments before saving and hide blank comments everywhere except the editable checksheet field.
