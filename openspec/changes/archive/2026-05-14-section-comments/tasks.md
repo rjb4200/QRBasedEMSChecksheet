@@ -19,6 +19,6 @@
 ## 4. Verification
 
 - [x] 4.1 Run `npm run typecheck` and `npm run lint`.
-- [ ] 4.2 Verify compartment comment submit/update/delete flows.
-- [ ] 4.3 Verify kit comment submit/update/delete flows.
-- [ ] 4.4 Verify merged display on unit page with multiple section comments.
+- [x] 4.2 Verify compartment comment submit/update/delete flows.
+- [x] 4.3 Verify kit comment submit/update/delete flows.
+- [x] 4.4 Verify merged display on unit page with multiple section comments.
