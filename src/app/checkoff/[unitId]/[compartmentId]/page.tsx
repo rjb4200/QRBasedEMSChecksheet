@@ -70,10 +70,11 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
   const supabase = createAdminClient();
 
   const currentShift = getCurrentShift();
-  const [{ data: unit }, { data: compartment }, { data: check }] = await Promise.all([
+  const [{ data: unit }, { data: compartment }, { data: check }, { data: sectionComment }] = await Promise.all([
     supabase.from("units").select("id, name, status, monthly_check_day").eq("id", unitId).is("deleted_at", null).single(),
     supabase.from("unit_compartments").select("id, name, photo_url, unit_compartment_item_groups(id, name, sort_order, created_at), unit_compartment_items(id, group_id, sort_order, par_level, input_type, equipment_catalog(name))").eq("id", compartmentId).eq("unit_id", unitId).single(),
     supabase.from("compartment_checks").select("*, users(full_name, email)").eq("unit_id", unitId).eq("compartment_id", compartmentId).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
+    supabase.from("daily_section_comments").select("comment").eq("unit_id", unitId).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).eq("source_type", "compartment").eq("source_id", compartmentId).maybeSingle(),
   ]);
 
   if (!unit || !compartment) redirect("/units");
@@ -147,7 +148,9 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
           items={compartment.unit_compartment_items ?? []}
           groups={compartment.unit_compartment_item_groups ?? []}
           previousData={recentCompletedData}
+          initialSectionComment={sectionComment?.comment ?? ""}
           readOnly={readOnly}
+          sourceName={compartment.name}
           unitId={unitId}
         />
       </section>

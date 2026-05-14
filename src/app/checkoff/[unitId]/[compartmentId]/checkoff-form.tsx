@@ -22,7 +22,9 @@ type Props = {
   initialData: Record<string, unknown>;
   previousData: Record<string, unknown>;
   carriedForwardData?: Record<string, unknown>;
+  initialSectionComment?: string;
   readOnly?: boolean;
+  sourceName: string;
 };
 
 function equipmentName(item: CheckoffItem) {
@@ -66,7 +68,7 @@ function ParLabel({ parLevel, needsAttention }: { parLevel: number | null; needs
   );
 }
 
-export function CheckoffForm({ unitId, compartmentId, targetType = "compartment", items, groups = [], initialData, previousData, carriedForwardData = {}, readOnly = false }: Props) {
+export function CheckoffForm({ unitId, compartmentId, targetType = "compartment", items, groups = [], initialData, previousData, carriedForwardData = {}, initialSectionComment = "", readOnly = false, sourceName }: Props) {
   const startTimeRef = useRef(Date.now());
   const [isPending, startTransition] = useTransition();
   const defaults = useMemo(() => Object.fromEntries(items.map((item) => {
@@ -76,6 +78,7 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
     return [item.id, { status: "OK", value: "" }];
   })), [initialData, items]);
   const [values, setValues] = useState<Record<string, unknown>>(defaults);
+  const [sectionComment, setSectionComment] = useState(initialSectionComment);
   const [touchedItemIds, setTouchedItemIds] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
@@ -159,9 +162,25 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
       ))}
 
       {!readOnly ? (
+        <div className="rounded-3xl bg-white p-5 shadow-sm">
+          <label className="text-sm font-bold uppercase tracking-[0.2em] text-red-700" htmlFor="section-comment">Section Comment</label>
+          <p className="mt-2 text-sm text-slate-600">Optional notes for this {targetType === "kit" ? "kit" : "compartment"}. These show on the unit page separately from unit comments.</p>
+          <textarea
+            className="mt-4 min-h-28 w-full rounded-2xl border border-slate-300 px-4 py-3 text-base outline-none ring-red-500 focus:ring-4"
+            id="section-comment"
+            maxLength={2000}
+            onChange={(event) => setSectionComment(event.target.value)}
+            placeholder="Add a section-specific note..."
+            value={sectionComment}
+          />
+          <p className="mt-2 text-xs font-semibold text-slate-500">Maximum 2,000 characters. Clear this field and submit to remove the saved section comment.</p>
+        </div>
+      ) : null}
+
+      {!readOnly ? (
         <button className="w-full rounded-3xl bg-green-700 px-5 py-5 text-xl font-black text-white disabled:opacity-60" disabled={isPending} onClick={() => {
           const seconds = Math.round((Date.now() - startTimeRef.current) / 1000);
-          startTransition(() => void submitCheckData(unitId, compartmentId, values, seconds, targetType));
+          startTransition(() => void submitCheckData(unitId, compartmentId, values, seconds, targetType, sectionComment, sourceName));
         }} type="button">
           {isPending ? "Saving..." : `Submit ${targetType === "kit" ? "Kit" : "Compartment"}`}
         </button>

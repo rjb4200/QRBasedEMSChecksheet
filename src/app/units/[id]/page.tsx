@@ -48,13 +48,14 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   const supabase = createAdminClient();
   const currentShift = getCurrentShift();
   const previousShift = getPreviousShift();
-  const [{ data: unit }, { data: checks }, { data: previousArchive }, { data: crew }, { data: comment }, { data: previousCrew }] = await Promise.all([
+  const [{ data: unit }, { data: checks }, { data: previousArchive }, { data: crew }, { data: comment }, { data: previousCrew }, { data: sectionComments }] = await Promise.all([
     supabase.from("units").select("id, name, status, monthly_check_day, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(id, name, kit_items(id, par_level, input_type, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
     supabase.from("compartment_checks").select("compartment_id, unit_kit_id, status").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
     supabase.from("shift_archives").select("completed_compartments, total_compartments, completion_percentage, check_data").eq("unit_id", id).eq("shift_date", previousShift.shiftDate).eq("shift_period", previousShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_crews").select("provider_names, locked").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_comments").select("comment").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_crews").select("provider_names, locked").eq("unit_id", id).eq("shift_date", previousShift.shiftDate).eq("shift_period", previousShift.shiftPeriod).maybeSingle(),
+    supabase.from("daily_section_comments").select("id, source_name, comment, created_at").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).order("source_name", { ascending: true }).order("created_at", { ascending: false }),
   ]);
   const compartments = (unit?.unit_compartments ?? []).map((compartment: any) => ({
     id: compartment.id,
@@ -136,6 +137,21 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
             {previousArchive ? `${previousCompleted} of ${previousTotal} done (${previousArchive.completion_percentage}%)` : "No previous shift archive found"}
           </p>
         </div>
+
+        {sectionComments && sectionComments.length > 0 ? (
+          <div className="rounded-3xl bg-white p-5 shadow-sm">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-700">Section Comments</p>
+            <h2 className="mt-1 text-2xl font-black">Compartment & Kit Notes</h2>
+            <ul className="mt-4 space-y-3">
+              {sectionComments.map((sectionComment) => (
+                <li key={sectionComment.id} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <p className="font-black text-slate-950">{sectionComment.source_name}</p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm font-semibold text-slate-700">{sectionComment.comment}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         <form action={saveDailyUnitComment} className="rounded-3xl bg-white p-5 shadow-sm">
           <input name="unitId" type="hidden" value={id} />

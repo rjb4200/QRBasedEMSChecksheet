@@ -10,7 +10,7 @@ import { createAdminClient } from "@/lib/supabase/server-admin";
 const pathSchema = z.object({ unitId: z.string().uuid(), compartmentId: z.string().uuid() });
 const targetSchema = z.object({ unitId: z.string().uuid(), targetId: z.string().uuid(), targetType: z.enum(["compartment", "kit"]).default("compartment") });
 
-async function upsertTargetCheck(input: z.infer<typeof targetSchema> & { status: "in_progress" | "completed"; itemData?: Record<string, unknown>; timeOnPage?: number }) {
+async function upsertTargetCheck(input: z.infer<typeof targetSchema> & { status: "in_progress" | "completed"; itemData?: Record<string, unknown>; timeOnPage?: number; sectionComment?: string; sourceName?: string }) {
   const supabase = createAdminClient();
   const authClient = await createClient();
   const { data: { user } } = await authClient.auth.getUser();
@@ -48,6 +48,34 @@ async function upsertTargetCheck(input: z.infer<typeof targetSchema> & { status:
     ? await supabase.from("compartment_checks").update(payload).eq("id", existing.id)
     : await supabase.from("compartment_checks").insert({ ...payload, started_at: startedAt, ...(!user?.id ? { checked_by: null } : {}) });
   if (result.error) throw new Error(result.error.message);
+
+  if (input.status === "completed" && input.sectionComment !== undefined && input.sourceName) {
+    const comment = input.sectionComment.trim();
+    const commentQuery = supabase
+      .from("daily_section_comments")
+      .delete()
+      .eq("unit_id", input.unitId)
+      .eq("shift_date", shift.shiftDate)
+      .eq("shift_period", shift.shiftPeriod)
+      .eq("source_type", input.targetType)
+      .eq("source_id", input.targetId);
+
+    if (comment) {
+      const { error: commentError } = await supabase.from("daily_section_comments").upsert({
+        unit_id: input.unitId,
+        shift_date: shift.shiftDate,
+        shift_period: shift.shiftPeriod,
+        source_type: input.targetType,
+        source_id: input.targetId,
+        source_name: input.sourceName,
+        comment,
+      }, { onConflict: "shift_date,shift_period,unit_id,source_type,source_id" });
+      if (commentError) throw new Error(commentError.message);
+    } else {
+      const { error: commentError } = await commentQuery;
+      if (commentError) throw new Error(commentError.message);
+    }
+  }
 }
 
 export async function takeOverCheckoff(formData: FormData) {
@@ -61,9 +89,9 @@ export async function saveCheckData(unitId: string, targetId: string, itemData: 
   await upsertTargetCheck({ ...parsed, status: "in_progress", itemData, timeOnPage });
 }
 
-export async function submitCheckData(unitId: string, targetId: string, itemData: Record<string, unknown>, timeOnPage: number, targetType: "compartment" | "kit" = "compartment") {
+export async function submitCheckData(unitId: string, targetId: string, itemData: Record<string, unknown>, timeOnPage: number, targetType: "compartment" | "kit" = "compartment", sectionComment = "", sourceName = "") {
   const parsed = targetSchema.parse({ unitId, targetId, targetType });
-  await upsertTargetCheck({ ...parsed, status: "completed", itemData, timeOnPage });
+  await upsertTargetCheck({ ...parsed, status: "completed", itemData, timeOnPage, sectionComment, sourceName });
   revalidatePath(`/units/${parsed.unitId}`);
   redirect(`/units/${parsed.unitId}`);
 }
