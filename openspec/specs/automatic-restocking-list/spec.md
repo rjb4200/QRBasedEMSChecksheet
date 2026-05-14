@@ -90,7 +90,9 @@ The Restocking List section SHALL include a Print button and a Copy-to-clipboard
 
 #### Scenario: User clicks Print
 - **WHEN** a user clicks the Print button inside the expanded Restocking List
-- **THEN** the browser print dialog SHALL open
+- **THEN** a new window SHALL open containing only the restocking checklist content
+- **AND** the browser print dialog SHALL open for that checklist window
+- **AND** the full unit page SHALL NOT be printed
 
 #### Scenario: User clicks Copy
 - **WHEN** a user clicks the Copy button inside the expanded Restocking List

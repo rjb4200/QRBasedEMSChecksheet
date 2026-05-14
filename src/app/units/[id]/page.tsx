@@ -124,7 +124,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
           </div>
         </form>
 
-        {restockingList.length > 0 ? <RestockingListSection restockingList={restockingList} /> : null}
+        {restockingList.length > 0 ? <RestockingListSection restockingList={restockingList} unitName={unit?.name} /> : null}
       </section>
     </main>
   );
