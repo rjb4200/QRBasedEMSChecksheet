@@ -2,7 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import { formatDuration } from "@/lib/archive-records";
 
 function formatTimestamp(value: string | null | undefined) {
-  return value ? new Date(value).toLocaleString("en-US", { timeZone: "America/New_York" }) : "Not recorded";
+  return value ? new Date(value).toLocaleString("en-US", { timeZone: "America/New_York" }) : "Unavailable";
+}
+
+function MetadataField({ label, value }: { label: string; value: string }) {
+  return <div><p className="text-xs font-black uppercase text-slate-500">{label}</p><p className="font-bold">{value}</p></div>;
 }
 
 export default async function ArchiveDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -19,6 +23,8 @@ export default async function ArchiveDetailPage({ params }: { params: Promise<{ 
   const unit = Array.isArray(archive?.units) ? archive?.units[0] : archive?.units;
   const shift = Array.isArray(archive?.shift_calendar) ? archive?.shift_calendar[0] : archive?.shift_calendar;
   const checkedBy = Array.isArray(archive?.users) ? archive?.users[0] : archive?.users;
+  const checkedByName = checkedBy?.full_name ?? checkedBy?.email ?? "";
+  const duration = formatDuration(archive?.time_to_complete_seconds ?? null);
   const checks = Array.isArray(archive?.check_data) ? archive.check_data : [];
 
   return (
@@ -30,12 +36,12 @@ export default async function ArchiveDetailPage({ params }: { params: Promise<{ 
           <p className="mt-2 font-semibold capitalize">{archive?.status?.replace("_", " ")} ({archive?.completed_compartments}/{archive?.total_compartments}, {archive?.completion_percentage}%)</p>
         </div>
         <section className="grid gap-3 rounded-3xl bg-white p-5 shadow-sm md:grid-cols-3">
-          <div><p className="text-xs font-black uppercase text-slate-500">Shift</p><p className="font-bold">{shift?.shift_name ?? "Not recorded"}</p></div>
-          <div><p className="text-xs font-black uppercase text-slate-500">Started</p><p className="font-bold">{formatTimestamp(archive?.started_at)}</p></div>
-          <div><p className="text-xs font-black uppercase text-slate-500">Submitted</p><p className="font-bold">{formatTimestamp(archive?.submitted_at)}</p></div>
-          <div><p className="text-xs font-black uppercase text-slate-500">Duration</p><p className="font-bold">{formatDuration(archive?.time_to_complete_seconds ?? null) || "Not recorded"}</p></div>
-          <div><p className="text-xs font-black uppercase text-slate-500">Checked By</p><p className="font-bold">{checkedBy?.full_name ?? checkedBy?.email ?? "Not recorded"}</p></div>
-          <div><p className="text-xs font-black uppercase text-slate-500">Operational Date</p><p className="font-bold">{archive?.operational_date ?? archive?.shift_date ?? "Not recorded"}</p></div>
+          <MetadataField label="Shift" value={shift?.shift_name ?? "Unknown shift"} />
+          {archive?.started_at ? <MetadataField label="Started" value={formatTimestamp(archive.started_at)} /> : null}
+          <MetadataField label="Archived At" value={formatTimestamp(archive?.submitted_at)} />
+          {duration ? <MetadataField label="Duration" value={duration} /> : null}
+          {checkedByName ? <MetadataField label="Checked By" value={checkedByName} /> : null}
+          <MetadataField label="Operational Date" value={archive?.operational_date ?? archive?.shift_date ?? "Unknown date"} />
         </section>
         {comment?.comment?.trim() ? (
           <section className="rounded-3xl bg-white p-5 shadow-sm">

@@ -3,7 +3,11 @@ import { formatDuration, getDailyUnitRecords } from "@/lib/archive-records";
 import { getCurrentShift } from "@/lib/shifts";
 
 function formatTimestamp(value: string | null) {
-  return value ? new Date(value).toLocaleString("en-US", { timeZone: "America/New_York" }) : "Not recorded";
+  return value ? new Date(value).toLocaleString("en-US", { timeZone: "America/New_York" }) : "Unavailable";
+}
+
+function MetadataField({ label, value }: { label: string; value: string }) {
+  return <div><p className="text-xs font-black uppercase text-slate-500">{label}</p><p className="mt-1 font-semibold text-slate-700">{value}</p></div>;
 }
 
 const checkStatusLabels = {
@@ -100,11 +104,11 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
               </div>
               <div className="mt-4 grid gap-3 text-sm md:grid-cols-2">
                 <div><p className="text-xs font-black uppercase text-slate-500">Crew</p><p className="mt-1 font-semibold text-slate-700">{record.crewLocked ? record.providerNames || "Locked" : "Not locked"}</p></div>
-                <div><p className="text-xs font-black uppercase text-slate-500">Checked By</p><p className="mt-1 font-semibold text-slate-700">{record.checkedByName || "Not recorded"}</p></div>
-                <div><p className="text-xs font-black uppercase text-slate-500">Started</p><p className="mt-1 font-semibold text-slate-700">{formatTimestamp(record.startedAt)}</p></div>
-                <div><p className="text-xs font-black uppercase text-slate-500">Submitted</p><p className="mt-1 font-semibold text-slate-700">{formatTimestamp(record.submittedAt)}</p></div>
-                <div><p className="text-xs font-black uppercase text-slate-500">Duration</p><p className="mt-1 font-semibold text-slate-700">{formatDuration(record.timeToCompleteSeconds) || "Not recorded"}</p></div>
-                <div><p className="text-xs font-black uppercase text-slate-500">Snapshot</p><p className="mt-1 font-semibold text-slate-700">{record.statusNote || "No status note"}</p></div>
+                {record.checkedByName ? <MetadataField label="Checked By" value={record.checkedByName} /> : null}
+                {record.startedAt ? <MetadataField label="Started" value={formatTimestamp(record.startedAt)} /> : null}
+                {record.submittedAt ? <MetadataField label={record.hasArchive ? "Archived At" : "Submitted"} value={formatTimestamp(record.submittedAt)} /> : null}
+                {formatDuration(record.timeToCompleteSeconds) ? <MetadataField label="Duration" value={formatDuration(record.timeToCompleteSeconds)} /> : null}
+                {record.statusNote.trim() ? <MetadataField label="Snapshot" value={record.statusNote.trim()} /> : null}
               </div>
               {record.exceptions.length > 0 ? <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-950"><p className="font-black">Exceptions</p>{record.exceptions.slice(0, 4).map((exception) => <p key={`${exception.targetName}-${exception.itemName}-${exception.actual}`} className="mt-1">{exception.targetName}: {exception.itemName} - {exception.issue} ({exception.actual} / {exception.expected})</p>)}</div> : null}
               {record.comments ? <div className="mt-4 whitespace-pre-wrap rounded-2xl bg-slate-100 p-3 text-sm text-slate-700"><p className="mb-1 font-black text-slate-950">Comments</p>{record.comments}</div> : null}
