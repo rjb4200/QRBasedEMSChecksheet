@@ -2,6 +2,7 @@ import { formatDuration } from "@/lib/archive-records";
 import { getCurrentShift, getShiftNameForDate } from "@/lib/shifts";
 import { refreshDailyUnitLedgers } from "@/lib/daily-unit-ledgers";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { buildRestockingList, restockingListText, type RestockingGroup, type RestockingTarget } from "@/lib/restocking-list";
 
 export type ChecksheetItem = {
   name: string;
@@ -33,6 +34,7 @@ export type ChecksheetUnit = {
   submittedAt: string | null;
   timeToCompleteSeconds: number | null;
   checkedByName: string;
+  restockingList: RestockingGroup[];
   compartments: ChecksheetCompartment[];
 };
 
@@ -238,6 +240,11 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
         }),
       ].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
 
+      const restockingTargets: RestockingTarget[] = targets.flatMap((target) => {
+        const check = checkMap.get(target.id);
+        return check?.item_data ? [{ id: target.id, name: target.name, items: target.items ?? [], itemData: check.item_data }] : [];
+      });
+
       return {
         id: source.id,
         name: source.name,
@@ -252,6 +259,7 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
         submittedAt: archive?.submitted_at ?? null,
         timeToCompleteSeconds: archive?.time_to_complete_seconds ?? null,
         checkedByName: getArchiveCheckedBy(archive),
+        restockingList: buildRestockingList(restockingTargets),
         compartments: targets.map((target) => {
           const check = checkMap.get(target.id);
           const itemData = check?.item_data ?? {};
@@ -279,7 +287,7 @@ export async function getDailyChecksheetDocument(date = getCurrentShift().shiftD
 }
 
 export function detailedChecksheetsCsv(documents: DailyChecksheetDocument[]) {
-  const headers = ["Date", "Shift", "Unit", "Unit Status", "Crew Names", "Comments", "Started At", "Submitted At", "Duration", "Checked By", "Compartment", "Check Status", "Item", "Input Type", "Actual", "Expected", "Item Status", "Completed At"];
+  const headers = ["Date", "Shift", "Unit", "Unit Status", "Crew Names", "Comments", "Restocking List", "Started At", "Submitted At", "Duration", "Checked By", "Compartment", "Check Status", "Item", "Input Type", "Actual", "Expected", "Item Status", "Completed At"];
   const escapeCell = (value: unknown) => {
     const text = String(value ?? "");
     return /[",\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
@@ -294,6 +302,7 @@ export function detailedChecksheetsCsv(documents: DailyChecksheetDocument[]) {
       unit.status,
       unit.providerNames,
       unit.comments,
+      restockingListText(unit.restockingList),
       unit.startedAt,
       unit.submittedAt,
       formatDuration(unit.timeToCompleteSeconds),

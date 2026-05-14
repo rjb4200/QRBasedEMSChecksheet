@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PrintButton } from "../../checksheets/print/print-button";
 import { getDailyUnitRecords, type DailyUnitCheckStatus } from "@/lib/archive-records";
+import { restockingListText } from "@/lib/restocking-list";
 import { getCurrentShift } from "@/lib/shifts";
 
 const WFD_LOGO_SRC = "/images/WFD_Logo_1848.jpg";
@@ -82,7 +83,7 @@ export default async function PrintDailyRecordPage({ searchParams }: { searchPar
               <th className="p-2 align-bottom">Service</th>
               <th className="p-2 align-bottom">Check Status</th>
               <th className="p-2 align-bottom">Sections</th>
-              <th className="p-2 align-bottom">Exceptions</th>
+              <th className="p-2 align-bottom">Restocking List</th>
               <th className="p-2 align-bottom">Comments</th>
               <th className="p-2 align-bottom">Crew</th>
             </tr>
@@ -99,7 +100,7 @@ export default async function PrintDailyRecordPage({ searchParams }: { searchPar
                 </td>
                 <td className="p-2 align-top font-bold">{record.completedCompartments}/{record.totalCompartments}<br />{record.completionPercentage}%</td>
                 <td className="p-2 align-top">
-                  {record.exceptions.length === 0 ? "None" : record.exceptions.map((exception) => `${exception.targetName}: ${exception.itemName} - ${exception.issue} (${exception.actual}/${exception.expected})`).join("; ")}
+                  {record.restockingList.length === 0 ? "" : restockingListText(record.restockingList)}
                 </td>
                 <td className="whitespace-pre-wrap p-2 align-top">{record.comments || "-"}</td>
                 <td className="p-2 align-top">{record.crewLocked ? record.providerNames || "Locked" : "Not locked"}</td>

@@ -6,6 +6,7 @@ import { getCurrentShift, getPreviousShift, getShiftLabel } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { shouldShowMonthlyCheckReminder } from "@/lib/monthly-check";
 import { MonthlyCheckReminderBanner } from "@/components/monthly-check-banner";
+import { buildRestockingList } from "@/lib/restocking-list";
 
 const statusStyles = {
   grey: "border-slate-300 bg-slate-200 text-slate-800",
@@ -50,7 +51,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   const previousShift = getPreviousShift();
   const [{ data: unit }, { data: checks }, { data: previousArchive }, { data: crew }, { data: comment }, { data: previousCrew }, { data: sectionComments }] = await Promise.all([
     supabase.from("units").select("id, name, status, monthly_check_day, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(id, name, kit_items(id, par_level, input_type, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
-    supabase.from("compartment_checks").select("compartment_id, unit_kit_id, status").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
+    supabase.from("compartment_checks").select("compartment_id, unit_kit_id, status, item_data").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
     supabase.from("shift_archives").select("completed_compartments, total_compartments, completion_percentage, check_data").eq("unit_id", id).eq("shift_date", previousShift.shiftDate).eq("shift_period", previousShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_crews").select("provider_names, locked").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_comments").select("comment").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
@@ -74,6 +75,13 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   });
   const targets = [...compartments, ...kits].sort((a, b) => a.sortOrder - b.sortOrder);
   const checkMap = new Map((checks ?? []).map((check: any) => [check.compartment_id ?? check.unit_kit_id, check.status]));
+  const checkDataMap = new Map((checks ?? []).map((check: any) => [check.compartment_id ?? check.unit_kit_id, check.item_data ?? null]));
+  const restockingList = buildRestockingList(targets.map((target) => ({
+    id: target.id,
+    name: target.name,
+    items: target.items,
+    itemData: checkDataMap.get(target.id) ?? null,
+  })));
   const crewComplete = Boolean(crew?.locked && crew.provider_names?.trim());
   const completedCompartments = checks?.filter((check) => check.status === "completed").length ?? 0;
   const total = targets.length + 1;
@@ -173,6 +181,23 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
             <span className="text-xs font-semibold text-slate-500">Maximum 2,000 characters.</span>
           </div>
         </form>
+
+        {restockingList.length > 0 ? (
+          <section className="rounded-3xl border border-red-200 bg-white p-5 shadow-sm">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-700">Restocking List</p>
+            <h2 className="mt-1 text-2xl font-black">Items Needing Attention</h2>
+            <div className="mt-4 space-y-3">
+              {restockingList.map((group) => (
+                <div key={group.sourceId} className="rounded-2xl bg-red-50 px-4 py-3 text-red-950">
+                  <p className="font-black">{group.sourceName}</p>
+                  <ul className="mt-2 space-y-1 text-sm font-semibold">
+                    {group.entries.map((entry) => <li key={`${group.sourceId}-${entry.itemId}`}>{entry.itemName} - {entry.detail}</li>)}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </section>
     </main>
   );

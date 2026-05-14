@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { saveCheckData, submitCheckData } from "./actions";
 import { groupItems, type ItemGroup } from "@/lib/item-groups";
+import { buildRestockingList } from "@/lib/restocking-list";
 
 type CheckoffItem = {
   id: string;
@@ -80,6 +81,7 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
   const [values, setValues] = useState<Record<string, unknown>>(defaults);
   const [sectionComment, setSectionComment] = useState(initialSectionComment);
   const [touchedItemIds, setTouchedItemIds] = useState<Set<string>>(() => new Set());
+  const restockingList = useMemo(() => buildRestockingList([{ id: compartmentId, name: sourceName, items, itemData: values }]), [compartmentId, items, sourceName, values]);
 
   useEffect(() => {
     if (readOnly) return;
@@ -160,6 +162,16 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
       ) : (
         <div key="ungrouped" className="space-y-4">{section.items.map(renderItem)}</div>
       ))}
+
+      {restockingList.length > 0 ? (
+        <div className="rounded-3xl border border-red-200 bg-red-50 p-5 text-red-950 shadow-sm">
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-700">Restocking List</p>
+          <p className="mt-1 text-sm font-semibold">Current deficiencies for {sourceName}.</p>
+          <ul className="mt-3 space-y-1 text-sm font-bold">
+            {restockingList[0].entries.map((entry) => <li key={entry.itemId}>{entry.itemName} - {entry.detail}</li>)}
+          </ul>
+        </div>
+      ) : null}
 
       {!readOnly ? (
         <div className="rounded-3xl bg-white p-5 shadow-sm">

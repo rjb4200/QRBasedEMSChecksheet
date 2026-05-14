@@ -60,6 +60,19 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
               <tr className="block print:table-row">
                 <td className="block p-0 print:table-cell">
                   <section className="rounded-2xl border border-slate-950 p-2 print:rounded-md print:border-slate-700 print:p-1.5">
+                    {unit.restockingList.length > 0 ? (
+                      <div className="mb-2 rounded-lg border border-red-300 bg-red-50 p-2 text-xs text-red-950 print:mb-1 print:p-1 print:text-[6pt]">
+                        <p className="font-black uppercase tracking-[0.15em] text-red-700">Restocking List</p>
+                        <div className="mt-1 columns-1 gap-3 print:columns-2">
+                          {unit.restockingList.map((group) => (
+                            <div key={group.sourceId} className="break-inside-avoid">
+                              <p className="font-black">{group.sourceName}</p>
+                              {group.entries.map((entry) => <p key={`${group.sourceId}-${entry.itemId}`} className="ml-2 font-bold">{entry.itemName} - {entry.detail}</p>)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
                     <div className="columns-1 gap-4 md:columns-2 print:columns-3 print:gap-3">
                       {unit.compartments.map((compartment) => (
                         <div key={compartment.id} className="break-inside-avoid border-b border-slate-200 pb-1 last:border-b-0">

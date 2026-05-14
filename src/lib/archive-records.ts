@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { refreshDailyUnitLedgers } from "@/lib/daily-unit-ledgers";
 import { getCurrentShift, getShiftNameForDate } from "@/lib/shifts";
+import { buildRestockingList, restockingListText, type RestockingGroup, type RestockingTarget } from "@/lib/restocking-list";
 
 export type DailyUnitCheckStatus = "checked" | "incomplete" | "not_started" | "not_required";
 
@@ -35,6 +36,7 @@ export type DailyUnitRecord = {
   totalCompartments: number;
   completionPercentage: number;
   exceptions: DailyUnitException[];
+  restockingList: RestockingGroup[];
   providerNames: string;
   comments: string;
   crewLocked: boolean;
@@ -221,35 +223,26 @@ function setFallbackUnit(units: Map<string, UnitRow>, unitId: string, unitName: 
   }
 }
 
-function getCheckExceptions(checks: CheckRow[], itemMap: Map<string, ItemRow>) {
-  const exceptions: DailyUnitException[] = [];
-
-  for (const check of checks) {
+function getCheckRestockingGroups(checks: CheckRow[], itemMap: Map<string, ItemRow>) {
+  const targets: RestockingTarget[] = checks.map((check) => {
     const compartment = getSingleRow(check.unit_compartments);
     const unitKit = getSingleRow(check.unit_kits);
     const kit = getSingleRow(unitKit?.kits);
     const targetName = compartment?.name ?? (kit?.name ? `${kit.name} (Kit)` : "Unknown target");
+    const itemIds = Object.keys(check.item_data ?? {});
 
-    for (const [itemId, value] of Object.entries(check.item_data ?? {})) {
-      const item = itemMap.get(itemId);
-      const equipment = getSingleRow(item?.equipment_catalog);
-      const itemName = equipment?.name ?? "Unknown item";
+    return {
+      id: check.compartment_id ?? check.unit_kit_id ?? targetName,
+      name: targetName,
+      itemData: check.item_data ?? null,
+      items: itemIds.flatMap((itemId) => {
+        const item = itemMap.get(itemId);
+        return item ? [{ ...item, id: itemId }] : [];
+      }),
+    };
+  });
 
-      if (item?.input_type === "checkbox" && value === false) {
-        exceptions.push({ targetName, itemName, issue: "Missing", actual: "No", expected: "Yes" });
-      }
-
-      if (item?.input_type === "quantity" && item.par_level !== null && Number(value) < item.par_level) {
-        exceptions.push({ targetName, itemName, issue: "Below par", actual: String(value), expected: String(item.par_level) });
-      }
-
-      if (item?.input_type === "condition" && typeof value === "object" && value !== null && (value as { status?: string }).status !== "OK") {
-        exceptions.push({ targetName, itemName, issue: "Condition issue", actual: (value as { status?: string }).status ?? "Unknown", expected: "OK" });
-      }
-    }
-  }
-
-  return exceptions;
+  return buildRestockingList(targets);
 }
 
 export function buildLedgerBackedDailyUnitRecords({ date, ledgers, archives, crews, checks, comments, itemMap = new Map(), unitStatusMap = new Map() }: DailyRecordReadModelInput) {
@@ -276,7 +269,14 @@ export function buildLedgerBackedDailyUnitRecords({ date, ledgers, archives, cre
     const completedCompartments = baseCompleted + (crewLocked ? 1 : 0);
     const completionPercentage = getCompletionPercentage(completedCompartments, totalCompartments);
     const unitStatus = ledger.unit_status || unitStatusMap.get(ledger.unit_id) || "unknown";
-    const exceptions = getCheckExceptions(unitChecks, itemMap);
+    const restockingList = getCheckRestockingGroups(unitChecks, itemMap);
+    const exceptions = restockingList.flatMap((group) => group.entries.map((entry) => ({
+      targetName: group.sourceName,
+      itemName: entry.itemName,
+      issue: entry.issue,
+      actual: entry.actual,
+      expected: entry.expected,
+    })));
     const checkTimestamp = latestCheckTimestamp(unitChecks);
     const hasActivity = Boolean(archive || crewLocked || unitChecks.length > 0);
     const archived = Boolean(ledger.archived);
@@ -299,6 +299,7 @@ export function buildLedgerBackedDailyUnitRecords({ date, ledgers, archives, cre
       totalCompartments,
       completionPercentage,
       exceptions,
+      restockingList,
       providerNames: crew?.provider_names ?? "",
       comments,
       crewLocked,
@@ -567,6 +568,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
         totalCompartments,
         completionPercentage,
         exceptions: [],
+        restockingList: [],
         providerNames: crew?.provider_names ?? "",
         comments,
         crewLocked,
@@ -633,6 +635,7 @@ export function archiveRecordToCsv(records: DailyUnitRecord[]) {
     "Completion Percentage",
     "Crew Names",
     "Comments",
+    "Restocking List",
     "Crew Locked",
     "Started At",
     "Submitted At",
@@ -664,6 +667,7 @@ export function archiveRecordToCsv(records: DailyUnitRecord[]) {
       record.completionPercentage,
       record.providerNames,
       record.comments,
+      restockingListText(record.restockingList),
       record.crewLocked ? "yes" : "no",
       record.startedAt,
       record.submittedAt,

@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { getDailyUnitRecords } from "@/lib/archive-records";
 import { getShiftNameForDate } from "@/lib/shifts";
+import { restockingListText } from "@/lib/restocking-list";
 
 const PAGE_MARGIN = 18;
 const WFD_LOGO_PATH = path.join(process.cwd(), "public", "images", "WFD_Logo_1848.jpg");
@@ -128,14 +129,14 @@ export async function generateDailyChecksheetsPdf(date: string) {
   const maxY = pdf.page.height - PAGE_MARGIN;
 
   // Header row
-  y += drawTableRow(pdf, y, columns, ["Unit", "Service", "Check Status", "Sections", "Exceptions", "Comments", "Crew"], true, headerHeight);
+  y += drawTableRow(pdf, y, columns, ["Unit", "Service", "Check Status", "Sections", "Restocking List", "Comments", "Crew"], true, headerHeight);
   y += 2;
 
   for (const record of records) {
     if (y + rowHeight > maxY) {
       pdf.addPage();
       y = PAGE_MARGIN;
-      y += drawTableRow(pdf, y, columns, ["Unit", "Service", "Check Status", "Sections", "Exceptions", "Comments", "Crew"], true, headerHeight);
+      y += drawTableRow(pdf, y, columns, ["Unit", "Service", "Check Status", "Sections", "Restocking List", "Comments", "Crew"], true, headerHeight);
       y += 2;
     }
 
@@ -143,16 +144,14 @@ export async function generateDailyChecksheetsPdf(date: string) {
       ? `Checked\n${formatTimeOnly(record.submittedAt)}`
       : STATUS_LABELS[record.checkStatus] || record.checkStatus;
 
-    const exceptionsText = record.exceptions.length === 0
-      ? "None"
-      : truncateText(record.exceptions.map((e) => `${e.targetName}: ${e.itemName} - ${e.issue}`).join("; "), 280);
+    const restockingText = truncateText(restockingListText(record.restockingList), 280);
 
     const cells = [
       record.unitName,
       `${record.unitStatus.replaceAll("_", " ")}${record.archived ? " / archived" : ""}`,
       statusText,
       `${record.completedCompartments}/${record.totalCompartments}  ${record.completionPercentage}%`,
-      exceptionsText,
+      restockingText,
       truncateText(record.comments || "-", 160),
       record.crewLocked ? (record.providerNames || "Locked") : "Not locked",
     ];
