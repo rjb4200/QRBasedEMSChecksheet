@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/server-admin";
 import { shouldShowMonthlyCheckReminder } from "@/lib/monthly-check";
 import { MonthlyCheckReminderBanner } from "@/components/monthly-check-banner";
 import { buildRestockingList } from "@/lib/restocking-list";
+import { RestockingListSection } from "@/components/restocking-list-section";
 
 const statusStyles = {
   grey: "border-slate-300 bg-slate-200 text-slate-800",
@@ -126,22 +127,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
           </div>
         </form>
 
-        {restockingList.length > 0 ? (
-          <section className="rounded-3xl border border-red-200 bg-white p-5 shadow-sm">
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-700">Restocking List</p>
-            <h2 className="mt-1 text-2xl font-black">Items Needing Attention</h2>
-            <div className="mt-4 space-y-3">
-              {restockingList.map((group) => (
-                <div key={group.sourceId} className="rounded-2xl bg-red-50 px-4 py-3 text-red-950">
-                  <p className="font-black">{group.sourceName}</p>
-                  <ul className="mt-2 space-y-1 text-sm font-semibold">
-                    {group.entries.map((entry) => <li key={`${group.sourceId}-${entry.itemId}`}>{entry.itemName} - {entry.detail}</li>)}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </section>
-        ) : null}
+        {restockingList.length > 0 ? <RestockingListSection restockingList={restockingList} /> : null}
       </section>
     </main>
   );
