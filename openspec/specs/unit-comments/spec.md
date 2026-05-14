@@ -13,7 +13,7 @@ The system SHALL allow crews to add text comments to their daily unit checkoff. 
 - **THEN** no comments data SHALL be stored for that day's checkoff
 
 ### Requirement: Comments display conditionally on unit page
-The system SHALL display the comments section on the unit viewing page only when comments have been entered. The section MUST appear above the "Past exceptions" and "Previous shift" sections.
+The system SHALL display saved unit comments separately from Section Comments and the Restocking List when comments have been entered, and the unit page SHALL NOT reserve layout space for removed previous-shift summary sections.
 
 #### Scenario: Display when comments exist
 - **WHEN** a user views a unit page that has comments stored
@@ -22,8 +22,13 @@ The system SHALL display the comments section on the unit viewing page only when
 
 #### Scenario: Hide when no comments exist
 - **WHEN** a user views a unit page that has no comments stored
-- **THEN** the comments section SHALL NOT be displayed
-- **AND** the page layout SHALL NOT show an empty comments section
+- **THEN** the page layout SHALL NOT show an empty saved-comments display section
+
+#### Scenario: Previous-shift summaries are removed
+- **WHEN** a user views the unit checkoff page
+- **THEN** the page SHALL NOT display an "Exceptions for past check" section
+- **AND** the page SHALL NOT display a "Previous shift" section
+- **AND** Daily Unit Comments, Section Comments, and Restocking List content SHALL remain available according to their own visibility rules
 
 ### Requirement: Comments appear in records view
 The system SHALL display comments in the supervisor records view when comments exist for the selected date range.
