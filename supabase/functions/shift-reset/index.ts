@@ -120,21 +120,35 @@ Deno.serve(async () => {
 
   for (const unit of (units ?? []).filter((unit) => unit.status === "in_service")) {
     const totalCompartments = (unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0);
-    const { data: checks, error: checksError } = await supabase
-      .from("compartment_checks")
-      .select("*")
-      .eq("unit_id", unit.id)
-      .eq("shift_date", shiftDate)
-      .eq("shift_period", shiftPeriod);
+    const [{ data: checks, error: checksError }, { data: crew, error: crewError }] = await Promise.all([
+      supabase
+        .from("compartment_checks")
+        .select("*")
+        .eq("unit_id", unit.id)
+        .eq("shift_date", shiftDate)
+        .eq("shift_period", shiftPeriod),
+      supabase
+        .from("daily_unit_crews")
+        .select("provider_names, locked")
+        .eq("unit_id", unit.id)
+        .eq("shift_date", shiftDate)
+        .eq("shift_period", shiftPeriod)
+        .maybeSingle(),
+    ]);
 
     if (checksError) {
       return Response.json({ error: checksError.message }, { status: 500 });
     }
+    if (crewError) {
+      return Response.json({ error: crewError.message }, { status: 500 });
+    }
 
-    const completed = (checks ?? []).filter((check) => check.status === "completed").length;
+    const crewComplete = Boolean(crew?.locked && crew.provider_names?.trim());
+    const baseTotal = totalCompartments + 1;
+    const completed = ((checks ?? []).filter((check) => check.status === "completed").length) + (crewComplete ? 1 : 0);
     const partial = (checks ?? []).filter((check) => check.status === "in_progress").length;
-    const status = partial > 0 || completed < totalCompartments ? "partially_complete" : "completed";
-    const completionPercentage = totalCompartments === 0 ? 0 : Math.round((completed / totalCompartments) * 10000) / 100;
+    const status = partial > 0 || completed < baseTotal ? "partially_complete" : "completed";
+    const completionPercentage = baseTotal === 0 ? 0 : Math.round((completed / baseTotal) * 10000) / 100;
     const startedAt = minIso((checks ?? []).map((check) => check.started_at ?? check.created_at));
     const submittedAt = maxIso((checks ?? []).filter((check) => check.status === "completed").map((check) => check.submitted_at ?? check.completed_at));
     const lastActivityAt = maxIso((checks ?? []).map((check) => check.last_activity_at ?? check.updated_at));
@@ -152,7 +166,7 @@ Deno.serve(async () => {
       status,
       completion_percentage: completionPercentage,
       completed_compartments: completed,
-      total_compartments: totalCompartments,
+      total_compartments: baseTotal,
       started_at: startedAt,
       submitted_at: submittedAt,
       last_activity_at: lastActivityAt,

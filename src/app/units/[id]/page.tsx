@@ -48,12 +48,13 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   const supabase = createAdminClient();
   const currentShift = getCurrentShift();
   const previousShift = getPreviousShift();
-  const [{ data: unit }, { data: checks }, { data: previousArchive }, { data: crew }, { data: comment }] = await Promise.all([
+  const [{ data: unit }, { data: checks }, { data: previousArchive }, { data: crew }, { data: comment }, { data: previousCrew }] = await Promise.all([
     supabase.from("units").select("id, name, status, monthly_check_day, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(id, name, kit_items(id, par_level, input_type, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
     supabase.from("compartment_checks").select("compartment_id, unit_kit_id, status").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
     supabase.from("shift_archives").select("completed_compartments, total_compartments, completion_percentage, check_data").eq("unit_id", id).eq("shift_date", previousShift.shiftDate).eq("shift_period", previousShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_crews").select("provider_names, locked").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_comments").select("comment").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
+    supabase.from("daily_unit_crews").select("provider_names, locked").eq("unit_id", id).eq("shift_date", previousShift.shiftDate).eq("shift_period", previousShift.shiftPeriod).maybeSingle(),
   ]);
   const compartments = (unit?.unit_compartments ?? []).map((compartment: any) => ({
     id: compartment.id,
@@ -75,7 +76,11 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   const crewComplete = Boolean(crew?.locked && crew.provider_names?.trim());
   const completedCompartments = checks?.filter((check) => check.status === "completed").length ?? 0;
   const total = targets.length + 1;
+  const previousCrewLocked = Boolean(previousCrew?.locked && previousCrew.provider_names?.trim());
   const previousExceptions = findPreviousExceptions(targets, previousArchive?.check_data);
+  const previousArchiveIsOldFormat = previousArchive ? previousArchive.total_compartments <= targets.length : false;
+  const previousTotal = previousArchive ? previousArchive.total_compartments + (previousArchiveIsOldFormat ? 1 : 0) : null;
+  const previousCompleted = previousArchive ? previousArchive.completed_compartments + (previousArchiveIsOldFormat && previousCrewLocked ? 1 : 0) : null;
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-6 text-slate-950">
@@ -128,7 +133,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
         <div className="rounded-3xl bg-white p-5 shadow-sm">
           <p className="text-sm font-semibold text-slate-600">Previous shift</p>
           <p className="mt-1 text-lg font-black">
-            {previousArchive ? `${previousArchive.completed_compartments} of ${previousArchive.total_compartments} done (${previousArchive.completion_percentage}%)` : "No previous shift archive found"}
+            {previousArchive ? `${previousCompleted} of ${previousTotal} done (${previousArchive.completion_percentage}%)` : "No previous shift archive found"}
           </p>
         </div>
 
