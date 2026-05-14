@@ -97,7 +97,7 @@ export function RestockingListSection({ restockingList, unitName, unitId, shiftD
       try {
         const rows = await getRestockAddressed(unitId!, shiftDate!, shiftPeriod!);
         if (!mounted) return;
-        setAddressedKeySet(new Set(rows.map((row) => `${row.target_type}:${row.target_id}:${row.item_id}`)));
+        setAddressedKeySet(new Set(rows.map((row) => `${row.target_id}:${row.item_id}`)));
       } catch {
         // Polling failure degrades silently.
       }

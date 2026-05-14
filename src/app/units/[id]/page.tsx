@@ -52,7 +52,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
     items: target.items,
     itemData: checkDataMap.get(target.id) ?? null,
   })));
-  const addressedKeySet = new Set((addressedRows ?? []).map((row) => `${row.target_type}:${row.target_id}:${row.item_id}`));
+  const addressedKeySet = new Set((addressedRows ?? []).map((row) => `${row.target_id}:${row.item_id}`));
   const crewComplete = Boolean(crew?.locked && crew.provider_names?.trim());
   const completedCompartments = checks?.filter((check) => check.status === "completed").length ?? 0;
   const total = targets.length + 1;
