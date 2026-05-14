@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { RestockingGroup } from "@/lib/restocking-list";
+import { toggleRestockAddressed, getRestockAddressed } from "@/app/units/[id]/actions";
 
 function buildRestockingText(groups: RestockingGroup[]) {
   return groups
@@ -56,9 +57,67 @@ function handlePrint(groups: RestockingGroup[], unitName?: string) {
   };
 }
 
-export function RestockingListSection({ restockingList, unitName }: { restockingList: RestockingGroup[]; unitName?: string }) {
+type Props = {
+  restockingList: RestockingGroup[];
+  unitName?: string;
+  unitId?: string;
+  shiftDate?: string;
+  shiftPeriod?: string;
+  addressedKeySet: Set<string>;
+};
+
+const POLL_INTERVAL_MS = 15000;
+
+export function RestockingListSection({ restockingList, unitName, unitId, shiftDate, shiftPeriod, addressedKeySet: initialAddressed }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [addressedKeySet, setAddressedKeySet] = useState(initialAddressed);
+  const savingRef = useRef(false);
+  const tabHiddenRef = useRef(false);
+
+  const addressedKey = useCallback((group: RestockingGroup, entry: RestockingGroup["entries"][number]) =>
+    `${group.sourceId}:${entry.itemId}`,
+  []);
+
+  useEffect(() => {
+    function handleVisibility() {
+      tabHiddenRef.current = document.hidden;
+    }
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
+
+  useEffect(() => {
+    if (!expanded || !unitId || !shiftDate || !shiftPeriod) return;
+
+    let mounted = true;
+
+    async function poll() {
+      if (tabHiddenRef.current || savingRef.current) return;
+      try {
+        const rows = await getRestockAddressed(unitId!, shiftDate!, shiftPeriod!);
+        if (!mounted) return;
+        setAddressedKeySet(new Set(rows.map((row) => `${row.target_type}:${row.target_id}:${row.item_id}`)));
+      } catch {
+        // Polling failure degrades silently.
+      }
+    }
+
+    const timer = setInterval(() => {
+      void poll();
+    }, POLL_INTERVAL_MS);
+
+    void poll();
+
+    return () => {
+      mounted = false;
+      clearInterval(timer);
+    };
+  }, [expanded, shiftDate, shiftPeriod, unitId]);
+
+  useEffect(() => {
+    setAddressedKeySet(initialAddressed);
+  }, [initialAddressed]);
 
   async function handleCopy() {
     try {
@@ -66,7 +125,59 @@ export function RestockingListSection({ restockingList, unitName }: { restocking
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard API unavailable — button remains visible but does nothing.
+      // Clipboard API unavailable.
+    }
+  }
+
+  async function handleToggle(group: RestockingGroup, entry: RestockingGroup["entries"][number]) {
+    const key = addressedKey(group, entry);
+    const currentlyAddressed = addressedKeySet.has(key);
+
+    // Optimistic toggle
+    setAddressedKeySet((current) => {
+      const next = new Set(current);
+      if (currentlyAddressed) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+
+    if (!unitId || !shiftDate || !shiftPeriod) return;
+
+    savingRef.current = true;
+    const targetType = group.sourceName.includes("(Kit)") ? "kit" as const : "compartment" as const;
+    const issueMap: Record<string, "missing" | "below_par" | "condition_issue"> = {
+      "Missing": "missing",
+      "Below par": "below_par",
+      "Condition issue": "condition_issue",
+    };
+
+    try {
+      await toggleRestockAddressed({
+        unitId,
+        shiftDate,
+        shiftPeriod,
+        targetType,
+        targetId: group.sourceId,
+        itemId: entry.itemId,
+        issueType: issueMap[entry.issue] ?? "missing",
+        addressed: !currentlyAddressed,
+      });
+    } catch {
+      // Revert on failure
+      setAddressedKeySet((current) => {
+        const next = new Set(current);
+        if (currentlyAddressed) {
+          next.add(key);
+        } else {
+          next.delete(key);
+        }
+        return next;
+      });
+    } finally {
+      savingRef.current = false;
     }
   }
 
@@ -104,9 +215,21 @@ export function RestockingListSection({ restockingList, unitName }: { restocking
               <div key={group.sourceId} className="rounded-2xl bg-red-50 px-4 py-3 text-red-950">
                 <p className="font-black">{group.sourceName}</p>
                 <ul className="mt-2 space-y-1 text-sm font-semibold">
-                  {group.entries.map((entry) => (
-                    <li key={`${group.sourceId}-${entry.itemId}`}>{entry.itemName} - {entry.detail}</li>
-                  ))}
+                  {group.entries.map((entry) => {
+                    const key = addressedKey(group, entry);
+                    const checked = addressedKeySet.has(key);
+                    return (
+                      <li key={key} className="flex items-center gap-2">
+                        <input
+                          className="h-4 w-4 shrink-0 accent-red-700"
+                          checked={checked}
+                          onChange={() => void handleToggle(group, entry)}
+                          type="checkbox"
+                        />
+                        <span>{entry.itemName} - {entry.detail}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ))}

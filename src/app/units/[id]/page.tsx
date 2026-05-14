@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CrewNameLock } from "./crew-name-lock";
 import { ShiftResetWarning } from "./shift-reset-warning";
-import { saveDailyUnitComment } from "./actions";
+import { saveDailyUnitComment, getRestockAddressed } from "./actions";
 import { getCurrentShift, getShiftLabel } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { shouldShowMonthlyCheckReminder } from "@/lib/monthly-check";
@@ -20,12 +20,13 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const supabase = createAdminClient();
   const currentShift = getCurrentShift();
-  const [{ data: unit }, { data: checks }, { data: crew }, { data: comment }, { data: sectionComments }] = await Promise.all([
+  const [{ data: unit }, { data: checks }, { data: crew }, { data: comment }, { data: sectionComments }, addressedRows] = await Promise.all([
     supabase.from("units").select("id, name, status, monthly_check_day, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(id, name, kit_items(id, par_level, input_type, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
     supabase.from("compartment_checks").select("compartment_id, unit_kit_id, status, item_data").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
     supabase.from("daily_unit_crews").select("provider_names, locked").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_comments").select("comment").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_section_comments").select("id, source_name, comment, created_at").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).order("source_name", { ascending: true }).order("created_at", { ascending: false }),
+    getRestockAddressed(id, currentShift.shiftDate, currentShift.shiftPeriod),
   ]);
   const compartments = (unit?.unit_compartments ?? []).map((compartment: any) => ({
     id: compartment.id,
@@ -51,6 +52,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
     items: target.items,
     itemData: checkDataMap.get(target.id) ?? null,
   })));
+  const addressedKeySet = new Set((addressedRows ?? []).map((row) => `${row.target_type}:${row.target_id}:${row.item_id}`));
   const crewComplete = Boolean(crew?.locked && crew.provider_names?.trim());
   const completedCompartments = checks?.filter((check) => check.status === "completed").length ?? 0;
   const total = targets.length + 1;
@@ -75,6 +77,17 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
         {shouldShowMonthlyCheckReminder(unit?.monthly_check_day ?? null) ? <MonthlyCheckReminderBanner /> : null}
 
         <ShiftResetWarning />
+
+        {restockingList.length > 0 ? (
+          <RestockingListSection
+            addressedKeySet={addressedKeySet}
+            restockingList={restockingList}
+            shiftDate={currentShift.shiftDate}
+            shiftPeriod={currentShift.shiftPeriod}
+            unitId={id}
+            unitName={unit?.name}
+          />
+        ) : null}
 
         <CrewNameLock completedCompartments={completedCompartments} initialLocked={crewComplete} initialProviderNames={crew?.provider_names ?? ""} totalChecks={total} unitId={id} />
 
@@ -123,8 +136,6 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
             <span className="text-xs font-semibold text-slate-500">Maximum 2,000 characters.</span>
           </div>
         </form>
-
-        {restockingList.length > 0 ? <RestockingListSection restockingList={restockingList} unitName={unit?.name} /> : null}
       </section>
     </main>
   );
