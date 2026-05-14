@@ -2,7 +2,7 @@ import { createAdminClient } from "@/lib/supabase/server-admin";
 import { verifyPassword } from "./password";
 
 const ADMIN_COOKIE_NAME = "ec_admin_session";
-const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+const SESSION_TTL_MS = 180 * 24 * 60 * 60 * 1000;
 
 export { ADMIN_COOKIE_NAME };
 

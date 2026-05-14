@@ -21,7 +21,7 @@ export async function signInAdmin(formData: FormData) {
 
   (await cookies()).set(ADMIN_COOKIE_NAME, await createAdminSessionValue(user.username), {
     httpOnly: true,
-    maxAge: 12 * 60 * 60,
+    maxAge: 180 * 24 * 60 * 60,
     path: "/",
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
