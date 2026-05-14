@@ -115,10 +115,6 @@ export function RestockingListSection({ restockingList, unitName, unitId, shiftD
     };
   }, [expanded, shiftDate, shiftPeriod, unitId]);
 
-  useEffect(() => {
-    setAddressedKeySet(initialAddressed);
-  }, [initialAddressed]);
-
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(buildRestockingText(restockingList));
