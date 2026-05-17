@@ -29,16 +29,6 @@ function escapeHtml(value: string) {
   })[character] ?? character);
 }
 
-function getLabelPosition(index: number) {
-  const row = Math.floor(index / 2);
-  const column = index % 2;
-
-  return {
-    top: 0.5 + row * 2,
-    left: 0.5 + column * 3.1875,
-  };
-}
-
 export function PrintButton({ onBeforePrint }: { onBeforePrint?: () => void }) {
   return (
     <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white print:hidden" onClick={() => {
@@ -83,11 +73,8 @@ function PrintRotatedLabelsButton({ codes, unitName }: { codes: QrCode[]; unitNa
         const escapedUnitName = escapeHtml(unitName);
         const sheetHtml = sheets.map((sheet) => `
           <section class="sheet">
-            ${sheet.map((code, labelIndex) => {
-              const position = getLabelPosition(labelIndex);
-
-              return `
-              <div class="label" style="top:${position.top}in;left:${position.left}in;">
+            ${sheet.map((code) => `
+              <div class="label">
                 <div class="rotated">
                   <img alt="${escapedUnitName} ${escapeHtml(code.name)} QR code" src="${code.dataUrl}" />
                   <div class="text">
@@ -97,8 +84,7 @@ function PrintRotatedLabelsButton({ codes, unitName }: { codes: QrCode[]; unitNa
                   </div>
                 </div>
               </div>
-            `;
-            }).join("")}
+            `).join("")}
           </section>
         `).join("");
 
@@ -124,9 +110,12 @@ function PrintRotatedLabelsButton({ codes, unitName }: { codes: QrCode[]; unitNa
                 .sheet {
                   width: 8.5in;
                   height: 11in;
-                  position: relative;
-                  display: block;
-                  padding: 0;
+                  display: grid;
+                  grid-template-columns: repeat(2, 3in);
+                  grid-template-rows: repeat(5, 2in);
+                  column-gap: 0.1875in;
+                  row-gap: 0;
+                  padding: 0.5in;
                   overflow: hidden;
                   break-after: page;
                   page-break-after: always;
@@ -142,7 +131,7 @@ function PrintRotatedLabelsButton({ codes, unitName }: { codes: QrCode[]; unitNa
                 .label {
                   width: 3in;
                   height: 2in;
-                  position: absolute;
+                  position: relative;
                   overflow: hidden;
                   break-inside: avoid;
                   page-break-inside: avoid;
@@ -327,11 +316,8 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
       <div className={`${expanded ? "" : "hidden"} qr-label-print`}>
         {labelSheets.map((sheet, sheetIndex) => (
           <section className="qr-label-sheet" key={sheetIndex}>
-            {sheet.map((code, labelIndex) => {
-              const position = getLabelPosition(labelIndex);
-
-              return (
-              <div key={code.id} className="qr-label" style={{ top: `${position.top}in`, left: `${position.left}in` }}>
+            {sheet.map((code) => (
+              <div key={code.id} className="qr-label">
                 <div className="qr-label-rotated">
                   <img
                     alt={`${unitName} ${code.name} QR code`}
@@ -345,8 +331,7 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
                   </div>
                 </div>
               </div>
-              );
-            })}
+            ))}
           </section>
         ))}
       </div>
