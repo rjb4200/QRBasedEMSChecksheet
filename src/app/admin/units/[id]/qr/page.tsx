@@ -47,15 +47,13 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
           }
 
           .qr-label-sheet {
-            display: grid;
-            grid-template-columns: repeat(2, 3in);
-            grid-template-rows: repeat(5, 2in);
-            column-gap: 0.1875in;
-            row-gap: 0;
+            position: relative;
+            display: block;
             box-sizing: border-box;
             width: 8.5in;
             min-height: 11in;
-            padding: 0.5in;
+            padding: 0;
+            overflow: hidden;
           }
 
           .qr-label-sheet:not(:last-child) {
@@ -64,7 +62,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
           }
 
           .qr-label {
-            position: relative;
+            position: absolute;
             box-sizing: border-box;
             width: 3in;
             height: 2in;
