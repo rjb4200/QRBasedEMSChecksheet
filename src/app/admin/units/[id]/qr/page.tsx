@@ -1,11 +1,13 @@
 import QRCode from "qrcode";
-import { QrCodeGrid } from "./print-button";
+import { QrCodeGrid, RotatedLabelGrid } from "./print-button";
 import { getAppOrigin } from "@/lib/app-url";
 import { getOrCreateQrTarget } from "@/lib/qr-targets";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
-export default async function UnitQrPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function UnitQrPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ format?: string }> }) {
   const { id } = await params;
+  const { format } = await searchParams;
+  const isRotated = format === "3x2-rotated";
   const supabase = createAdminClient();
   const { data: unit } = await supabase
     .from("units")
@@ -35,14 +37,31 @@ export default async function UnitQrPage({ params }: { params: Promise<{ id: str
 
   return (
     <main className="min-h-screen bg-white px-6 py-8 text-slate-950 print:px-0 print:py-0">
-      <style>{`@page { size: letter; margin: 0.75in 0.25in 0.25in 0.25in; }`}</style>
+      {isRotated ? (
+        <style>{`@page { size: letter; margin: 0.5in; }`}</style>
+      ) : (
+        <style>{`@page { size: letter; margin: 0.75in 0.25in 0.25in 0.25in; }`}</style>
+      )}
       <section className="mx-auto max-w-6xl space-y-6 print:max-w-none print:pl-[0.25in]">
         <div className="flex items-end justify-between gap-4 print:hidden">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">QR Codes</p>
             <h1 className="mt-2 text-4xl font-black">{unit?.name}</h1>
-            <p className="mt-2 text-slate-600">Print these labels and place each QR code on the matching physical compartment.</p>
+            <p className="mt-2 text-slate-600">
+              {isRotated
+                ? "3×2 label layout with rotated content. Print at 100% scale with headers/footers off."
+                : "Print these labels and place each QR code on the matching physical compartment."}
+            </p>
           </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 print:hidden">
+          <a className={`rounded-2xl px-5 py-3 font-bold ${!isRotated ? "bg-red-700 text-white" : "border border-slate-300 text-slate-950"}`} href={`/admin/units/${id}/qr`}>
+            Standard
+          </a>
+          <a className={`rounded-2xl px-5 py-3 font-bold ${isRotated ? "bg-red-700 text-white" : "border border-slate-300 text-slate-950"}`} href={`/admin/units/${id}/qr?format=3x2-rotated`}>
+            3×2 Labels
+          </a>
         </div>
 
         <div className="rounded-3xl border border-blue-200 bg-blue-50 p-5 text-blue-950 print:hidden">
@@ -57,7 +76,11 @@ export default async function UnitQrPage({ params }: { params: Promise<{ id: str
           </ul>
         </div>
 
-        <QrCodeGrid codes={codes} unitName={unit?.name ?? "Unit"} />
+        {isRotated ? (
+          <RotatedLabelGrid codes={codes} unitName={unit?.name ?? "Unit"} />
+        ) : (
+          <QrCodeGrid codes={codes} unitName={unit?.name ?? "Unit"} />
+        )}
       </section>
     </main>
   );

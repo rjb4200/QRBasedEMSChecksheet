@@ -132,3 +132,60 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
     </div>
   );
 }
+
+export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
+  const [expanded, setExpanded] = useState(true);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2 print:hidden">
+        <PrintButton />
+        <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={() => setExpanded(!expanded)} type="button">
+          {expanded ? "Collapse All" : "Expand All"}
+        </button>
+      </div>
+
+      <div className={`${expanded ? "" : "hidden"} grid gap-0 print:grid`}
+        style={{
+          gridTemplateColumns: "repeat(2, 3in)",
+          gridAutoRows: "2in",
+          columnGap: "0.1875in",
+        }}
+      >
+        {codes.map((code) => (
+          <div key={code.id} className="overflow-hidden print:break-inside-avoid"
+            style={{ width: "3in", height: "2in", position: "relative" }}
+          >
+            <div className="absolute"
+              style={{
+                top: "50%",
+                left: "50%",
+                width: "2in",
+                height: "3in",
+                transform: "translate(-50%, -50%) rotate(90deg)",
+                transformOrigin: "center center",
+                padding: "0.12in",
+                display: "grid",
+                gridTemplateRows: "1fr auto",
+                alignItems: "center",
+                justifyItems: "center",
+                gap: "0.08in",
+              }}
+            >
+              <img
+                alt={`${unitName} ${code.name} QR code`}
+                src={code.dataUrl}
+                style={{ width: "2in", height: "2in", objectFit: "contain" }}
+              />
+              <div style={{ textAlign: "center", lineHeight: "1.1", maxWidth: "2in" }}>
+                <p style={{ fontSize: "9pt", fontWeight: 700, margin: 0, overflowWrap: "anywhere" }}>{code.name}</p>
+                <p style={{ fontSize: "6pt", margin: "1px 0 0", overflowWrap: "anywhere" }}>{unitName}</p>
+                <p style={{ fontSize: "5pt", margin: "1px 0 0", fontFamily: "monospace", overflowWrap: "anywhere" }}>/q/{code.code}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
