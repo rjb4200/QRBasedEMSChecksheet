@@ -102,9 +102,54 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
           }
         `}</style>
       ) : (
-        <style>{`@page { size: letter; margin: 0.75in 0.25in 0.25in 0.25in; }`}</style>
+        <style>{`
+          @page { size: letter; margin: 0; }
+
+          @media print {
+            html,
+            body {
+              margin: 0;
+              padding: 0;
+              width: 8.5in;
+            }
+
+            main,
+            section {
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+
+            .qr-spartan-sheet {
+              width: 8.5in;
+              height: 11in;
+              position: relative;
+              display: block;
+              box-sizing: border-box;
+              padding: 0;
+              margin: 0;
+              overflow: hidden;
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+
+            .qr-spartan-label {
+              width: 3in;
+              height: 3in;
+              position: absolute;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              overflow: hidden;
+              box-sizing: border-box;
+              padding: 0.12in;
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+          }
+        `}</style>
       )}
-      <section className={`mx-auto max-w-6xl space-y-6 print:max-w-none ${isRotated ? "print:space-y-0" : "print:pl-[0.25in]"}`}>
+      <section className="mx-auto max-w-6xl space-y-6 print:max-w-none print:space-y-0">
         <div className="flex items-end justify-between gap-4 print:hidden">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">QR Codes</p>

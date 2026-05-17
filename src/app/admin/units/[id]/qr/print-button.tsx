@@ -168,6 +168,16 @@ function useLabelPrintSelection(codes: QrCode[], maxPhysicalLabels?: number) {
   };
 }
 
+function getSpartanS004Position(index: number) {
+  const row = Math.floor(index / 2);
+  const column = index % 2;
+
+  return {
+    top: `${1 + row * 3}in`,
+    left: `${1.25 + column * 3}in`,
+  };
+}
+
 function LabelPrintControls({ count, max, onDeselectAll, onPrint, onSelectAll }: { count: number; max?: number; onDeselectAll: () => void; onPrint: () => void; onSelectAll?: () => void }) {
   return (
     <div className="flex flex-wrap items-center gap-2 print:hidden">
@@ -259,14 +269,18 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
         ))}
       </div>
 
-      <div className="hidden print:mx-auto print:grid print:max-w-[576px] print:grid-cols-2 print:gap-0">
+      <div className="hidden print:block print:m-0 print:p-0">
+        <section className="qr-spartan-sheet">
         {selection.printLabels.map((code, index) => (
-          <article id={`qr-print-${code.id}-${index}`} key={`${code.id}-${index}`} className="qr-card break-inside-avoid bg-white p-1 text-center print:h-[288px] print:w-[288px]">
-            <img alt={`${unitName} ${code.name} QR code`} className="mx-auto h-[216px] w-[216px]" src={code.dataUrl} />
-            <h2 className="mt-0.5 text-xs font-black">{unitName}</h2>
-            <p className="text-xs font-semibold text-slate-700">{code.name}</p>
+          <article id={`qr-print-${code.id}-${index}`} key={`${code.id}-${index}`} className="qr-spartan-label" style={getSpartanS004Position(index)}>
+            <img alt={`${unitName} ${code.name} QR code`} src={code.dataUrl} style={{ width: "2.18in", height: "2.18in", objectFit: "contain" }} />
+            <div style={{ textAlign: "center", lineHeight: "1.1", maxWidth: "2.7in" }}>
+              <h2 style={{ fontSize: "9pt", fontWeight: 900, margin: "0.03in 0 0" }}>{unitName}</h2>
+              <p style={{ fontSize: "8pt", fontWeight: 600, margin: "0.03in 0 0", overflowWrap: "anywhere" }}>{code.name}</p>
+            </div>
           </article>
         ))}
+        </section>
       </div>
     </div>
   );
