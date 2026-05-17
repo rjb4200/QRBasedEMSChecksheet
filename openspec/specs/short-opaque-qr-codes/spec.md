@@ -1,4 +1,7 @@
-## ADDED Requirements
+## Purpose
+Define short opaque QR codes, admin QR label printing, and QR/NFC access behavior for unit compartments and assigned kits.
+
+## Requirements
 
 ### Requirement: QR URLs use short opaque codes
 The system SHALL generate printed QR URLs using a short opaque code path `/q/{code}` instead of embedding internal unit, compartment, or unit kit UUIDs in the QR URL.
@@ -135,60 +138,71 @@ The admin QR page SHALL include a compact guidance section explaining that the d
 - **THEN** a guidance block SHALL recommend NTAG216 anti-metal tags (30mm+)
 - **AND** the guidance SHALL explain that programming the URL into an NFC tag enables one-tap compartment access
 
-### Requirement: Admin QR page supports 3x2 rotated label print format
-The admin QR print page SHALL support a 3" × 2" rotated label layout accessible via a `format=3x2-rotated` query parameter.
+### Requirement: Admin QR page supports Spartan S004 and Avery 94237 label formats
+The admin QR print page SHALL provide two label format choices: the default Spartan S004 3" × 3" format and an Avery 94237 2" × 3" format accessible via the `format=3x2-rotated` query parameter.
 
-#### Scenario: Admin selects 3x2 rotated format
-- **WHEN** an admin navigates to the QR print page with `?format=3x2-rotated`
-- **THEN** the page SHALL render a 5-row × 2-column grid of 3" × 2" label cells
-- **AND** each label cell SHALL contain content rotated 90 degrees
-
-#### Scenario: Default format unchanged
+#### Scenario: Admin selects Spartan S004 format
 - **WHEN** an admin navigates to the QR print page without a format parameter
-- **THEN** the existing default QR print grid SHALL render unchanged
+- **THEN** the page SHALL render the Spartan S004 3" × 3" label workflow
+- **AND** the format tab SHALL identify it as Spartan S004 3×3 Labels
 
-### Requirement: Rotated label uses 2x2 QR with identifying text
-Each 3x2 rotated label SHALL display a QR code filling a ~2" × 2" area with the unit name and compartment/kit name in the remaining strip, so that when the label is peeled off and held upright the QR is at the top with the name underneath. Printed 3x2 labels SHALL NOT display visible `/q/{code}` text.
+#### Scenario: Admin selects Avery 94237 format
+- **WHEN** an admin navigates to the QR print page with `?format=3x2-rotated`
+- **THEN** the page SHALL render the Avery 94237 label workflow
+- **AND** the format tab SHALL identify it as Avery 94237 Labels
 
-#### Scenario: Label content renders
-- **WHEN** the 3x2 rotated label layout is active
-- **THEN** each label SHALL show a QR code sized approximately 2" × 2"
-- **AND** the unit name and target name SHALL appear in the remaining 1" strip
-- **AND** visible `/q/{code}` text SHALL NOT appear on the printed label
-- **AND** when the label is turned upright, the QR SHALL appear at the top with text below it
+### Requirement: Admin can select capped QR labels for printing
+The admin QR label page SHALL display all available compartment and assigned-kit labels with controls that determine whether each label is included in print output, while limiting each format to the physical label count supported by that sheet.
 
-#### Scenario: QR code still encodes URL
-- **WHEN** a printed label omits visible `/q/{code}` text
-- **THEN** the QR code SHALL still encode the full valid checkoff URL
-- **AND** scanning the QR code SHALL resolve through the existing `/q/{code}` lookup flow
-
-### Requirement: Admin can select QR labels for printing
-The admin QR label page SHALL display all available compartment and assigned-kit labels with controls that determine whether each label is included in standard and 3x2 print output.
-
-#### Scenario: QR label page loads
-- **WHEN** an admin opens the QR label page for a unit
+#### Scenario: Spartan QR label page loads
+- **WHEN** an admin opens the Spartan S004 QR label page for a unit
 - **THEN** all available QR labels SHALL be visible
-- **AND** every label SHALL default to selected for printing
+- **AND** up to the first 6 physical labels SHALL default to selected for printing
 - **AND** each label SHALL show a print-label selection control
+- **AND** the page SHALL show the selected physical-label count as `N/6`
+
+#### Scenario: Avery QR label page loads
+- **WHEN** an admin opens the Avery 94237 QR label page for a unit
+- **THEN** all available QR labels SHALL be visible
+- **AND** up to the first 8 physical labels SHALL default to selected for printing
+- **AND** each label SHALL show a print-label selection control
+- **AND** the page SHALL show the selected physical-label count as `N/8`
 
 #### Scenario: Admin deselects one label
 - **WHEN** an admin turns off the print-label control for a label
 - **THEN** that label SHALL remain visible on the page
 - **AND** that label SHALL be excluded from print output
+- **AND** the selected physical-label count SHALL decrease
 
-### Requirement: Admin can select or deselect all QR labels
-The admin QR label page SHALL provide page-level controls to select all labels and deselect all labels.
+### Requirement: Capped label formats prevent over-selection
+The Spartan S004 and Avery 94237 print workflows SHALL prevent admins from selecting more physical labels than the current format supports, including duplicate physical copies.
 
-#### Scenario: Admin selects all labels
-- **WHEN** an admin activates Select All
-- **THEN** every available label SHALL become selected for printing
+#### Scenario: Spartan selection limit is reached
+- **WHEN** 6 Spartan S004 physical labels are selected
+- **THEN** selecting another unselected label SHALL be disabled or blocked
+- **AND** enabling a second copy that would exceed 6 physical labels SHALL be disabled or blocked
+- **AND** the page SHALL show a warning that Spartan S004 3x3 supports up to 6 physical labels per print
+
+#### Scenario: Avery selection limit is reached
+- **WHEN** 8 Avery 94237 physical labels are selected
+- **THEN** selecting another unselected label SHALL be disabled or blocked
+- **AND** enabling a second copy that would exceed 8 physical labels SHALL be disabled or blocked
+- **AND** the page SHALL show a warning that Avery 94237 supports up to 8 physical labels per print
+
+### Requirement: Admin can deselect all QR labels
+The admin QR label page SHALL provide a page-level control to deselect all labels in capped label formats.
 
 #### Scenario: Admin deselects all labels
 - **WHEN** an admin activates Deselect All
 - **THEN** every available label SHALL become deselected for printing
+- **AND** the selected physical-label count SHALL become zero
+
+#### Scenario: Capped format omits Select All
+- **WHEN** an admin views the Spartan S004 or Avery 94237 label format
+- **THEN** the page SHALL NOT show a Select All control
 
 ### Requirement: Admin can print selected QR labels
-The admin QR label page SHALL provide a Print Selected action that prints only labels currently selected for printing in both standard and 3x2 formats.
+The admin QR label page SHALL provide a Print Selected action that prints only labels currently selected for printing in both Spartan S004 and Avery 94237 formats.
 
 #### Scenario: Admin prints selected labels
 - **WHEN** an admin activates Print Selected
@@ -201,7 +215,7 @@ The admin QR label page SHALL provide a Print Selected action that prints only l
 - **AND** the system SHALL NOT open an empty print dialog
 
 ### Requirement: Admin can print duplicate physical QR label copies
-Each QR label SHALL provide a second-copy control that optionally prints one additional physical copy using the same QR target and encoded URL in both standard and 3x2 formats.
+Each QR label SHALL provide a second-copy control that optionally prints one additional physical copy using the same QR target and encoded URL in both Spartan S004 and Avery 94237 formats.
 
 #### Scenario: Selected label without second copy
 - **WHEN** a label is selected
@@ -214,6 +228,7 @@ Each QR label SHALL provide a second-copy control that optionally prints one add
 - **THEN** print output SHALL include two physical copies for that label
 - **AND** both physical copies SHALL encode the same URL
 - **AND** both physical copies SHALL reference the same QR target
+- **AND** both physical copies SHALL count toward the current format's physical-label limit
 
 #### Scenario: Deselected label with second copy enabled
 - **WHEN** a label is deselected
@@ -228,24 +243,38 @@ Printing a second physical copy SHALL NOT create a new QR target, QR code record
 - **THEN** the existing QR code image and encoded URL SHALL be reused
 - **AND** no new QR target SHALL be created for the duplicate physical label
 
-### Requirement: Selected QR labels paginate as physical labels
-The 3x2 QR label print output SHALL paginate the rendered physical label list, including duplicate copies, at 10 labels per letter-size page.
+### Requirement: Spartan S004 labels print on a fixed letter-size template
+The Spartan S004 QR label print output SHALL use a fixed letter-size sheet with six absolute-positioned 3" × 3" label cells.
 
-#### Scenario: Duplicate copies fill a sheet
-- **WHEN** 8 labels are selected
-- **AND** 2 selected labels have second copy enabled
-- **THEN** print output SHALL contain 10 physical labels
-- **AND** those physical labels SHALL fit on one 3x2 label sheet
-
-#### Scenario: More than 10 physical labels print
-- **WHEN** the selected labels and duplicate copies produce more than 10 physical labels
-- **THEN** print output SHALL start a new sheet after every 10 physical labels
-- **AND** labels SHALL NOT overlap page breaks
-
-### Requirement: Rotated layout prints correctly at 100% scale
-The rotated label layout SHALL print reliably at 100% scale on letter-size paper without browser scaling.
-
-#### Scenario: Printing rotated labels
-- **WHEN** an admin prints the 3x2 rotated layout
-- **THEN** labels SHALL align to a 2-column × 5-row grid on letter paper
+#### Scenario: Printing Spartan S004 labels
+- **WHEN** an admin prints the Spartan S004 format at 100% scale with browser headers and footers off
+- **THEN** print output SHALL use a letter-size page with zero page margin
+- **AND** labels SHALL align to two columns and three rows of 3" × 3" cells
 - **AND** QR codes SHALL remain scannable after printing
+
+#### Scenario: Spartan printed label content renders
+- **WHEN** a Spartan S004 label prints
+- **THEN** each label SHALL show a QR code sized approximately 2.18" × 2.18"
+- **AND** the unit name and target name SHALL appear below the QR code
+- **AND** visible `/q/{code}` text SHALL NOT appear on the printed label
+
+### Requirement: Avery 94237 labels print on a fixed letter-size template
+The Avery 94237 QR label print output SHALL use a fixed letter-size sheet with eight absolute-positioned 3" × 2" label cells containing rotated content.
+
+#### Scenario: Printing Avery 94237 labels
+- **WHEN** an admin prints the Avery 94237 format at 100% scale with browser headers and footers off
+- **THEN** print output SHALL use a letter-size page with zero page margin
+- **AND** labels SHALL align to two columns and four rows of 3" × 2" cells
+- **AND** QR codes SHALL remain scannable after printing
+
+#### Scenario: Avery printed label content renders
+- **WHEN** an Avery 94237 label prints
+- **THEN** each label SHALL contain content rotated 90 degrees
+- **AND** each label SHALL show a QR code sized approximately 1.92" × 1.92"
+- **AND** the unit name and target name SHALL appear with the QR code
+- **AND** visible `/q/{code}` text SHALL NOT appear on the printed label
+
+#### Scenario: QR code still encodes URL
+- **WHEN** a printed Spartan S004 or Avery 94237 label omits visible `/q/{code}` text
+- **THEN** the QR code SHALL still encode the full valid checkoff URL
+- **AND** scanning the QR code SHALL resolve through the existing `/q/{code}` lookup flow

@@ -1,42 +1,49 @@
 ## ADDED Requirements
 
-### Requirement: Print all formats output for label sheet
-The Print / Save as PDF function on the QR codes page SHALL produce output formatted for the Spartan Industrial S004 label sheet (6 labels per sheet, 3" × 3" each).
+### Requirement: QR label formats output for physical label sheets
+The QR codes page SHALL provide print output formatted for the Spartan Industrial S004 3" × 3" label sheet and the Avery 94237 2" × 3" label sheet.
 
-#### Scenario: Full-sheet print uses 2-column grid
-- **WHEN** user clicks Print / Save as PDF
-- **THEN** the print output SHALL use a 2-column × 3-row grid matching the S004 label layout
+#### Scenario: Spartan S004 format is selected
+- **WHEN** the user opens the QR codes page without a label-format query parameter
+- **THEN** the page SHALL render the Spartan S004 3×3 label format
+- **AND** print output SHALL target six 3" × 3" labels on a letter-size sheet
 
-#### Scenario: Each label is exactly 3in × 3in
+#### Scenario: Avery 94237 format is selected
+- **WHEN** the user opens the QR codes page with `?format=3x2-rotated`
+- **THEN** the page SHALL render the Avery 94237 label format
+- **AND** print output SHALL target eight 3" × 2" labels on a letter-size sheet
+
+### Requirement: Label print selection is capped by sheet capacity
+The QR label print controls SHALL limit selected physical labels to the current sheet capacity, counting duplicate copies as physical labels.
+
+#### Scenario: Spartan S004 reaches capacity
+- **WHEN** six physical labels are selected in the Spartan S004 format
+- **THEN** selecting another label SHALL be disabled or blocked
+- **AND** enabling a duplicate copy that would exceed six physical labels SHALL be disabled or blocked
+
+#### Scenario: Avery 94237 reaches capacity
+- **WHEN** eight physical labels are selected in the Avery 94237 format
+- **THEN** selecting another label SHALL be disabled or blocked
+- **AND** enabling a duplicate copy that would exceed eight physical labels SHALL be disabled or blocked
+
+### Requirement: Spartan S004 print layout uses fixed physical positions
+The Spartan S004 print output SHALL use a letter-size page with zero page margin and absolute-positioned 3" × 3" label cells.
+
+#### Scenario: Spartan S004 labels print
 - **WHEN** the print output renders
-- **THEN** each label SHALL be sized to exactly 3" × 3" to align with the label sheet
+- **THEN** labels SHALL align to two columns and three rows
+- **AND** each label SHALL be sized to 3" × 3"
+- **AND** the QR code SHALL be approximately 2.18" × 2.18"
+- **AND** the unit name and target name SHALL fit inside the label
+- **AND** visible code text and full URL text SHALL NOT appear on the printed label
 
-### Requirement: QR code sized for reliable scanning
-The printed QR code on each label SHALL be large enough for reliable scanning through a plastic badge holder or lamination.
+### Requirement: Avery 94237 print layout uses fixed physical positions
+The Avery 94237 print output SHALL use a letter-size page with zero page margin and absolute-positioned 3" × 2" label cells with rotated label content.
 
-#### Scenario: QR code is ~2.25in
-- **WHEN** the label prints
-- **THEN** the QR code image SHALL be approximately 2.25" × 2.25"
-
-### Requirement: Label text is compact
-Each label SHALL display unit name and compartment/kit name in a compact font size to fit within the 3" × 3" label.
-
-#### Scenario: Text uses small font
-- **WHEN** the label prints
-- **THEN** the unit name SHALL use approximately 12px font
-- **AND** the compartment/kit name SHALL use approximately 12px font
-
-### Requirement: Redundant text removed from print
-The print output SHALL omit information that is encoded in the QR itself.
-
-#### Scenario: Code text removed
-- **WHEN** printing labels
-- **THEN** the "Code:" label text SHALL NOT appear
-- **AND** the full URL SHALL NOT appear
-
-### Requirement: Individual print is unchanged
-The Print This QR button for individual labels SHALL produce the same output as before this change.
-
-#### Scenario: Single label print unaffected
-- **WHEN** user clicks Print This QR for an individual label
-- **THEN** the print output SHALL use the existing individual print format with the original layout, font sizes, and content
+#### Scenario: Avery 94237 labels print
+- **WHEN** the print output renders
+- **THEN** labels SHALL align to two columns and four rows
+- **AND** each label cell SHALL be sized to 3" × 2"
+- **AND** each label's content SHALL be rotated 90 degrees
+- **AND** the QR code SHALL be approximately 1.92" × 1.92"
+- **AND** visible code text and full URL text SHALL NOT appear on the printed label
