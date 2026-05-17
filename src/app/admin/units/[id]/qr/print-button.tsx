@@ -91,7 +91,7 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 print:space-y-0">
       <div className="flex flex-wrap gap-2 print:hidden">
         <PrintButton onBeforePrint={expandAll} />
         <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={allExpanded ? collapseAll : expandAll} type="button">
@@ -135,45 +135,14 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
 
 export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
   const [expanded, setExpanded] = useState(true);
-  const sheets = codes.reduce<QrCode[][]>((acc, code, i) => {
-    const sheetIndex = Math.floor(i / 10);
-    if (!acc[sheetIndex]) acc[sheetIndex] = [];
-    acc[sheetIndex].push(code);
-    return acc;
-  }, []);
+  const labelSheets: QrCode[][] = [];
+
+  for (let index = 0; index < codes.length; index += 10) {
+    labelSheets.push(codes.slice(index, index + 10));
+  }
 
   return (
-    <div className="space-y-4">
-      <style>{`
-        @media print {
-          html, body { margin: 0; padding: 0; }
-          @page { size: letter; margin: 0; }
-          .qr-label-sheet {
-            width: 8.5in;
-            height: 11in;
-            display: grid;
-            grid-template-columns: repeat(2, 3in);
-            grid-template-rows: repeat(5, 2in);
-            column-gap: 0.1875in;
-            row-gap: 0;
-            box-sizing: border-box;
-            padding-top: 0.5in;
-            padding-left: 0.5in;
-            padding-right: 0.5in;
-            padding-bottom: 0.5in;
-            page-break-after: always;
-            break-after: page;
-          }
-          .qr-label-sheet:last-child {
-            page-break-after: auto;
-            break-after: auto;
-          }
-          .qr-label-sheet > * {
-            page-break-inside: avoid;
-            break-inside: avoid;
-          }
-        }
-      `}</style>
+    <div className="space-y-4 print:space-y-0">
       <div className="flex flex-wrap gap-2 print:hidden">
         <PrintButton />
         <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={() => setExpanded(!expanded)} type="button">
@@ -181,38 +150,12 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
         </button>
       </div>
 
-      <div className={expanded ? "" : "hidden"}>
-        {sheets.map((sheet, sheetIndex) => (
-          <div key={sheetIndex} className="qr-label-sheet mx-auto mb-4 print:mb-0"
-            style={{
-              width: "8.5in",
-              display: "grid",
-              gridTemplateColumns: "repeat(2, 3in)",
-              gridTemplateRows: "repeat(5, 2in)",
-              columnGap: "0.1875in",
-              rowGap: 0,
-            }}
-          >
+      <div className={`${expanded ? "" : "hidden"} qr-label-print`}>
+        {labelSheets.map((sheet, sheetIndex) => (
+          <section className="qr-label-sheet" key={sheetIndex}>
             {sheet.map((code) => (
-              <div key={code.id} className="overflow-hidden"
-                style={{ width: "3in", height: "2in", position: "relative" }}
-              >
-                <div className="absolute"
-                  style={{
-                    top: "50%",
-                    left: "50%",
-                    width: "2in",
-                    height: "3in",
-                    transform: "translate(-50%, -50%) rotate(90deg)",
-                    transformOrigin: "center center",
-                    padding: "0.12in",
-                    display: "grid",
-                    gridTemplateRows: "1fr auto",
-                    alignItems: "center",
-                    justifyItems: "center",
-                    gap: "0.08in",
-                  }}
-                >
+              <div key={code.id} className="qr-label">
+                <div className="qr-label-rotated">
                   <img
                     alt={`${unitName} ${code.name} QR code`}
                     src={code.dataUrl}
@@ -226,7 +169,7 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
                 </div>
               </div>
             ))}
-          </div>
+          </section>
         ))}
       </div>
     </div>

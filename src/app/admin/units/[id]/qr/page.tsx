@@ -37,10 +37,76 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
 
   return (
     <main className="min-h-screen bg-white px-6 py-8 text-slate-950 print:px-0 print:py-0">
-      {!isRotated ? (
+      {isRotated ? (
+        <style>{`
+          @page { size: letter; margin: 0; }
+
+          .qr-label-print {
+            margin: 0;
+            padding: 0;
+          }
+
+          .qr-label-sheet {
+            display: grid;
+            grid-template-columns: repeat(2, 3in);
+            grid-template-rows: repeat(5, 2in);
+            column-gap: 0.1875in;
+            row-gap: 0;
+            box-sizing: border-box;
+            width: 8.5in;
+            min-height: 11in;
+            padding: 0.5in;
+          }
+
+          .qr-label-sheet:not(:last-child) {
+            break-after: page;
+            page-break-after: always;
+          }
+
+          .qr-label {
+            position: relative;
+            box-sizing: border-box;
+            width: 3in;
+            height: 2in;
+            overflow: hidden;
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+
+          .qr-label-rotated {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            display: grid;
+            grid-template-rows: 1fr auto;
+            align-items: center;
+            justify-items: center;
+            gap: 0.08in;
+            width: 2in;
+            height: 3in;
+            padding: 0.12in;
+            transform: translate(-50%, -50%) rotate(90deg);
+            transform-origin: center center;
+          }
+
+          @media print {
+            html,
+            body {
+              margin: 0;
+              padding: 0;
+            }
+
+            .qr-label-sheet {
+              height: 11in;
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+          }
+        `}</style>
+      ) : (
         <style>{`@page { size: letter; margin: 0.75in 0.25in 0.25in 0.25in; }`}</style>
-      ) : null}
-      <section className={`mx-auto max-w-6xl space-y-6 ${isRotated ? "print:max-w-none" : "print:max-w-none print:pl-[0.25in]"}`}>
+      )}
+      <section className={`mx-auto max-w-6xl space-y-6 print:max-w-none ${isRotated ? "print:space-y-0" : "print:pl-[0.25in]"}`}>
         <div className="flex items-end justify-between gap-4 print:hidden">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">QR Codes</p>
