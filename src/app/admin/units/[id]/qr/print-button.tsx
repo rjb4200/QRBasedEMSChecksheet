@@ -294,9 +294,9 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
                   <img
                     alt={`${unitName} ${code.name} QR code`}
                     src={code.dataUrl}
-                    style={{ width: "2in", height: "2in", objectFit: "contain" }}
+                    style={{ width: "1.92in", height: "1.92in", objectFit: "contain" }}
                   />
-                  <div style={{ textAlign: "center", lineHeight: "1.1", maxWidth: "2in" }}>
+                  <div style={{ textAlign: "center", lineHeight: "1.1", maxWidth: "1.92in" }}>
                     <p style={{ fontSize: "9pt", fontWeight: 700, margin: 0, overflowWrap: "anywhere" }}>{code.name}</p>
                     <p style={{ fontSize: "6pt", margin: "1px 0 0", overflowWrap: "anywhere" }}>{unitName}</p>
                   </div>

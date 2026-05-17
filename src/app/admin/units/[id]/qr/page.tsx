@@ -57,14 +57,14 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
 
             .qr-label-sheet {
               width: 8.5in;
-              height: 11in;
+              height: 10.94in;
               display: grid;
               grid-template-columns: repeat(2, 3in);
-              grid-template-rows: repeat(5, 2in);
+              grid-template-rows: repeat(5, 1.988in);
               column-gap: 0.1875in;
               row-gap: 0;
               box-sizing: border-box;
-              padding: 0.5in;
+              padding: 0.5in 0.5in 0.5in 0.5in;
               margin: 0;
               break-after: page;
               page-break-after: always;
@@ -79,7 +79,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
 
             .qr-label {
               width: 3in;
-              height: 2in;
+              height: 1.988in;
               position: relative;
               overflow: hidden;
               break-inside: avoid;
@@ -90,8 +90,8 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
               position: absolute;
               top: 50%;
               left: 50%;
-              width: 2in;
-              height: 3in;
+              width: 1.92in;
+              height: 2.88in;
               padding: 0.12in;
               display: grid;
               grid-template-rows: 1fr auto;
