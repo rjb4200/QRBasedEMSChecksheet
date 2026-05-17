@@ -46,6 +46,13 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
             body {
               margin: 0;
               padding: 0;
+              width: 8.5in;
+            }
+
+            main,
+            section {
+              margin: 0 !important;
+              padding: 0 !important;
             }
 
             .qr-label-sheet {
@@ -58,6 +65,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
               row-gap: 0;
               box-sizing: border-box;
               padding: 0.5in;
+              margin: 0;
               break-after: page;
               page-break-after: always;
               break-inside: avoid;

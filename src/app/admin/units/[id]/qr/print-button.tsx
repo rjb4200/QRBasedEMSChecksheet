@@ -177,7 +177,7 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 print:space-y-0">
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <LabelPrintControls count={selection.printLabels.length} onDeselectAll={selection.deselectAll} onPrint={selection.printSelected} onSelectAll={selection.selectAll} />
         <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={allExpanded ? collapseAll : expandAll} type="button">
@@ -246,7 +246,7 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 print:space-y-0">
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <LabelPrintControls count={selection.printLabels.length} onDeselectAll={selection.deselectAll} onPrint={selection.printSelected} onSelectAll={selection.selectAll} />
         <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={() => setExpanded(!expanded)} type="button">
@@ -285,7 +285,7 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
         ))}
       </div>
 
-      <div className="hidden print:block">
+      <div className="hidden print:block print:m-0 print:p-0">
         {sheets.map((sheet, sheetIndex) => (
           <section className="qr-label-sheet" key={sheetIndex}>
             {sheet.map((code, labelIndex) => (
