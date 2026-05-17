@@ -112,14 +112,14 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
             <p className="mt-2 text-slate-600">
               {isRotated
                 ? "Avery 94237 layout: 8 labels per sheet with selectable labels and optional duplicate physical copies. Print at 100% scale with headers/footers off."
-                : "Select the QR labels to print and optionally include duplicate physical copies for unit placement."}
+                : "Spartan Industrial S004 layout: 3×3 square labels, 6 labels per sheet, with selectable labels and optional duplicate physical copies. Print at 100% scale with headers/footers off."}
             </p>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2 print:hidden">
           <a className={`rounded-2xl px-5 py-3 font-bold ${!isRotated ? "bg-red-700 text-white" : "border border-slate-300 text-slate-950"}`} href={`/admin/units/${id}/qr`}>
-            Standard
+            Spartan S004 3×3 Labels
           </a>
           <a className={`rounded-2xl px-5 py-3 font-bold ${isRotated ? "bg-red-700 text-white" : "border border-slate-300 text-slate-950"}`} href={`/admin/units/${id}/qr?format=3x2-rotated`}>
             Avery 94237 Labels
