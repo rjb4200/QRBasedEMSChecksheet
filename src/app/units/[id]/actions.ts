@@ -132,3 +132,104 @@ export async function getRestockAddressed(unitId: string, shiftDate: string, shi
   if (error) throw new Error(error.message);
   return (data ?? []) as { target_type: string; target_id: string; item_id: string }[];
 }
+
+// Manual restock item server actions
+
+const manualRestockAddSchema = z.object({
+  unitId: z.string().uuid(),
+  shiftDate: z.string(),
+  shiftPeriod: z.string(),
+  itemName: z.string().min(1, "Item name is required").max(200),
+  note: z.string().max(1000).default(""),
+  sourceName: z.string().max(100).default("Manual"),
+});
+
+export async function addManualRestockItem(input: z.infer<typeof manualRestockAddSchema>) {
+  const parsed = manualRestockAddSchema.parse(input);
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("daily_manual_restock_items")
+    .insert({
+      unit_id: parsed.unitId,
+      shift_date: parsed.shiftDate,
+      shift_period: parsed.shiftPeriod,
+      item_name: parsed.itemName.trim(),
+      note: parsed.note.trim(),
+      source_name: parsed.sourceName.trim() || "Manual",
+    })
+    .select("id, item_name, note, source_name, addressed, created_at")
+    .single();
+  if (error) throw new Error(error.message);
+  return data as { id: string; item_name: string; note: string; source_name: string; addressed: boolean; created_at: string };
+}
+
+const manualRestockToggleSchema = z.object({
+  itemId: z.string().uuid(),
+  unitId: z.string().uuid(),
+  shiftDate: z.string(),
+  shiftPeriod: z.string(),
+  addressed: z.boolean(),
+});
+
+export async function toggleManualRestockAddressed(input: z.infer<typeof manualRestockToggleSchema>) {
+  const parsed = manualRestockToggleSchema.parse(input);
+  const supabase = createAdminClient();
+
+  if (parsed.addressed) {
+    const { error } = await supabase
+      .from("daily_manual_restock_items")
+      .update({ addressed: true, addressed_at: new Date().toISOString() })
+      .eq("id", parsed.itemId)
+      .eq("unit_id", parsed.unitId);
+    if (error) throw new Error(error.message);
+  } else {
+    const { error } = await supabase
+      .from("daily_manual_restock_items")
+      .update({ addressed: false, addressed_at: null })
+      .eq("id", parsed.itemId)
+      .eq("unit_id", parsed.unitId);
+    if (error) throw new Error(error.message);
+  }
+}
+
+const manualRestockDeleteSchema = z.object({
+  itemId: z.string().uuid(),
+  unitId: z.string().uuid(),
+});
+
+export async function deleteManualRestockItem(input: z.infer<typeof manualRestockDeleteSchema>) {
+  const parsed = manualRestockDeleteSchema.parse(input);
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("daily_manual_restock_items")
+    .delete()
+    .eq("id", parsed.itemId)
+    .eq("unit_id", parsed.unitId);
+  if (error) throw new Error(error.message);
+}
+
+export async function getManualRestockItems(unitId: string, shiftDate: string, shiftPeriod: string) {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("daily_manual_restock_items")
+    .select("id, item_name, note, source_name, addressed")
+    .eq("unit_id", unitId)
+    .eq("shift_date", shiftDate)
+    .eq("shift_period", shiftPeriod)
+    .order("created_at", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as { id: string; item_name: string; note: string; source_name: string; addressed: boolean }[];
+}
+
+export async function getManualRestockAddressed(unitId: string, shiftDate: string, shiftPeriod: string) {
+  const supabase = createAdminClient();
+  const { data, error } = await supabase
+    .from("daily_manual_restock_items")
+    .select("id")
+    .eq("unit_id", unitId)
+    .eq("shift_date", shiftDate)
+    .eq("shift_period", shiftPeriod)
+    .eq("addressed", true);
+  if (error) throw new Error(error.message);
+  return (data ?? []) as { id: string }[];
+}

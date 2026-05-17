@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { CrewNameLock } from "./crew-name-lock";
 import { ShiftResetWarning } from "./shift-reset-warning";
-import { saveDailyUnitComment, getRestockAddressed } from "./actions";
+import { saveDailyUnitComment, getRestockAddressed, getManualRestockItems } from "./actions";
 import { getCurrentShift, getShiftLabel } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { shouldShowMonthlyCheckReminder } from "@/lib/monthly-check";
 import { MonthlyCheckReminderBanner } from "@/components/monthly-check-banner";
-import { buildRestockingList } from "@/lib/restocking-list";
+import { buildRestockingList, type ManualRestockItem } from "@/lib/restocking-list";
 import { RestockingListSection } from "@/components/restocking-list-section";
 
 const statusStyles = {
@@ -20,13 +20,14 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   const { id } = await params;
   const supabase = createAdminClient();
   const currentShift = getCurrentShift();
-  const [{ data: unit }, { data: checks }, { data: crew }, { data: comment }, { data: sectionComments }, addressedRows] = await Promise.all([
+  const [{ data: unit }, { data: checks }, { data: crew }, { data: comment }, { data: sectionComments }, addressedRows, manualItemsData] = await Promise.all([
     supabase.from("units").select("id, name, status, monthly_check_day, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(id, name, kit_items(id, par_level, input_type, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
     supabase.from("compartment_checks").select("compartment_id, unit_kit_id, status, item_data").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
     supabase.from("daily_unit_crews").select("provider_names, locked").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_comments").select("comment").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_section_comments").select("id, source_name, comment, created_at").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).order("source_name", { ascending: true }).order("created_at", { ascending: false }),
     getRestockAddressed(id, currentShift.shiftDate, currentShift.shiftPeriod),
+    getManualRestockItems(id, currentShift.shiftDate, currentShift.shiftPeriod),
   ]);
   const compartments = (unit?.unit_compartments ?? []).map((compartment: any) => ({
     id: compartment.id,
@@ -53,6 +54,17 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
     itemData: checkDataMap.get(target.id) ?? null,
   })));
   const addressedKeySet = new Set((addressedRows ?? []).map((row) => `${row.target_id}:${row.item_id}`));
+  // Merge manual addressed state into the key set with manual: prefix (server-side initialization)
+  (manualItemsData ?? []).forEach((item) => {
+    if (item.addressed) addressedKeySet.add(`manual:${item.id}`);
+  });
+  const manualItems: ManualRestockItem[] = (manualItemsData ?? []).map((item) => ({
+    id: item.id,
+    itemName: item.item_name,
+    note: item.note,
+    sourceName: item.source_name,
+    addressed: item.addressed,
+  }));
   const crewComplete = Boolean(crew?.locked && crew.provider_names?.trim());
   const completedCompartments = checks?.filter((check) => check.status === "completed").length ?? 0;
   const total = targets.length + 1;
@@ -78,9 +90,10 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
 
         <ShiftResetWarning />
 
-        {restockingList.length > 0 ? (
+        {restockingList.length > 0 || manualItems.length > 0 ? (
           <RestockingListSection
             addressedKeySet={addressedKeySet}
+            manualItems={manualItems}
             restockingList={restockingList}
             shiftDate={currentShift.shiftDate}
             shiftPeriod={currentShift.shiftPeriod}

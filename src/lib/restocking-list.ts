@@ -30,6 +30,14 @@ export type RestockingGroup = {
   entries: RestockingEntry[];
 };
 
+export type ManualRestockItem = {
+  id: string;
+  itemName: string;
+  note: string;
+  sourceName: string;
+  addressed: boolean;
+};
+
 function single<T>(value: T | T[] | null | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
