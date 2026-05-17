@@ -10,6 +10,25 @@ type QrCode = {
   dataUrl: string;
 };
 
+function chunkLabels(codes: QrCode[]) {
+  const sheets: QrCode[][] = [];
+
+  for (let index = 0; index < codes.length; index += 10) {
+    sheets.push(codes.slice(index, index + 10));
+  }
+
+  return sheets;
+}
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"]/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+  })[character] ?? character);
+}
+
 export function PrintButton({ onBeforePrint }: { onBeforePrint?: () => void }) {
   return (
     <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white print:hidden" onClick={() => {
@@ -38,6 +57,154 @@ export function PrintSingleQrButton({ targetId }: { targetId: string }) {
       type="button"
     >
       Print This QR
+    </button>
+  );
+}
+
+function PrintRotatedLabelsButton({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
+  return (
+    <button
+      className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white print:hidden"
+      onClick={() => {
+        const printWindow = window.open("", "_blank", "width=900,height=1200");
+        if (!printWindow) return;
+
+        const sheets = chunkLabels(codes);
+        const escapedUnitName = escapeHtml(unitName);
+        const sheetHtml = sheets.map((sheet) => `
+          <section class="sheet">
+            ${sheet.map((code) => `
+              <div class="label">
+                <div class="rotated">
+                  <img alt="${escapedUnitName} ${escapeHtml(code.name)} QR code" src="${code.dataUrl}" />
+                  <div class="text">
+                    <p class="name">${escapeHtml(code.name)}</p>
+                    <p class="unit">${escapedUnitName}</p>
+                    <p class="code">/q/${escapeHtml(code.code)}</p>
+                  </div>
+                </div>
+              </div>
+            `).join("")}
+          </section>
+        `).join("");
+
+        printWindow.document.write(`<!doctype html>
+          <html>
+            <head>
+              <title>3x2 QR Labels</title>
+              <style>
+                @page { size: letter; margin: 0; }
+
+                * { box-sizing: border-box; }
+
+                html,
+                body {
+                  width: 8.5in;
+                  margin: 0;
+                  padding: 0;
+                  background: white;
+                  color: #020617;
+                  font-family: Arial, Helvetica, sans-serif;
+                }
+
+                .sheet {
+                  width: 8.5in;
+                  height: 11in;
+                  display: grid;
+                  grid-template-columns: repeat(2, 3in);
+                  grid-template-rows: repeat(5, 2in);
+                  column-gap: 0.1875in;
+                  row-gap: 0;
+                  padding: 0.5in;
+                  overflow: hidden;
+                  break-after: page;
+                  page-break-after: always;
+                  break-inside: avoid;
+                  page-break-inside: avoid;
+                }
+
+                .sheet:last-child {
+                  break-after: auto;
+                  page-break-after: auto;
+                }
+
+                .label {
+                  width: 3in;
+                  height: 2in;
+                  position: relative;
+                  overflow: hidden;
+                  break-inside: avoid;
+                  page-break-inside: avoid;
+                }
+
+                .rotated {
+                  position: absolute;
+                  top: 50%;
+                  left: 50%;
+                  width: 2in;
+                  height: 3in;
+                  padding: 0.12in;
+                  display: grid;
+                  grid-template-rows: 1fr auto;
+                  align-items: center;
+                  justify-items: center;
+                  gap: 0.08in;
+                  transform: translate(-50%, -50%) rotate(90deg);
+                  transform-origin: center center;
+                }
+
+                img {
+                  width: 2in;
+                  height: 2in;
+                  object-fit: contain;
+                  display: block;
+                }
+
+                .text {
+                  max-width: 2in;
+                  text-align: center;
+                  line-height: 1.1;
+                }
+
+                p { margin: 0; overflow-wrap: anywhere; }
+                .name { font-size: 9pt; font-weight: 700; }
+                .unit { margin-top: 1px; font-size: 6pt; }
+                .code { margin-top: 1px; font: 5pt monospace; }
+
+                @media screen {
+                  body { background: #e2e8f0; }
+                  .sheet { margin: 24px auto; background: white; box-shadow: 0 8px 24px rgb(15 23 42 / 0.16); }
+                }
+
+                @media print {
+                  html,
+                  body {
+                    width: 8.5in;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                  }
+                }
+              </style>
+            </head>
+            <body>
+              ${sheetHtml}
+              <script>
+                const images = Array.from(document.images);
+                Promise.all(images.map((image) => image.complete ? Promise.resolve() : new Promise((resolve) => {
+                  image.onload = resolve;
+                  image.onerror = resolve;
+                }))).then(() => {
+                  window.focus();
+                  window.print();
+                });
+              </script>
+            </body>
+          </html>`);
+        printWindow.document.close();
+      }}
+      type="button"
+    >
+      Print / Save as PDF
     </button>
   );
 }
@@ -135,16 +302,12 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
 
 export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
   const [expanded, setExpanded] = useState(true);
-  const labelSheets: QrCode[][] = [];
-
-  for (let index = 0; index < codes.length; index += 10) {
-    labelSheets.push(codes.slice(index, index + 10));
-  }
+  const labelSheets = chunkLabels(codes);
 
   return (
     <div className="space-y-4 print:space-y-0">
       <div className="flex flex-wrap gap-2 print:hidden">
-        <PrintButton />
+        <PrintRotatedLabelsButton codes={codes} unitName={unitName} />
         <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={() => setExpanded(!expanded)} type="button">
           {expanded ? "Collapse All" : "Expand All"}
         </button>
