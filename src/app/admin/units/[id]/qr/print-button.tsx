@@ -10,6 +10,18 @@ type QrCode = {
   dataUrl: string;
 };
 
+const AVERY_94237_LABELS_PER_SHEET = 8;
+
+function getAvery94237Position(index: number) {
+  const row = Math.floor(index / 2);
+  const column = index % 2;
+
+  return {
+    top: `${0.75 + row * 2.5}in`,
+    left: `${1 + column * 3.5}in`,
+  };
+}
+
 export function PrintButton({ onBeforePrint }: { onBeforePrint?: () => void }) {
   return (
     <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white print:hidden" onClick={() => {
@@ -241,8 +253,8 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
   const selection = useLabelPrintSelection(codes);
 
   const sheets: QrCode[][] = [];
-  for (let index = 0; index < selection.printLabels.length; index += 10) {
-    sheets.push(selection.printLabels.slice(index, index + 10));
+  for (let index = 0; index < selection.printLabels.length; index += AVERY_94237_LABELS_PER_SHEET) {
+    sheets.push(selection.printLabels.slice(index, index + AVERY_94237_LABELS_PER_SHEET));
   }
 
   return (
@@ -289,7 +301,7 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
         {sheets.map((sheet, sheetIndex) => (
           <section className="qr-label-sheet" key={sheetIndex}>
             {sheet.map((code, labelIndex) => (
-              <div key={`${code.id}-${labelIndex}`} className="qr-label">
+              <div key={`${code.id}-${labelIndex}`} className="qr-label" style={getAvery94237Position(labelIndex)}>
                 <div className="qr-label-rotated">
                   <img
                     alt={`${unitName} ${code.name} QR code`}

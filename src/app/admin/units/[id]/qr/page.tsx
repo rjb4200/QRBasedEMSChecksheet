@@ -57,15 +57,13 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
 
             .qr-label-sheet {
               width: 8.5in;
-              height: 10.94in;
-              display: grid;
-              grid-template-columns: repeat(2, 3in);
-              grid-template-rows: repeat(5, 1.988in);
-              column-gap: 0.1875in;
-              row-gap: 0;
+              height: 11in;
+              position: relative;
+              display: block;
               box-sizing: border-box;
-              padding: 0.5in 0.5in 0.5in 0.5in;
+              padding: 0;
               margin: 0;
+              overflow: hidden;
               break-after: page;
               page-break-after: always;
               break-inside: avoid;
@@ -79,8 +77,8 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
 
             .qr-label {
               width: 3in;
-              height: 1.988in;
-              position: relative;
+              height: 2in;
+              position: absolute;
               overflow: hidden;
               break-inside: avoid;
               page-break-inside: avoid;
@@ -113,7 +111,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
             <h1 className="mt-2 text-4xl font-black">{unit?.name}</h1>
             <p className="mt-2 text-slate-600">
               {isRotated
-                ? "3×2 label layout with selectable labels and optional duplicate physical copies. Print at 100% scale with headers/footers off."
+                ? "Avery 94237 layout: 8 labels per sheet with selectable labels and optional duplicate physical copies. Print at 100% scale with headers/footers off."
                 : "Select the QR labels to print and optionally include duplicate physical copies for unit placement."}
             </p>
           </div>
@@ -124,7 +122,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
             Standard
           </a>
           <a className={`rounded-2xl px-5 py-3 font-bold ${isRotated ? "bg-red-700 text-white" : "border border-slate-300 text-slate-950"}`} href={`/admin/units/${id}/qr?format=3x2-rotated`}>
-            3×2 Labels
+            Avery 94237 Labels
           </a>
         </div>
 
