@@ -11,18 +11,14 @@ type QrCode = {
 };
 
 const AVERY_94237_LABELS_PER_SHEET = 8;
-const AVERY_94237_TOP_MARGIN_IN = 0.5;
-const AVERY_94237_LEFT_MARGIN_IN = 1;
-const AVERY_94237_ROW_PITCH_IN = 2.25;
-const AVERY_94237_COLUMN_PITCH_IN = 3.5;
 
 function getAvery94237Position(index: number) {
   const row = Math.floor(index / 2);
   const column = index % 2;
 
   return {
-    top: `${AVERY_94237_TOP_MARGIN_IN + row * AVERY_94237_ROW_PITCH_IN}in`,
-    left: `${AVERY_94237_LEFT_MARGIN_IN + column * AVERY_94237_COLUMN_PITCH_IN}in`,
+    top: `${0.75 + row * 2.5}in`,
+    left: `${1 + column * 3.5}in`,
   };
 }
 

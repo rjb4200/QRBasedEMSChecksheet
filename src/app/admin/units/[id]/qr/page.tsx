@@ -57,7 +57,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
 
             .qr-label-sheet {
               width: 8.5in;
-              height: 9.75in;
+              height: 11in;
               position: relative;
               display: block;
               box-sizing: border-box;
@@ -66,8 +66,6 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
               overflow: hidden;
               break-after: page;
               page-break-after: always;
-              break-before: auto;
-              page-break-before: auto;
               break-inside: avoid;
               page-break-inside: avoid;
             }
