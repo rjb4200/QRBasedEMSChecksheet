@@ -21,27 +21,6 @@ export function PrintButton({ onBeforePrint }: { onBeforePrint?: () => void }) {
   );
 }
 
-export function PrintSingleQrButton({ targetId }: { targetId: string }) {
-  return (
-    <button
-      className="mt-4 rounded-2xl border border-slate-300 bg-white px-4 py-2 font-bold text-slate-950 print:hidden"
-      onClick={() => {
-        const target = document.getElementById(targetId);
-        if (!target) return;
-
-        const printWindow = window.open("", "_blank", "width=520,height=700");
-        if (!printWindow) return;
-
-        printWindow.document.write(`<!doctype html><html><head><title>QR Code</title><style>body{font-family:Arial,sans-serif;margin:24px;color:#020617}.qr-card{border:1px solid #cbd5e1;border-radius:24px;padding:24px;text-align:center}.qr-card img{width:320px;height:320px}button,.print-hidden{display:none}h2{font-size:28px;margin:16px 0 4px}p{font-size:18px;margin:0;color:#334155}</style></head><body>${target.outerHTML}<script>window.onload=()=>{window.print();window.close();}</script></body></html>`);
-        printWindow.document.close();
-      }}
-      type="button"
-    >
-      Print This QR
-    </button>
-  );
-}
-
 function CopyUrlButton({ url }: { url: string }) {
   const [copied, setCopied] = useState(false);
 
@@ -123,7 +102,6 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
                   <p className="break-all text-xs text-slate-500">{code.url}</p>
                   <CopyUrlButton url={code.url} />
                 </div>
-                <PrintSingleQrButton targetId={`qr-${code.id}`} />
               </div>
             </article>
           );
@@ -135,55 +113,138 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
 
 export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
   const [expanded, setExpanded] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(codes.map((code) => code.id)));
+  const [secondCopyIds, setSecondCopyIds] = useState<Set<string>>(() => new Set());
+  const [printAttemptedWithNone, setPrintAttemptedWithNone] = useState(false);
+
+  const printLabels = codes.flatMap((code) => {
+    if (!selectedIds.has(code.id)) return [];
+    return secondCopyIds.has(code.id) ? [code, code] : [code];
+  });
+
+  const sheets: QrCode[][] = [];
+  for (let index = 0; index < printLabels.length; index += 10) {
+    sheets.push(printLabels.slice(index, index + 10));
+  }
+
+  function selectAll() {
+    setSelectedIds(new Set(codes.map((code) => code.id)));
+    setPrintAttemptedWithNone(false);
+  }
+
+  function deselectAll() {
+    setSelectedIds(new Set());
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+    setPrintAttemptedWithNone(false);
+  }
+
+  function toggleSecondCopy(id: string) {
+    setSecondCopyIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  function printSelected() {
+    if (printLabels.length === 0) {
+      setPrintAttemptedWithNone(true);
+      return;
+    }
+
+    setPrintAttemptedWithNone(false);
+    setTimeout(() => window.print(), 0);
+  }
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2 print:hidden">
-        <PrintButton />
+      <div className="flex flex-wrap items-center gap-2 print:hidden">
+        <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" onClick={printSelected} type="button">
+          Print Selected
+        </button>
+        <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={deselectAll} type="button">
+          Deselect All
+        </button>
+        <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={selectAll} type="button">
+          Select All
+        </button>
         <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={() => setExpanded(!expanded)} type="button">
           {expanded ? "Collapse All" : "Expand All"}
         </button>
+        <p className="text-sm font-bold text-slate-600">{printLabels.length} physical label{printLabels.length === 1 ? "" : "s"} selected</p>
       </div>
 
-      <div className={`${expanded ? "" : "hidden"} grid gap-0 print:grid`}
-        style={{
-          gridTemplateColumns: "repeat(2, 3in)",
-          gridAutoRows: "2in",
-          columnGap: "0.1875in",
-        }}
-      >
+      {printAttemptedWithNone ? (
+        <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-800 print:hidden">No labels selected.</p>
+      ) : null}
+
+      <div className={`${expanded ? "" : "hidden"} grid gap-3 md:grid-cols-2 print:hidden`}>
         {codes.map((code) => (
-          <div key={code.id} className="overflow-hidden print:break-inside-avoid"
-            style={{ width: "3in", height: "2in", position: "relative" }}
-          >
-            <div className="absolute"
-              style={{
-                top: "50%",
-                left: "50%",
-                width: "2in",
-                height: "3in",
-                transform: "translate(-50%, -50%) rotate(90deg)",
-                transformOrigin: "center center",
-                padding: "0.12in",
-                display: "grid",
-                gridTemplateRows: "1fr auto",
-                alignItems: "center",
-                justifyItems: "center",
-                gap: "0.08in",
-              }}
-            >
+          <article key={code.id} className="rounded-3xl border border-slate-300 bg-white p-4 shadow-sm">
+            <div className="flex gap-4">
               <img
                 alt={`${unitName} ${code.name} QR code`}
                 src={code.dataUrl}
-                style={{ width: "2in", height: "2in", objectFit: "contain" }}
+                className="h-28 w-28 shrink-0 rounded-xl border border-slate-200 bg-white p-1"
               />
-              <div style={{ textAlign: "center", lineHeight: "1.1", maxWidth: "2in" }}>
-                <p style={{ fontSize: "9pt", fontWeight: 700, margin: 0, overflowWrap: "anywhere" }}>{code.name}</p>
-                <p style={{ fontSize: "6pt", margin: "1px 0 0", overflowWrap: "anywhere" }}>{unitName}</p>
-                <p style={{ fontSize: "5pt", margin: "1px 0 0", fontFamily: "monospace", overflowWrap: "anywhere" }}>/q/{code.code}</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-700">{unitName}</p>
+                <h2 className="mt-1 text-xl font-black text-slate-950">{code.name}</h2>
+                <p className="mt-1 font-mono text-sm font-black text-red-700">Code: {code.code}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <p className="break-all text-xs text-slate-500">{code.url}</p>
+                  <CopyUrlButton url={code.url} />
+                </div>
+                <div className="mt-4 flex flex-wrap gap-4 text-sm font-bold text-slate-800">
+                  <label className="flex items-center gap-2">
+                    <input checked={selectedIds.has(code.id)} className="h-5 w-5 accent-red-700" onChange={() => toggleSelected(code.id)} type="checkbox" />
+                    Print label
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input checked={secondCopyIds.has(code.id)} className="h-5 w-5 accent-red-700" onChange={() => toggleSecondCopy(code.id)} type="checkbox" />
+                    Print second copy
+                  </label>
+                </div>
               </div>
             </div>
-          </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="hidden print:block">
+        {sheets.map((sheet, sheetIndex) => (
+          <section className="qr-label-sheet" key={sheetIndex}>
+            {sheet.map((code, labelIndex) => (
+              <div key={`${code.id}-${labelIndex}`} className="qr-label">
+                <div className="qr-label-rotated">
+                  <img
+                    alt={`${unitName} ${code.name} QR code`}
+                    src={code.dataUrl}
+                    style={{ width: "2in", height: "2in", objectFit: "contain" }}
+                  />
+                  <div style={{ textAlign: "center", lineHeight: "1.1", maxWidth: "2in" }}>
+                    <p style={{ fontSize: "9pt", fontWeight: 700, margin: 0, overflowWrap: "anywhere" }}>{code.name}</p>
+                    <p style={{ fontSize: "6pt", margin: "1px 0 0", overflowWrap: "anywhere" }}>{unitName}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </section>
         ))}
       </div>
     </div>

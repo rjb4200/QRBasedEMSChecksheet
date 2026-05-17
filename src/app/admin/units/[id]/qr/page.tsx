@@ -38,18 +38,74 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
   return (
     <main className="min-h-screen bg-white px-6 py-8 text-slate-950 print:px-0 print:py-0">
       {isRotated ? (
-        <style>{`@page { size: letter; margin: 0.5in; }`}</style>
+        <style>{`
+          @page { size: letter; margin: 0; }
+
+          @media print {
+            html,
+            body {
+              margin: 0;
+              padding: 0;
+            }
+
+            .qr-label-sheet {
+              width: 8.5in;
+              height: 11in;
+              display: grid;
+              grid-template-columns: repeat(2, 3in);
+              grid-template-rows: repeat(5, 2in);
+              column-gap: 0.1875in;
+              row-gap: 0;
+              box-sizing: border-box;
+              padding: 0.5in;
+              break-after: page;
+              page-break-after: always;
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+
+            .qr-label-sheet:last-child {
+              break-after: auto;
+              page-break-after: auto;
+            }
+
+            .qr-label {
+              width: 3in;
+              height: 2in;
+              position: relative;
+              overflow: hidden;
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+
+            .qr-label-rotated {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              width: 2in;
+              height: 3in;
+              padding: 0.12in;
+              display: grid;
+              grid-template-rows: 1fr auto;
+              align-items: center;
+              justify-items: center;
+              gap: 0.08in;
+              transform: translate(-50%, -50%) rotate(90deg);
+              transform-origin: center center;
+            }
+          }
+        `}</style>
       ) : (
         <style>{`@page { size: letter; margin: 0.75in 0.25in 0.25in 0.25in; }`}</style>
       )}
-      <section className="mx-auto max-w-6xl space-y-6 print:max-w-none print:pl-[0.25in]">
+      <section className={`mx-auto max-w-6xl space-y-6 print:max-w-none ${isRotated ? "print:space-y-0" : "print:pl-[0.25in]"}`}>
         <div className="flex items-end justify-between gap-4 print:hidden">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">QR Codes</p>
             <h1 className="mt-2 text-4xl font-black">{unit?.name}</h1>
             <p className="mt-2 text-slate-600">
               {isRotated
-                ? "3×2 label layout with rotated content. Print at 100% scale with headers/footers off."
+                ? "3×2 label layout with selectable labels and optional duplicate physical copies. Print at 100% scale with headers/footers off."
                 : "Print these labels and place each QR code on the matching physical compartment."}
             </p>
           </div>
