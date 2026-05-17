@@ -126,7 +126,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
             <h1 className="mt-2 text-4xl font-black">{unit?.name}</h1>
             <p className="mt-2 text-slate-600">
               {isRotated
-                ? "3×2 label layout with rotated content. Print at 100% scale with headers/footers off."
+                ? "3×2 label layout with rotated content. Open the print PDF and print at actual size."
                 : "Print these labels and place each QR code on the matching physical compartment."}
             </p>
           </div>
@@ -154,7 +154,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
         </div>
 
         {isRotated ? (
-          <RotatedLabelGrid codes={codes} unitName={unit?.name ?? "Unit"} />
+          <RotatedLabelGrid codes={codes} unitId={id} unitName={unit?.name ?? "Unit"} />
         ) : (
           <QrCodeGrid codes={codes} unitName={unit?.name ?? "Unit"} />
         )}

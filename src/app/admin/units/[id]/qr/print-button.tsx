@@ -20,15 +20,6 @@ function chunkLabels(codes: QrCode[]) {
   return sheets;
 }
 
-function escapeHtml(value: string) {
-  return value.replace(/[&<>"]/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    "\"": "&quot;",
-  })[character] ?? character);
-}
-
 function getLabelPosition(index: number) {
   const row = Math.floor(index / 2);
   const column = index % 2;
@@ -71,152 +62,16 @@ export function PrintSingleQrButton({ targetId }: { targetId: string }) {
   );
 }
 
-function PrintRotatedLabelsButton({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
+function PrintRotatedLabelsButton({ unitId }: { unitId: string }) {
   return (
-    <button
+    <a
       className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white print:hidden"
-      onClick={() => {
-        const printWindow = window.open("", "_blank", "width=900,height=1200");
-        if (!printWindow) return;
-
-        const sheets = chunkLabels(codes);
-        const escapedUnitName = escapeHtml(unitName);
-        const sheetHtml = sheets.map((sheet) => `
-          <section class="sheet">
-            ${sheet.map((code, labelIndex) => {
-              const position = getLabelPosition(labelIndex);
-
-              return `
-              <div class="label" style="top:${position.top}in;left:${position.left}in;">
-                <div class="rotated">
-                  <img alt="${escapedUnitName} ${escapeHtml(code.name)} QR code" src="${code.dataUrl}" />
-                  <div class="text">
-                    <p class="name">${escapeHtml(code.name)}</p>
-                    <p class="unit">${escapedUnitName}</p>
-                    <p class="code">/q/${escapeHtml(code.code)}</p>
-                  </div>
-                </div>
-              </div>
-            `;
-            }).join("")}
-          </section>
-        `).join("");
-
-        printWindow.document.write(`<!doctype html>
-          <html>
-            <head>
-              <title>3x2 QR Labels</title>
-              <style>
-                @page { size: letter; margin: 0; }
-
-                * { box-sizing: border-box; }
-
-                html,
-                body {
-                  width: 8.5in;
-                  margin: 0;
-                  padding: 0;
-                  background: white;
-                  color: #020617;
-                  font-family: Arial, Helvetica, sans-serif;
-                }
-
-                .sheet {
-                  width: 8.5in;
-                  height: 11in;
-                  position: relative;
-                  display: block;
-                  padding: 0;
-                  overflow: hidden;
-                  break-after: page;
-                  page-break-after: always;
-                  break-inside: avoid;
-                  page-break-inside: avoid;
-                }
-
-                .sheet:last-child {
-                  break-after: auto;
-                  page-break-after: auto;
-                }
-
-                .label {
-                  width: 3in;
-                  height: 2in;
-                  position: absolute;
-                  overflow: hidden;
-                  break-inside: avoid;
-                  page-break-inside: avoid;
-                }
-
-                .rotated {
-                  position: absolute;
-                  top: 50%;
-                  left: 50%;
-                  width: 2in;
-                  height: 3in;
-                  padding: 0.12in;
-                  display: grid;
-                  grid-template-rows: 1fr auto;
-                  align-items: center;
-                  justify-items: center;
-                  gap: 0.08in;
-                  transform: translate(-50%, -50%) rotate(90deg);
-                  transform-origin: center center;
-                }
-
-                img {
-                  width: 2in;
-                  height: 2in;
-                  object-fit: contain;
-                  display: block;
-                }
-
-                .text {
-                  max-width: 2in;
-                  text-align: center;
-                  line-height: 1.1;
-                }
-
-                p { margin: 0; overflow-wrap: anywhere; }
-                .name { font-size: 9pt; font-weight: 700; }
-                .unit { margin-top: 1px; font-size: 6pt; }
-                .code { margin-top: 1px; font: 5pt monospace; }
-
-                @media screen {
-                  body { background: #e2e8f0; }
-                  .sheet { margin: 24px auto; background: white; box-shadow: 0 8px 24px rgb(15 23 42 / 0.16); }
-                }
-
-                @media print {
-                  html,
-                  body {
-                    width: 8.5in;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                  }
-                }
-              </style>
-            </head>
-            <body>
-              ${sheetHtml}
-              <script>
-                const images = Array.from(document.images);
-                Promise.all(images.map((image) => image.complete ? Promise.resolve() : new Promise((resolve) => {
-                  image.onload = resolve;
-                  image.onerror = resolve;
-                }))).then(() => {
-                  window.focus();
-                  window.print();
-                });
-              </script>
-            </body>
-          </html>`);
-        printWindow.document.close();
-      }}
-      type="button"
+      href={`/api/units/${unitId}/qr-labels`}
+      rel="noreferrer"
+      target="_blank"
     >
-      Print / Save as PDF
-    </button>
+      Open Print PDF
+    </a>
   );
 }
 
@@ -311,14 +166,14 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
   );
 }
 
-export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
+export function RotatedLabelGrid({ codes, unitId, unitName }: { codes: QrCode[]; unitId: string; unitName: string }) {
   const [expanded, setExpanded] = useState(true);
   const labelSheets = chunkLabels(codes);
 
   return (
     <div className="space-y-4 print:space-y-0">
       <div className="flex flex-wrap gap-2 print:hidden">
-        <PrintRotatedLabelsButton codes={codes} unitName={unitName} />
+        <PrintRotatedLabelsButton unitId={unitId} />
         <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={() => setExpanded(!expanded)} type="button">
           {expanded ? "Collapse All" : "Expand All"}
         </button>
