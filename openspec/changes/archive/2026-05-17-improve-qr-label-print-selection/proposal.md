@@ -8,7 +8,7 @@ The current QR label workflow is too rigid because admins can print all labels o
 - Show all QR labels on the unit QR label page by default and default every label to selected.
 - Add page-level Select All, Deselect All, and Print Selected controls.
 - Add per-label controls for whether the label prints and whether it prints a second physical copy.
-- Print only selected labels, with duplicate-copy labels appearing as an additional physical label using the same QR code and URL.
+- Print only selected labels in both standard and 3x2 formats, with duplicate-copy labels appearing as an additional physical label using the same QR code and URL.
 - Remove visible `/q/{code}` short URL text from printed labels while preserving the encoded QR URL and copyable URL behavior for administration/NFC use.
 - Preserve one QR target per checkoff location; duplicate copies are duplicate stickers, not duplicate QR records.
 

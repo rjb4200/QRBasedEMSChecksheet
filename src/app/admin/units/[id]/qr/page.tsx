@@ -106,7 +106,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
             <p className="mt-2 text-slate-600">
               {isRotated
                 ? "3×2 label layout with selectable labels and optional duplicate physical copies. Print at 100% scale with headers/footers off."
-                : "Print these labels and place each QR code on the matching physical compartment."}
+                : "Select the QR labels to print and optionally include duplicate physical copies for unit placement."}
             </p>
           </div>
         </div>

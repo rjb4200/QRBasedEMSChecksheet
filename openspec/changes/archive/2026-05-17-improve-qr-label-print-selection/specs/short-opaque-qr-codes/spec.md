@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Admin can select QR labels for printing
-The admin QR label page SHALL display all available compartment and assigned-kit labels with controls that determine whether each label is included in print output.
+The admin QR label page SHALL display all available compartment and assigned-kit labels with controls that determine whether each label is included in standard and 3x2 print output.
 
 #### Scenario: QR label page loads
 - **WHEN** an admin opens the QR label page for a unit
@@ -26,7 +26,7 @@ The admin QR label page SHALL provide page-level controls to select all labels a
 - **THEN** every available label SHALL become deselected for printing
 
 ### Requirement: Admin can print selected QR labels
-The admin QR label page SHALL provide a Print Selected action that prints only labels currently selected for printing.
+The admin QR label page SHALL provide a Print Selected action that prints only labels currently selected for printing in both standard and 3x2 formats.
 
 #### Scenario: Admin prints selected labels
 - **WHEN** an admin activates Print Selected
@@ -39,7 +39,7 @@ The admin QR label page SHALL provide a Print Selected action that prints only l
 - **AND** the system SHALL NOT open an empty print dialog
 
 ### Requirement: Admin can print duplicate physical QR label copies
-Each QR label SHALL provide a second-copy control that optionally prints one additional physical copy using the same QR target and encoded URL.
+Each QR label SHALL provide a second-copy control that optionally prints one additional physical copy using the same QR target and encoded URL in both standard and 3x2 formats.
 
 #### Scenario: Selected label without second copy
 - **WHEN** a label is selected

@@ -45,87 +45,18 @@ function CopyUrlButton({ url }: { url: string }) {
   );
 }
 
-export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const allExpanded = expandedIds.size === codes.length;
-
-  function expandAll() {
-    setExpandedIds(new Set(codes.map((code) => code.id)));
-  }
-
-  function collapseAll() {
-    setExpandedIds(new Set());
-  }
-
-  function toggle(id: string) {
-    setExpandedIds((current) => {
-      const next = new Set(current);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-2 print:hidden">
-        <PrintButton onBeforePrint={expandAll} />
-        <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={allExpanded ? collapseAll : expandAll} type="button">
-          {allExpanded ? "Collapse All" : "Expand All"}
-        </button>
-      </div>
-
-      <div className="grid gap-3 print:grid-cols-2 print:gap-0 print:mx-auto print:max-w-[576px]">
-        {codes.map((code) => {
-          const expanded = expandedIds.has(code.id);
-
-          return (
-            <article id={`qr-${code.id}`} key={code.id} className="qr-card break-inside-avoid rounded-3xl border border-slate-300 bg-white p-4 print:rounded-none print:border-none print:p-1 print:w-[288px] print:h-[288px] print:mx-auto">
-              <button className="flex w-full items-center justify-between gap-4 text-left print:hidden" onClick={() => toggle(code.id)} type="button">
-                  <span>
-                    <span className="block text-lg font-black">{code.name}</span>
-                    <span className="text-sm font-semibold text-slate-600">{unitName}</span>
-                    <span className="mt-1 block font-mono text-sm font-black text-red-700">{code.code}</span>
-                  </span>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700">{expanded ? "Collapse" : "Expand"}</span>
-              </button>
-
-              <div className={`${expanded ? "mt-4" : "hidden"} text-center print:mt-0 print:block`}>
-                <img alt={`${unitName} ${code.name} QR code`} className="mx-auto h-56 w-56 print:h-[216px] print:w-[216px]" src={code.dataUrl} />
-                <h2 className="mt-4 text-xl font-black print:text-xs print:mt-0.5">{unitName}</h2>
-                <p className="font-semibold text-slate-700 print:text-xs">{code.name}</p>
-                <p className="mt-1 font-mono text-sm font-black text-red-700 print:hidden">Code: {code.code}</p>
-                <div className="mt-2 flex items-center justify-center gap-2 print:hidden">
-                  <p className="break-all text-xs text-slate-500">{code.url}</p>
-                  <CopyUrlButton url={code.url} />
-                </div>
-              </div>
-            </article>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
-  const [expanded, setExpanded] = useState(true);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(codes.map((code) => code.id)));
-  const [secondCopyIds, setSecondCopyIds] = useState<Set<string>>(() => new Set());
-  const [printAttemptedWithNone, setPrintAttemptedWithNone] = useState(false);
-
-  const printLabels = codes.flatMap((code) => {
+function buildPrintLabels(codes: QrCode[], selectedIds: Set<string>, secondCopyIds: Set<string>) {
+  return codes.flatMap((code) => {
     if (!selectedIds.has(code.id)) return [];
     return secondCopyIds.has(code.id) ? [code, code] : [code];
   });
+}
 
-  const sheets: QrCode[][] = [];
-  for (let index = 0; index < printLabels.length; index += 10) {
-    sheets.push(printLabels.slice(index, index + 10));
-  }
+function useLabelPrintSelection(codes: QrCode[]) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(codes.map((code) => code.id)));
+  const [secondCopyIds, setSecondCopyIds] = useState<Set<string>>(() => new Set());
+  const [printAttemptedWithNone, setPrintAttemptedWithNone] = useState(false);
+  const printLabels = buildPrintLabels(codes, selectedIds, secondCopyIds);
 
   function selectAll() {
     setSelectedIds(new Set(codes.map((code) => code.id)));
@@ -171,27 +102,159 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
     setTimeout(() => window.print(), 0);
   }
 
+  return {
+    deselectAll,
+    printAttemptedWithNone,
+    printLabels,
+    printSelected,
+    secondCopyIds,
+    selectAll,
+    selectedIds,
+    toggleSecondCopy,
+    toggleSelected,
+  };
+}
+
+function LabelPrintControls({ count, onDeselectAll, onPrint, onSelectAll }: { count: number; onDeselectAll: () => void; onPrint: () => void; onSelectAll: () => void }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 print:hidden">
+      <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" onClick={onPrint} type="button">
+        Print Selected
+      </button>
+      <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={onDeselectAll} type="button">
+        Deselect All
+      </button>
+      <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={onSelectAll} type="button">
+        Select All
+      </button>
+      <p className="text-sm font-bold text-slate-600">{count} physical label{count === 1 ? "" : "s"} selected</p>
+    </div>
+  );
+}
+
+function EmptyPrintMessage({ show }: { show: boolean }) {
+  return show ? <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-800 print:hidden">No labels selected.</p> : null;
+}
+
+function LabelSelectionControls({ checked, secondCopyChecked, onToggleSecondCopy, onToggleSelected }: { checked: boolean; secondCopyChecked: boolean; onToggleSecondCopy: () => void; onToggleSelected: () => void }) {
+  return (
+    <div className="mt-4 flex flex-wrap gap-4 text-sm font-bold text-slate-800 print:hidden">
+      <label className="flex items-center gap-2">
+        <input checked={checked} className="h-5 w-5 accent-red-700" onChange={onToggleSelected} type="checkbox" />
+        Print label
+      </label>
+      <label className="flex items-center gap-2">
+        <input checked={secondCopyChecked} className="h-5 w-5 accent-red-700" onChange={onToggleSecondCopy} type="checkbox" />
+        Print second copy
+      </label>
+    </div>
+  );
+}
+
+export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set(codes.map((code) => code.id)));
+  const selection = useLabelPrintSelection(codes);
+  const allExpanded = expandedIds.size === codes.length;
+
+  function expandAll() {
+    setExpandedIds(new Set(codes.map((code) => code.id)));
+  }
+
+  function collapseAll() {
+    setExpandedIds(new Set());
+  }
+
+  function toggle(id: string) {
+    setExpandedIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" onClick={printSelected} type="button">
-          Print Selected
+        <LabelPrintControls count={selection.printLabels.length} onDeselectAll={selection.deselectAll} onPrint={selection.printSelected} onSelectAll={selection.selectAll} />
+        <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={allExpanded ? collapseAll : expandAll} type="button">
+          {allExpanded ? "Collapse All" : "Expand All"}
         </button>
-        <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={deselectAll} type="button">
-          Deselect All
-        </button>
-        <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={selectAll} type="button">
-          Select All
-        </button>
+      </div>
+
+      <EmptyPrintMessage show={selection.printAttemptedWithNone} />
+
+      <div className="grid gap-3 print:hidden">
+        {codes.map((code) => {
+          const expanded = expandedIds.has(code.id);
+
+          return (
+            <article id={`qr-${code.id}`} key={code.id} className="qr-card break-inside-avoid rounded-3xl border border-slate-300 bg-white p-4">
+              <button className="flex w-full items-center justify-between gap-4 text-left print:hidden" onClick={() => toggle(code.id)} type="button">
+                  <span>
+                    <span className="block text-lg font-black">{code.name}</span>
+                    <span className="text-sm font-semibold text-slate-600">{unitName}</span>
+                    <span className="mt-1 block font-mono text-sm font-black text-red-700">{code.code}</span>
+                  </span>
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700">{expanded ? "Collapse" : "Expand"}</span>
+              </button>
+
+              <div className={`${expanded ? "mt-4" : "hidden"} text-center print:mt-0 print:block`}>
+                <img alt={`${unitName} ${code.name} QR code`} className="mx-auto h-56 w-56 print:h-[216px] print:w-[216px]" src={code.dataUrl} />
+                <h2 className="mt-4 text-xl font-black print:text-xs print:mt-0.5">{unitName}</h2>
+                <p className="font-semibold text-slate-700 print:text-xs">{code.name}</p>
+                <p className="mt-1 font-mono text-sm font-black text-red-700 print:hidden">Code: {code.code}</p>
+                <div className="mt-2 flex items-center justify-center gap-2 print:hidden">
+                  <p className="break-all text-xs text-slate-500">{code.url}</p>
+                  <CopyUrlButton url={code.url} />
+                </div>
+                <LabelSelectionControls
+                  checked={selection.selectedIds.has(code.id)}
+                  onToggleSecondCopy={() => selection.toggleSecondCopy(code.id)}
+                  onToggleSelected={() => selection.toggleSelected(code.id)}
+                  secondCopyChecked={selection.secondCopyIds.has(code.id)}
+                />
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      <div className="hidden print:mx-auto print:grid print:max-w-[576px] print:grid-cols-2 print:gap-0">
+        {selection.printLabels.map((code, index) => (
+          <article id={`qr-print-${code.id}-${index}`} key={`${code.id}-${index}`} className="qr-card break-inside-avoid bg-white p-1 text-center print:h-[288px] print:w-[288px]">
+            <img alt={`${unitName} ${code.name} QR code`} className="mx-auto h-[216px] w-[216px]" src={code.dataUrl} />
+            <h2 className="mt-0.5 text-xs font-black">{unitName}</h2>
+            <p className="text-xs font-semibold text-slate-700">{code.name}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
+  const [expanded, setExpanded] = useState(true);
+  const selection = useLabelPrintSelection(codes);
+
+  const sheets: QrCode[][] = [];
+  for (let index = 0; index < selection.printLabels.length; index += 10) {
+    sheets.push(selection.printLabels.slice(index, index + 10));
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2 print:hidden">
+        <LabelPrintControls count={selection.printLabels.length} onDeselectAll={selection.deselectAll} onPrint={selection.printSelected} onSelectAll={selection.selectAll} />
         <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={() => setExpanded(!expanded)} type="button">
           {expanded ? "Collapse All" : "Expand All"}
         </button>
-        <p className="text-sm font-bold text-slate-600">{printLabels.length} physical label{printLabels.length === 1 ? "" : "s"} selected</p>
       </div>
 
-      {printAttemptedWithNone ? (
-        <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-800 print:hidden">No labels selected.</p>
-      ) : null}
+      <EmptyPrintMessage show={selection.printAttemptedWithNone} />
 
       <div className={`${expanded ? "" : "hidden"} grid gap-3 md:grid-cols-2 print:hidden`}>
         {codes.map((code) => (
@@ -210,16 +273,12 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
                   <p className="break-all text-xs text-slate-500">{code.url}</p>
                   <CopyUrlButton url={code.url} />
                 </div>
-                <div className="mt-4 flex flex-wrap gap-4 text-sm font-bold text-slate-800">
-                  <label className="flex items-center gap-2">
-                    <input checked={selectedIds.has(code.id)} className="h-5 w-5 accent-red-700" onChange={() => toggleSelected(code.id)} type="checkbox" />
-                    Print label
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input checked={secondCopyIds.has(code.id)} className="h-5 w-5 accent-red-700" onChange={() => toggleSecondCopy(code.id)} type="checkbox" />
-                    Print second copy
-                  </label>
-                </div>
+                <LabelSelectionControls
+                  checked={selection.selectedIds.has(code.id)}
+                  onToggleSecondCopy={() => selection.toggleSecondCopy(code.id)}
+                  onToggleSelected={() => selection.toggleSelected(code.id)}
+                  secondCopyChecked={selection.secondCopyIds.has(code.id)}
+                />
               </div>
             </div>
           </article>

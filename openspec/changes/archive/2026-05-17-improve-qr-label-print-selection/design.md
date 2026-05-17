@@ -6,7 +6,7 @@ The unit QR page currently renders QR codes for compartments and assigned kits a
 
 **Goals:**
 
-- Provide one selectable label print workflow for QR labels.
+- Provide one selectable label print workflow for standard and 3x2 QR labels.
 - Default all labels to visible and selected.
 - Allow admins to select/deselect individual labels and select/deselect all labels.
 - Allow a selected label to print a second physical copy using the same QR URL and QR image.
