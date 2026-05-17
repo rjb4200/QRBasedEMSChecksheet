@@ -96,21 +96,6 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
               padding: 0;
             }
 
-            body * {
-              visibility: hidden;
-            }
-
-            .qr-label-print,
-            .qr-label-print * {
-              visibility: visible;
-            }
-
-            .qr-label-print {
-              position: absolute;
-              top: 0;
-              left: 0;
-            }
-
             .qr-label-sheet {
               height: 11in;
               break-inside: avoid;
