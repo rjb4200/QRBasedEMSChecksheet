@@ -11,6 +11,7 @@ type QrCode = {
 };
 
 const AVERY_94237_LABELS_PER_SHEET = 8;
+const SPARTAN_S004_LABELS_PER_SHEET = 6;
 
 function getAvery94237Position(index: number) {
   const row = Math.floor(index / 2);
@@ -192,8 +193,8 @@ function EmptyPrintMessage({ show }: { show: boolean }) {
   return show ? <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-800 print:hidden">No labels selected.</p> : null;
 }
 
-function SelectionLimitMessage({ max, show }: { max?: number; show: boolean }) {
-  return show && max ? <p className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-bold text-amber-900 print:hidden">Avery 94237 supports up to {max} physical labels per print. Deselect a label or turn off a second copy before adding another.</p> : null;
+function SelectionLimitMessage({ labelName, max, show }: { labelName: string; max?: number; show: boolean }) {
+  return show && max ? <p className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-bold text-amber-900 print:hidden">{labelName} supports up to {max} physical labels per print. Deselect a label or turn off a second copy before adding another.</p> : null;
 }
 
 function LabelSelectionControls({ checked, disabledSecondCopy, disabledSelected, secondCopyChecked, onToggleSecondCopy, onToggleSelected }: { checked: boolean; disabledSecondCopy?: boolean; disabledSelected?: boolean; secondCopyChecked: boolean; onToggleSecondCopy: () => void; onToggleSelected: () => void }) {
@@ -212,62 +213,35 @@ function LabelSelectionControls({ checked, disabledSecondCopy, disabledSelected,
 }
 
 export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set(codes.map((code) => code.id)));
-  const selection = useLabelPrintSelection(codes);
-  const allExpanded = expandedIds.size === codes.length;
-
-  function expandAll() {
-    setExpandedIds(new Set(codes.map((code) => code.id)));
-  }
-
-  function collapseAll() {
-    setExpandedIds(new Set());
-  }
-
-  function toggle(id: string) {
-    setExpandedIds((current) => {
-      const next = new Set(current);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }
+  const [expanded, setExpanded] = useState(true);
+  const selection = useLabelPrintSelection(codes, SPARTAN_S004_LABELS_PER_SHEET);
 
   return (
     <div className="space-y-4 print:space-y-0">
       <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <LabelPrintControls count={selection.printLabels.length} onDeselectAll={selection.deselectAll} onPrint={selection.printSelected} onSelectAll={selection.selectAll} />
-        <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={allExpanded ? collapseAll : expandAll} type="button">
-          {allExpanded ? "Collapse All" : "Expand All"}
+        <LabelPrintControls count={selection.printLabels.length} max={selection.maxPhysicalLabels} onDeselectAll={selection.deselectAll} onPrint={selection.printSelected} />
+        <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={() => setExpanded(!expanded)} type="button">
+          {expanded ? "Collapse All" : "Expand All"}
         </button>
       </div>
 
       <EmptyPrintMessage show={selection.printAttemptedWithNone} />
+      <SelectionLimitMessage labelName="Spartan S004 3x3" max={selection.maxPhysicalLabels} show={selection.limitAttempted || selection.maxReached} />
 
-      <div className="grid gap-3 print:hidden">
-        {codes.map((code) => {
-          const expanded = expandedIds.has(code.id);
-
-          return (
-            <article id={`qr-${code.id}`} key={code.id} className="qr-card break-inside-avoid rounded-3xl border border-slate-300 bg-white p-4">
-              <button className="flex w-full items-center justify-between gap-4 text-left print:hidden" onClick={() => toggle(code.id)} type="button">
-                  <span>
-                    <span className="block text-lg font-black">{code.name}</span>
-                    <span className="text-sm font-semibold text-slate-600">{unitName}</span>
-                    <span className="mt-1 block font-mono text-sm font-black text-red-700">{code.code}</span>
-                  </span>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-bold text-slate-700">{expanded ? "Collapse" : "Expand"}</span>
-              </button>
-
-              <div className={`${expanded ? "mt-4" : "hidden"} text-center print:mt-0 print:block`}>
-                <img alt={`${unitName} ${code.name} QR code`} className="mx-auto h-56 w-56 print:h-[216px] print:w-[216px]" src={code.dataUrl} />
-                <h2 className="mt-4 text-xl font-black print:text-xs print:mt-0.5">{unitName}</h2>
-                <p className="font-semibold text-slate-700 print:text-xs">{code.name}</p>
-                <p className="mt-1 font-mono text-sm font-black text-red-700 print:hidden">Code: {code.code}</p>
-                <div className="mt-2 flex items-center justify-center gap-2 print:hidden">
+      <div className={`${expanded ? "" : "hidden"} grid gap-3 md:grid-cols-2 print:hidden`}>
+        {codes.map((code) => (
+          <article id={`qr-${code.id}`} key={code.id} className="qr-card break-inside-avoid rounded-3xl border border-slate-300 bg-white p-4 shadow-sm">
+            <div className="flex gap-4">
+              <img
+                alt={`${unitName} ${code.name} QR code`}
+                src={code.dataUrl}
+                className="h-28 w-28 shrink-0 rounded-xl border border-slate-200 bg-white p-1"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-700">{unitName}</p>
+                <h2 className="mt-1 text-xl font-black text-slate-950">{code.name}</h2>
+                <p className="mt-1 font-mono text-sm font-black text-red-700">Code: {code.code}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
                   <p className="break-all text-xs text-slate-500">{code.url}</p>
                   <CopyUrlButton url={code.url} />
                 </div>
@@ -280,9 +254,9 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
                   secondCopyChecked={selection.secondCopyIds.has(code.id)}
                 />
               </div>
-            </article>
-          );
-        })}
+            </div>
+          </article>
+        ))}
       </div>
 
       <div className="hidden print:mx-auto print:grid print:max-w-[576px] print:grid-cols-2 print:gap-0">
@@ -317,7 +291,7 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
       </div>
 
       <EmptyPrintMessage show={selection.printAttemptedWithNone} />
-      <SelectionLimitMessage max={selection.maxPhysicalLabels} show={selection.limitAttempted || selection.maxReached} />
+      <SelectionLimitMessage labelName="Avery 94237" max={selection.maxPhysicalLabels} show={selection.limitAttempted || selection.maxReached} />
 
       <div className={`${expanded ? "" : "hidden"} grid gap-3 md:grid-cols-2 print:hidden`}>
         {codes.map((code) => (
