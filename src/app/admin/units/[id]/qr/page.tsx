@@ -37,12 +37,10 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
 
   return (
     <main className="min-h-screen bg-white px-6 py-8 text-slate-950 print:px-0 print:py-0">
-      {isRotated ? (
-        <style>{`@page { size: letter; margin: 0.5in; }`}</style>
-      ) : (
+      {!isRotated ? (
         <style>{`@page { size: letter; margin: 0.75in 0.25in 0.25in 0.25in; }`}</style>
-      )}
-      <section className="mx-auto max-w-6xl space-y-6 print:max-w-none print:pl-[0.25in]">
+      ) : null}
+      <section className={`mx-auto max-w-6xl space-y-6 ${isRotated ? "print:max-w-none" : "print:max-w-none print:pl-[0.25in]"}`}>
         <div className="flex items-end justify-between gap-4 print:hidden">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">QR Codes</p>
