@@ -64,19 +64,28 @@ function buildPrintLabels(codes: QrCode[], selectedIds: Set<string>, secondCopyI
   });
 }
 
-function useLabelPrintSelection(codes: QrCode[]) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(codes.map((code) => code.id)));
+function useLabelPrintSelection(codes: QrCode[], maxPhysicalLabels?: number) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set(codes.slice(0, maxPhysicalLabels).map((code) => code.id)));
   const [secondCopyIds, setSecondCopyIds] = useState<Set<string>>(() => new Set());
   const [printAttemptedWithNone, setPrintAttemptedWithNone] = useState(false);
+  const [limitAttempted, setLimitAttempted] = useState(false);
   const printLabels = buildPrintLabels(codes, selectedIds, secondCopyIds);
+  const maxReached = typeof maxPhysicalLabels === "number" && printLabels.length >= maxPhysicalLabels;
+
+  function wouldExceedLimit(nextSelectedIds: Set<string>, nextSecondCopyIds: Set<string>) {
+    return typeof maxPhysicalLabels === "number" && buildPrintLabels(codes, nextSelectedIds, nextSecondCopyIds).length > maxPhysicalLabels;
+  }
 
   function selectAll() {
-    setSelectedIds(new Set(codes.map((code) => code.id)));
+    setSelectedIds(new Set(codes.slice(0, maxPhysicalLabels).map((code) => code.id)));
+    setSecondCopyIds(new Set());
     setPrintAttemptedWithNone(false);
+    setLimitAttempted(false);
   }
 
   function deselectAll() {
     setSelectedIds(new Set());
+    setLimitAttempted(false);
   }
 
   function toggleSelected(id: string) {
@@ -86,7 +95,12 @@ function useLabelPrintSelection(codes: QrCode[]) {
         next.delete(id);
       } else {
         next.add(id);
+        if (wouldExceedLimit(next, secondCopyIds)) {
+          setLimitAttempted(true);
+          return current;
+        }
       }
+      setLimitAttempted(false);
       return next;
     });
     setPrintAttemptedWithNone(false);
@@ -99,9 +113,30 @@ function useLabelPrintSelection(codes: QrCode[]) {
         next.delete(id);
       } else {
         next.add(id);
+        if (wouldExceedLimit(selectedIds, next)) {
+          setLimitAttempted(true);
+          return current;
+        }
       }
+      setLimitAttempted(false);
       return next;
     });
+  }
+
+  function canSelect(code: QrCode) {
+    if (selectedIds.has(code.id) || typeof maxPhysicalLabels !== "number") return true;
+    const nextSelectedIds = new Set(selectedIds);
+    nextSelectedIds.add(code.id);
+    return !wouldExceedLimit(nextSelectedIds, secondCopyIds);
+  }
+
+  function canAddSecondCopy(code: QrCode) {
+    if (secondCopyIds.has(code.id)) return true;
+    if (!selectedIds.has(code.id)) return false;
+    if (typeof maxPhysicalLabels !== "number") return true;
+    const nextSecondCopyIds = new Set(secondCopyIds);
+    nextSecondCopyIds.add(code.id);
+    return !wouldExceedLimit(selectedIds, nextSecondCopyIds);
   }
 
   function printSelected() {
@@ -116,6 +151,11 @@ function useLabelPrintSelection(codes: QrCode[]) {
 
   return {
     deselectAll,
+    canAddSecondCopy,
+    canSelect,
+    limitAttempted,
+    maxPhysicalLabels,
+    maxReached,
     printAttemptedWithNone,
     printLabels,
     printSelected,
@@ -127,7 +167,7 @@ function useLabelPrintSelection(codes: QrCode[]) {
   };
 }
 
-function LabelPrintControls({ count, onDeselectAll, onPrint, onSelectAll }: { count: number; onDeselectAll: () => void; onPrint: () => void; onSelectAll: () => void }) {
+function LabelPrintControls({ count, max, onDeselectAll, onPrint, onSelectAll }: { count: number; max?: number; onDeselectAll: () => void; onPrint: () => void; onSelectAll?: () => void }) {
   return (
     <div className="flex flex-wrap items-center gap-2 print:hidden">
       <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" onClick={onPrint} type="button">
@@ -136,10 +176,14 @@ function LabelPrintControls({ count, onDeselectAll, onPrint, onSelectAll }: { co
       <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={onDeselectAll} type="button">
         Deselect All
       </button>
-      <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={onSelectAll} type="button">
-        Select All
-      </button>
-      <p className="text-sm font-bold text-slate-600">{count} physical label{count === 1 ? "" : "s"} selected</p>
+      {onSelectAll ? (
+        <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={onSelectAll} type="button">
+          Select All
+        </button>
+      ) : null}
+      <p className={`rounded-2xl px-4 py-2 text-sm font-black ${max && count >= max ? "bg-amber-100 text-amber-900" : "bg-slate-100 text-slate-700"}`}>
+        {count}{max ? `/${max}` : ""} physical label{count === 1 ? "" : "s"} selected
+      </p>
     </div>
   );
 }
@@ -148,15 +192,19 @@ function EmptyPrintMessage({ show }: { show: boolean }) {
   return show ? <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-800 print:hidden">No labels selected.</p> : null;
 }
 
-function LabelSelectionControls({ checked, secondCopyChecked, onToggleSecondCopy, onToggleSelected }: { checked: boolean; secondCopyChecked: boolean; onToggleSecondCopy: () => void; onToggleSelected: () => void }) {
+function SelectionLimitMessage({ max, show }: { max?: number; show: boolean }) {
+  return show && max ? <p className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm font-bold text-amber-900 print:hidden">Avery 94237 supports up to {max} physical labels per print. Deselect a label or turn off a second copy before adding another.</p> : null;
+}
+
+function LabelSelectionControls({ checked, disabledSecondCopy, disabledSelected, secondCopyChecked, onToggleSecondCopy, onToggleSelected }: { checked: boolean; disabledSecondCopy?: boolean; disabledSelected?: boolean; secondCopyChecked: boolean; onToggleSecondCopy: () => void; onToggleSelected: () => void }) {
   return (
     <div className="mt-4 flex flex-wrap gap-4 text-sm font-bold text-slate-800 print:hidden">
-      <label className="flex items-center gap-2">
-        <input checked={checked} className="h-5 w-5 accent-red-700" onChange={onToggleSelected} type="checkbox" />
+      <label className={`flex items-center gap-2 ${disabledSelected ? "text-slate-400" : ""}`}>
+        <input checked={checked} className="h-5 w-5 accent-red-700 disabled:accent-slate-300" disabled={disabledSelected} onChange={onToggleSelected} type="checkbox" />
         Print label
       </label>
-      <label className="flex items-center gap-2">
-        <input checked={secondCopyChecked} className="h-5 w-5 accent-red-700" onChange={onToggleSecondCopy} type="checkbox" />
+      <label className={`flex items-center gap-2 ${disabledSecondCopy ? "text-slate-400" : ""}`}>
+        <input checked={secondCopyChecked} className="h-5 w-5 accent-red-700 disabled:accent-slate-300" disabled={disabledSecondCopy} onChange={onToggleSecondCopy} type="checkbox" />
         Print second copy
       </label>
     </div>
@@ -225,6 +273,8 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
                 </div>
                 <LabelSelectionControls
                   checked={selection.selectedIds.has(code.id)}
+                  disabledSecondCopy={!selection.canAddSecondCopy(code)}
+                  disabledSelected={!selection.canSelect(code)}
                   onToggleSecondCopy={() => selection.toggleSecondCopy(code.id)}
                   onToggleSelected={() => selection.toggleSelected(code.id)}
                   secondCopyChecked={selection.secondCopyIds.has(code.id)}
@@ -250,7 +300,7 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
 
 export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
   const [expanded, setExpanded] = useState(true);
-  const selection = useLabelPrintSelection(codes);
+  const selection = useLabelPrintSelection(codes, AVERY_94237_LABELS_PER_SHEET);
 
   const sheets: QrCode[][] = [];
   for (let index = 0; index < selection.printLabels.length; index += AVERY_94237_LABELS_PER_SHEET) {
@@ -260,13 +310,14 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
   return (
     <div className="space-y-4 print:space-y-0">
       <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <LabelPrintControls count={selection.printLabels.length} onDeselectAll={selection.deselectAll} onPrint={selection.printSelected} onSelectAll={selection.selectAll} />
+        <LabelPrintControls count={selection.printLabels.length} max={selection.maxPhysicalLabels} onDeselectAll={selection.deselectAll} onPrint={selection.printSelected} />
         <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={() => setExpanded(!expanded)} type="button">
           {expanded ? "Collapse All" : "Expand All"}
         </button>
       </div>
 
       <EmptyPrintMessage show={selection.printAttemptedWithNone} />
+      <SelectionLimitMessage max={selection.maxPhysicalLabels} show={selection.limitAttempted || selection.maxReached} />
 
       <div className={`${expanded ? "" : "hidden"} grid gap-3 md:grid-cols-2 print:hidden`}>
         {codes.map((code) => (
@@ -287,6 +338,8 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
                 </div>
                 <LabelSelectionControls
                   checked={selection.selectedIds.has(code.id)}
+                  disabledSecondCopy={!selection.canAddSecondCopy(code)}
+                  disabledSelected={!selection.canSelect(code)}
                   onToggleSecondCopy={() => selection.toggleSecondCopy(code.id)}
                   onToggleSelected={() => selection.toggleSelected(code.id)}
                   secondCopyChecked={selection.secondCopyIds.has(code.id)}
