@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { getCurrentAdminLogActor, logSystemEvent } from "@/lib/system-log";
 
 type SupabaseAdmin = ReturnType<typeof createAdminClient>;
 
@@ -48,6 +49,16 @@ export async function createKit(formData: FormData) {
     .select("id")
     .single();
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "kits",
+    action: "kit.created",
+    targetType: "kit",
+    targetId: data.id,
+    targetName: parsed.name.trim(),
+    afterData: { name: parsed.name.trim(), description: parsed.description?.trim() || null, sort_order: parsed.sortOrder, active: parsed.active },
+  });
   redirect(`/admin/kits/${data.id}`);
 }
 
@@ -60,6 +71,7 @@ export async function updateKit(formData: FormData) {
     active: formData.get("active") === "on",
   });
   const supabase = createAdminClient();
+  const { data: before } = await supabase.from("kits").select("name, description, sort_order, active").eq("id", parsed.id).maybeSingle();
   const { error } = await supabase
     .from("kits")
     .update({
@@ -70,6 +82,17 @@ export async function updateKit(formData: FormData) {
     })
     .eq("id", parsed.id);
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "kits",
+    action: "kit.updated",
+    targetType: "kit",
+    targetId: parsed.id,
+    targetName: parsed.name.trim(),
+    beforeData: before ?? null,
+    afterData: { name: parsed.name.trim(), description: parsed.description?.trim() || null, sort_order: parsed.sortOrder, active: parsed.active },
+  });
   revalidatePath("/admin/kits");
   revalidatePath(`/admin/kits/${parsed.id}`);
 }
@@ -77,6 +100,7 @@ export async function updateKit(formData: FormData) {
 export async function deleteKit(formData: FormData) {
   const id = z.string().uuid().parse(formData.get("id"));
   const supabase = createAdminClient();
+  const { data: before } = await supabase.from("kits").select("name, active").eq("id", id).maybeSingle();
   const { count, error: countError } = await supabase
     .from("unit_kits")
     .select("id", { count: "exact", head: true })
@@ -85,6 +109,16 @@ export async function deleteKit(formData: FormData) {
   if ((count ?? 0) > 0) throw new Error("Cannot delete a kit while it is assigned to units.");
   const { error } = await supabase.from("kits").delete().eq("id", id);
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "kits",
+    action: "kit.deleted",
+    targetType: "kit",
+    targetId: id,
+    targetName: before?.name ?? null,
+    beforeData: before ?? null,
+  });
   revalidatePath("/admin/kits");
   redirect("/admin/kits");
 }
@@ -119,6 +153,17 @@ export async function copyKit(formData: FormData) {
     const { error: itemError } = await supabase.from("kit_items").insert(items);
     if (itemError) throw new Error(itemError.message);
   }
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "kits",
+    action: "kit.copied",
+    targetType: "kit",
+    targetId: kit.id,
+    targetName: parsed.name.trim(),
+    afterData: { name: parsed.name.trim(), item_count: items.length },
+    metadata: { source_kit_id: parsed.kitId },
+  });
   redirect(`/admin/kits/${kit.id}`);
 }
 
@@ -156,6 +201,17 @@ export async function createKitFromCompartment(formData: FormData) {
     const { error: itemError } = await supabase.from("kit_items").insert(items);
     if (itemError) throw new Error(itemError.message);
   }
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "kits",
+    action: "kit.created_from_compartment",
+    targetType: "kit",
+    targetId: kit.id,
+    targetName: parsed.name.trim(),
+    afterData: { name: parsed.name.trim(), item_count: items.length },
+    metadata: { source_compartment_id: parsed.sourceCompartmentId },
+  });
   redirect(`/admin/kits/${kit.id}`);
 }
 
@@ -188,6 +244,15 @@ export async function addKitItem(formData: FormData) {
     group_id: parsed.groupId,
   }, { onConflict: "kit_id,equipment_id" });
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "kits",
+    action: "kit_item.saved",
+    targetType: "kit",
+    targetId: parsed.kitId,
+    afterData: { equipment_id: parsed.equipmentId, group_id: parsed.groupId },
+  });
   revalidatePath(`/admin/kits/${parsed.kitId}`);
 }
 
@@ -202,6 +267,15 @@ export async function updateKitItem(formData: FormData) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("kit_items").update({ par_level: parsed.parLevel, sort_order: parsed.sortOrder, group_id: parsed.groupId }).eq("id", parsed.itemId);
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "kits",
+    action: "kit_item.updated",
+    targetType: "kit",
+    targetId: parsed.kitId,
+    afterData: { item_id: parsed.itemId, par_level: parsed.parLevel, sort_order: parsed.sortOrder, group_id: parsed.groupId },
+  });
   revalidatePath(`/admin/kits/${parsed.kitId}`);
 }
 
@@ -210,6 +284,15 @@ export async function deleteKitItem(formData: FormData) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("kit_items").delete().eq("id", parsed.itemId);
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "kits",
+    action: "kit_item.deleted",
+    targetType: "kit",
+    targetId: parsed.kitId,
+    beforeData: { item_id: parsed.itemId },
+  });
   revalidatePath(`/admin/kits/${parsed.kitId}`);
 }
 
@@ -233,6 +316,15 @@ export async function createKitGroup(formData: FormData) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("kit_item_groups").upsert({ kit_id: parsed.kitId, name: parsed.name.trim(), sort_order: parsed.sortOrder }, { onConflict: "kit_id,name" });
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "kits",
+    action: "kit_item_group.saved",
+    targetType: "kit",
+    targetId: parsed.kitId,
+    afterData: { name: parsed.name.trim(), sort_order: parsed.sortOrder },
+  });
   revalidatePath(`/admin/kits/${parsed.kitId}`);
 }
 
@@ -241,6 +333,15 @@ export async function updateKitGroup(formData: FormData) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("kit_item_groups").update({ name: parsed.name.trim(), sort_order: parsed.sortOrder }).eq("id", parsed.groupId);
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "kits",
+    action: "kit_item_group.updated",
+    targetType: "kit",
+    targetId: parsed.kitId,
+    afterData: { group_id: parsed.groupId, name: parsed.name.trim(), sort_order: parsed.sortOrder },
+  });
   revalidatePath(`/admin/kits/${parsed.kitId}`);
 }
 
@@ -249,5 +350,14 @@ export async function deleteKitGroup(formData: FormData) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("kit_item_groups").delete().eq("id", parsed.groupId);
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "kits",
+    action: "kit_item_group.deleted",
+    targetType: "kit",
+    targetId: parsed.kitId,
+    beforeData: { group_id: parsed.groupId },
+  });
   revalidatePath(`/admin/kits/${parsed.kitId}`);
 }

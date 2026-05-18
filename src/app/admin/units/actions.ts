@@ -5,8 +5,14 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { refreshDailyUnitLedgers, upsertTodayUnitLedger } from "@/lib/daily-unit-ledgers";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { getCurrentAdminLogActor, logSystemEvent } from "@/lib/system-log";
 
 type SupabaseAdmin = ReturnType<typeof createAdminClient>;
+
+async function getUnitName(supabase: SupabaseAdmin, unitId: string) {
+  const { data } = await supabase.from("units").select("name").eq("id", unitId).maybeSingle();
+  return data?.name ?? null;
+}
 
 async function copyCompartmentGroups(supabase: SupabaseAdmin, sourceGroups: any[] = [], destinationCompartmentId: string) {
   const groupMap = new Map<string, string>();
@@ -90,6 +96,17 @@ export async function createUnit(formData: FormData) {
 
   await refreshDailyUnitLedgers(supabase);
 
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "fleet",
+    action: "unit.created",
+    targetType: "unit",
+    targetId: unit.id,
+    targetName: parsed.name,
+    afterData: { name: parsed.name, unit_kind: parsed.unitKind, source_unit_id: parsed.sourceUnitId ?? null },
+  });
+
   redirect(`/admin/units/${unit.id}`);
 }
 
@@ -100,9 +117,21 @@ export async function toggleUnitStatus(formData: FormData) {
     statusNote: formData.get("status_note") || undefined,
   });
   const supabase = createAdminClient();
+  const { data: before } = await supabase.from("units").select("name, status").eq("id", parsed.id).maybeSingle();
   const { error } = await supabase.from("units").update({ status: parsed.status }).eq("id", parsed.id);
   if (error) throw new Error(error.message);
   await upsertTodayUnitLedger(supabase, parsed.id, { status: parsed.status, statusNote: parsed.status === "in_service" ? null : parsed.statusNote });
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "fleet",
+    action: "unit.status_changed",
+    targetType: "unit",
+    targetId: parsed.id,
+    targetName: before?.name ?? null,
+    beforeData: { status: before?.status ?? null },
+    afterData: { status: parsed.status, status_note: parsed.status === "in_service" ? null : parsed.statusNote ?? null },
+  });
   revalidatePath("/");
   revalidatePath("/admin/units");
   revalidatePath(`/admin/units/${parsed.id}`);
@@ -128,9 +157,21 @@ export async function updateUnitMonthlyCheckDay(formData: FormData) {
 export async function deleteUnit(formData: FormData) {
   const id = z.string().uuid().parse(formData.get("id"));
   const supabase = createAdminClient();
+  const { data: before } = await supabase.from("units").select("name, status").eq("id", id).maybeSingle();
   const { error } = await supabase.from("units").update({ deleted_at: new Date().toISOString(), status: "out_of_service" }).eq("id", id);
   if (error) throw new Error(error.message);
   await upsertTodayUnitLedger(supabase, id, { status: "out_of_service", archived: true, statusNote: "Archived" });
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "fleet",
+    action: "unit.archived",
+    targetType: "unit",
+    targetId: id,
+    targetName: before?.name ?? null,
+    beforeData: { status: before?.status ?? null },
+    afterData: { status: "out_of_service", archived: true },
+  });
   revalidatePath("/");
   revalidatePath("/admin/units");
 }
@@ -145,6 +186,16 @@ export async function addUnitCompartment(formData: FormData) {
   const { error } = await supabase.from("unit_compartments").upsert({ unit_id: parsed.unitId, name: parsed.name, sort_order: parsed.sortOrder }, { onConflict: "unit_id,name" });
   if (error) throw new Error(error.message);
   await upsertTodayUnitLedger(supabase, parsed.unitId);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "fleet",
+    action: "compartment.saved",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    afterData: { compartment_name: parsed.name, sort_order: parsed.sortOrder },
+  });
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
@@ -185,6 +236,18 @@ export async function importUnitCompartment(formData: FormData) {
     const { error: itemError } = await supabase.from("unit_compartment_items").upsert(items, { onConflict: "compartment_id,equipment_id" });
     if (itemError) throw new Error(itemError.message);
   }
+
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "fleet",
+    action: "compartment.imported",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    afterData: { compartment_id: newCompartment.id, compartment_name: parsed.name?.trim() || source.name, item_count: items.length },
+    metadata: { source_compartment_id: parsed.sourceCompartmentId },
+  });
 
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
@@ -236,6 +299,18 @@ export async function cloneKitToUnitCompartment(formData: FormData) {
     if (itemError) throw new Error(itemError.message);
   }
 
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "fleet",
+    action: "compartment.cloned_from_kit",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    afterData: { compartment_id: newCompartment.id, compartment_name: parsed.name?.trim() || kit.name, item_count: items.length },
+    metadata: { kit_id: parsed.kitId, kit_name: kit.name },
+  });
+
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
@@ -253,24 +328,56 @@ export async function assignKitToUnit(formData: FormData) {
   }, { onConflict: "unit_id,kit_id" });
   if (error) throw new Error(error.message);
   await upsertTodayUnitLedger(supabase, parsed.unitId);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "kits",
+    action: "unit_kit.assigned",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    afterData: { kit_id: parsed.kitId, sort_order: parsed.sortOrder },
+  });
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
 export async function removeKitFromUnit(formData: FormData) {
   const parsed = z.object({ unitId: z.string().uuid(), unitKitId: z.string().uuid() }).parse({ unitId: formData.get("unitId"), unitKitId: formData.get("unitKitId") });
   const supabase = createAdminClient();
+  const { data: before } = await supabase.from("unit_kits").select("kit_id").eq("id", parsed.unitKitId).maybeSingle();
   const { error } = await supabase.from("unit_kits").delete().eq("id", parsed.unitKitId).eq("unit_id", parsed.unitId);
   if (error) throw new Error(error.message);
   await upsertTodayUnitLedger(supabase, parsed.unitId);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "kits",
+    action: "unit_kit.removed",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    beforeData: { unit_kit_id: parsed.unitKitId, kit_id: before?.kit_id ?? null },
+  });
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
 export async function deleteUnitCompartment(formData: FormData) {
   const parsed = z.object({ unitId: z.string().uuid(), id: z.string().uuid() }).parse({ unitId: formData.get("unitId"), id: formData.get("id") });
   const supabase = createAdminClient();
+  const { data: before } = await supabase.from("unit_compartments").select("name").eq("id", parsed.id).maybeSingle();
   const { error } = await supabase.from("unit_compartments").delete().eq("id", parsed.id);
   if (error) throw new Error(error.message);
   await upsertTodayUnitLedger(supabase, parsed.unitId);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "fleet",
+    action: "compartment.deleted",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    beforeData: { compartment_id: parsed.id, compartment_name: before?.name ?? null },
+  });
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
@@ -279,6 +386,16 @@ export async function deleteUnitItem(formData: FormData) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("unit_compartment_items").delete().eq("id", parsed.id);
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "fleet",
+    action: "unit_item.deleted",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    beforeData: { item_id: parsed.id },
+  });
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
@@ -308,6 +425,16 @@ export async function addUnitItem(formData: FormData) {
     onConflict: "compartment_id,equipment_id",
   });
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "fleet",
+    action: "unit_item.saved",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    afterData: { compartment_id: parsed.compartmentId, equipment_id: parsed.equipmentId, group_id: parsed.groupId },
+  });
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
@@ -321,6 +448,16 @@ export async function createCompartmentGroup(formData: FormData) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("unit_compartment_item_groups").upsert({ compartment_id: parsed.compartmentId, name: parsed.name.trim(), sort_order: parsed.sortOrder }, { onConflict: "compartment_id,name" });
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "fleet",
+    action: "unit_item_group.saved",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    afterData: { compartment_id: parsed.compartmentId, name: parsed.name.trim(), sort_order: parsed.sortOrder },
+  });
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
@@ -334,6 +471,16 @@ export async function updateCompartmentGroup(formData: FormData) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("unit_compartment_item_groups").update({ name: parsed.name.trim(), sort_order: parsed.sortOrder }).eq("id", parsed.groupId);
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "fleet",
+    action: "unit_item_group.updated",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    afterData: { group_id: parsed.groupId, name: parsed.name.trim(), sort_order: parsed.sortOrder },
+  });
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
@@ -342,6 +489,16 @@ export async function deleteCompartmentGroup(formData: FormData) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("unit_compartment_item_groups").delete().eq("id", parsed.groupId);
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "fleet",
+    action: "unit_item_group.deleted",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    beforeData: { group_id: parsed.groupId },
+  });
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
@@ -354,6 +511,16 @@ export async function updateUnitItemGroup(formData: FormData) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("unit_compartment_items").update({ group_id: parsed.groupId }).eq("id", parsed.itemId);
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "fleet",
+    action: "unit_item.updated",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    afterData: { item_id: parsed.itemId, group_id: parsed.groupId },
+  });
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 

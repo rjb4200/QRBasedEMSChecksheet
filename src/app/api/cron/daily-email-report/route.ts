@@ -4,6 +4,7 @@ import { buildDailyReportEmail } from "@/lib/email/daily-report";
 import { sendEmailWithAttachment } from "@/lib/email/resend";
 import { generateDailyChecksheetsPdf } from "@/lib/pdf/daily-checksheets";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { logSystemEvent } from "@/lib/system-log";
 
 export const runtime = "nodejs";
 
@@ -89,6 +90,19 @@ export async function POST(request: NextRequest) {
     const force = request.nextUrl.searchParams.get("force") === "true";
     const report = await getDailyEmailReport(requestedReportDate);
 
+    if (force) {
+      await logSystemEvent({
+        actorType: "system",
+        actorName: "Daily report cron",
+        area: "reporting",
+        action: "daily_report.force_requested",
+        targetType: "daily_report",
+        targetId: report.reportDate,
+        targetName: report.reportDate,
+        result: "warning",
+      });
+    }
+
     if (!force) {
       const existingRun = await hasSuccessfulRun(report.reportDate);
       if (existingRun) {
@@ -101,7 +115,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: "skipped", reason: "no_recipients", reportDate: report.reportDate });
     }
 
-    const attachment = await generateDailyChecksheetsPdf(report.reportDate);
+    let attachment;
+    try {
+      attachment = await generateDailyChecksheetsPdf(report.reportDate);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to generate daily checksheets PDF";
+      await logSystemEvent({
+        actorType: "system",
+        actorName: "Daily report cron",
+        area: "reporting",
+        action: "daily_report.pdf_failed",
+        targetType: "daily_report",
+        targetId: report.reportDate,
+        targetName: report.reportDate,
+        result: "failure",
+        message,
+      });
+      throw error;
+    }
     const email = buildDailyReportEmail(report);
     const sendResult = await sendEmailWithAttachment({
       to: report.recipients.map((recipient) => recipient.email),
@@ -122,6 +153,24 @@ export async function POST(request: NextRequest) {
       resendMessageId: sendResult.data?.id,
     });
 
+    await logSystemEvent({
+      actorType: "system",
+      actorName: "Daily report cron",
+      area: "reporting",
+      action: "daily_report.sent",
+      targetType: "daily_report",
+      targetId: report.reportDate,
+      targetName: report.reportDate,
+      result: "success",
+      afterData: {
+        recipient_count: report.recipients.length,
+        unchecked_unit_count: report.uncheckedUnits.length,
+        exception_count: report.exceptions.length,
+        resend_message_id: sendResult.data?.id ?? null,
+      },
+      metadata: { forced: force },
+    });
+
     return NextResponse.json({
       status: "sent",
       reportDate: report.reportDate,
@@ -135,6 +184,18 @@ export async function POST(request: NextRequest) {
     if (requestedReportDate) {
       await recordRun({ reportDate: requestedReportDate, recipientCount: 0, status: "failed", errorMessage: message });
     }
+    await logSystemEvent({
+      actorType: "system",
+      actorName: "Daily report cron",
+      area: "reporting",
+      action: "daily_report.failed",
+      targetType: "daily_report",
+      targetId: requestedReportDate ?? null,
+      targetName: requestedReportDate ?? null,
+      result: "failure",
+      message,
+      metadata: { forced: request.nextUrl.searchParams.get("force") === "true" },
+    });
     console.error("Daily email report failed:", error);
     return NextResponse.json({ error: message }, { status: 500 });
   }

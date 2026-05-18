@@ -4,6 +4,14 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getCurrentShift } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { logSystemEvent } from "@/lib/system-log";
+
+type SupabaseAdmin = ReturnType<typeof createAdminClient>;
+
+async function getUnitName(supabase: SupabaseAdmin, unitId: string) {
+  const { data } = await supabase.from("units").select("name").eq("id", unitId).maybeSingle();
+  return data?.name ?? null;
+}
 
 const commentSchema = z.object({
   unitId: z.string().uuid(),
@@ -27,6 +35,16 @@ export async function saveUnitCrew(unitId: string, providerNames: string) {
   }, { onConflict: "shift_date,shift_period,unit_id" });
 
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    actorType: "crew",
+    actorName: "Crew",
+    area: "checkoff",
+    action: "crew.locked",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    metadata: { shift_date: shift.shiftDate, shift_period: shift.shiftPeriod },
+  });
 }
 
 export async function unlockUnitCrew(unitId: string, providerNames: string) {
@@ -42,6 +60,16 @@ export async function unlockUnitCrew(unitId: string, providerNames: string) {
   }, { onConflict: "shift_date,shift_period,unit_id" });
 
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    actorType: "crew",
+    actorName: "Crew",
+    area: "checkoff",
+    action: "crew.unlocked",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    metadata: { shift_date: shift.shiftDate, shift_period: shift.shiftPeriod },
+  });
 }
 
 export async function saveDailyUnitComment(formData: FormData) {
@@ -71,6 +99,17 @@ export async function saveDailyUnitComment(formData: FormData) {
     }, { onConflict: "shift_date,shift_period,unit_id" });
     if (error) throw new Error(error.message);
   }
+
+  await logSystemEvent({
+    actorType: "crew",
+    actorName: "Crew",
+    area: "checkoff",
+    action: comment ? "comment.saved" : "comment.cleared",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    metadata: { shift_date: shift.shiftDate, shift_period: shift.shiftPeriod, comment_length: comment.length },
+  });
 
   revalidatePath(`/units/${parsed.unitId}`);
   revalidatePath("/admin");
@@ -118,6 +157,23 @@ export async function toggleRestockAddressed(input: z.infer<typeof restockToggle
       .eq("item_id", parsed.itemId);
     if (error) throw new Error(error.message);
   }
+  await logSystemEvent({
+    actorType: "crew",
+    actorName: "Crew",
+    area: "restocking",
+    action: parsed.addressed ? "restock_item.addressed" : "restock_item.unaddressed",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    metadata: {
+      shift_date: parsed.shiftDate,
+      shift_period: parsed.shiftPeriod,
+      target_type: parsed.targetType,
+      target_id: parsed.targetId,
+      item_id: parsed.itemId,
+      issue_type: parsed.issueType,
+    },
+  });
 }
 
 export async function getRestockAddressed(unitId: string, shiftDate: string, shiftPeriod: string) {
@@ -160,6 +216,17 @@ export async function addManualRestockItem(input: z.infer<typeof manualRestockAd
     .select("id, item_name, note, source_name, addressed, created_at")
     .single();
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    actorType: "crew",
+    actorName: "Crew",
+    area: "restocking",
+    action: "manual_restock_item.added",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    afterData: { id: data.id, item_name: data.item_name, note: data.note, source_name: data.source_name, addressed: data.addressed },
+    metadata: { shift_date: parsed.shiftDate, shift_period: parsed.shiftPeriod },
+  });
   return data as { id: string; item_name: string; note: string; source_name: string; addressed: boolean; created_at: string };
 }
 
@@ -190,6 +257,17 @@ export async function toggleManualRestockAddressed(input: z.infer<typeof manualR
       .eq("unit_id", parsed.unitId);
     if (error) throw new Error(error.message);
   }
+  await logSystemEvent({
+    actorType: "crew",
+    actorName: "Crew",
+    area: "restocking",
+    action: parsed.addressed ? "manual_restock_item.addressed" : "manual_restock_item.unaddressed",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    afterData: { item_id: parsed.itemId, addressed: parsed.addressed },
+    metadata: { shift_date: parsed.shiftDate, shift_period: parsed.shiftPeriod },
+  });
 }
 
 const manualRestockDeleteSchema = z.object({
@@ -200,12 +278,23 @@ const manualRestockDeleteSchema = z.object({
 export async function deleteManualRestockItem(input: z.infer<typeof manualRestockDeleteSchema>) {
   const parsed = manualRestockDeleteSchema.parse(input);
   const supabase = createAdminClient();
+  const { data: before } = await supabase.from("daily_manual_restock_items").select("item_name, note, source_name, addressed").eq("id", parsed.itemId).eq("unit_id", parsed.unitId).maybeSingle();
   const { error } = await supabase
     .from("daily_manual_restock_items")
     .delete()
     .eq("id", parsed.itemId)
     .eq("unit_id", parsed.unitId);
   if (error) throw new Error(error.message);
+  await logSystemEvent({
+    actorType: "crew",
+    actorName: "Crew",
+    area: "restocking",
+    action: "manual_restock_item.deleted",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    beforeData: before ?? { item_id: parsed.itemId },
+  });
 }
 
 export async function getManualRestockItems(unitId: string, shiftDate: string, shiftPeriod: string) {
