@@ -8,6 +8,7 @@ import { shouldShowMonthlyCheckReminder } from "@/lib/monthly-check";
 import { MonthlyCheckReminderBanner } from "@/components/monthly-check-banner";
 import { buildRestockingList, type ManualRestockItem } from "@/lib/restocking-list";
 import { RestockingListSection } from "@/components/restocking-list-section";
+import { CheckoffPrefetch } from "@/components/checkoff-prefetch";
 
 const statusStyles = {
   grey: "border-slate-300 bg-slate-200 text-slate-800",
@@ -21,7 +22,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   const supabase = createAdminClient();
   const currentShift = getCurrentShift();
   const [{ data: unit }, { data: checks }, { data: crew }, { data: comment }, { data: sectionComments }, addressedRows, manualItemsData] = await Promise.all([
-    supabase.from("units").select("id, name, status, monthly_check_day, unit_compartments(id, name, sort_order, unit_compartment_items(id, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(id, name, kit_items(id, par_level, input_type, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
+    supabase.from("units").select("id, name, status, monthly_check_day, unit_compartments(id, name, sort_order, unit_compartment_items(id, equipment_id, par_level, input_type)), unit_kits(id, sort_order, kits(id, name, kit_items(id, equipment_id, par_level, input_type)))").eq("id", id).is("deleted_at", null).single(),
     supabase.from("compartment_checks").select("compartment_id, unit_kit_id, status, item_data").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
     supabase.from("daily_unit_crews").select("provider_names, locked").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_comments").select("comment").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
@@ -29,19 +30,53 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
     getRestockAddressed(id, currentShift.shiftDate, currentShift.shiftPeriod),
     getManualRestockItems(id, currentShift.shiftDate, currentShift.shiftPeriod),
   ]);
+
+  // Collect all equipment IDs from compartment and kit items
+  const equipmentIds = new Set<string>();
+  for (const comp of (unit?.unit_compartments ?? []) as any[]) {
+    for (const item of (comp.unit_compartment_items ?? []) as any[]) {
+      if (item.equipment_id) equipmentIds.add(item.equipment_id);
+    }
+  }
+  for (const assignment of (unit?.unit_kits ?? []) as any[]) {
+    const kit = Array.isArray(assignment.kits) ? assignment.kits[0] : assignment.kits;
+    for (const item of (kit?.kit_items ?? []) as any[]) {
+      if (item.equipment_id) equipmentIds.add(item.equipment_id);
+    }
+  }
+
+  // Fetch equipment catalog names in a single flat query
+  const equipmentNameMap = new Map<string, string>();
+  if (equipmentIds.size > 0) {
+    const { data: catalogRows } = await supabase
+      .from("equipment_catalog")
+      .select("id, name")
+      .in("id", Array.from(equipmentIds));
+    for (const row of (catalogRows ?? []) as { id: string; name: string }[]) {
+      equipmentNameMap.set(row.id, row.name);
+    }
+  }
   const compartments = (unit?.unit_compartments ?? []).map((compartment: any) => ({
     id: compartment.id,
     name: compartment.name,
+    type: "compartment" as const,
     sortOrder: compartment.sort_order ?? 0,
-    items: compartment.unit_compartment_items ?? [],
+    items: (compartment.unit_compartment_items ?? []).map((item: any) => ({
+      ...item,
+      name: equipmentNameMap.get(item.equipment_id) ?? item.name ?? "Unknown item",
+    })),
   }));
   const kits = (unit?.unit_kits ?? []).map((assignment: any) => {
     const kit = Array.isArray(assignment.kits) ? assignment.kits[0] : assignment.kits;
     return {
       id: assignment.id,
       name: kit?.name ?? "Shared kit",
+      type: "kit" as const,
       sortOrder: assignment.sort_order ?? 0,
-      items: kit?.kit_items ?? [],
+      items: (kit?.kit_items ?? []).map((item: any) => ({
+        ...item,
+        name: equipmentNameMap.get(item.equipment_id) ?? item.name ?? "Unknown item",
+      })),
     };
   });
   const targets = [...compartments, ...kits].sort((a, b) => a.sortOrder - b.sortOrder);
@@ -150,6 +185,13 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
           </div>
         </form>
       </section>
+      <CheckoffPrefetch
+        targets={targets.map((t) => ({
+          id: t.id,
+          type: t.type,
+        }))}
+        unitId={id}
+      />
     </main>
   );
 }

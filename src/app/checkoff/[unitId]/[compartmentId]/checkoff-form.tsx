@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { saveCheckData, submitCheckData } from "./actions";
 import { groupItems, type ItemGroup } from "@/lib/item-groups";
 import { buildRestockingList } from "@/lib/restocking-list";
+import { writeCachedFormSetup } from "@/lib/checkoff-cache";
 
 type CheckoffItem = {
   id: string;
@@ -92,6 +93,27 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
 
     return () => clearTimeout(timer);
   }, [compartmentId, readOnly, targetType, unitId, values]);
+
+  // Cache form setup data for future opens
+  useEffect(() => {
+    writeCachedFormSetup(unitId, targetType, compartmentId, {
+      targetType,
+      sourceName,
+      items: items.map((item) => ({
+        id: item.id,
+        name: equipmentName(item) ?? "Unknown item",
+        parLevel: item.par_level,
+        inputType: item.input_type,
+        sortOrder: item.sort_order ?? 0,
+        groupId: item.group_id ?? null,
+      })),
+      groups: groups.map((group) => ({
+        id: group.id,
+        name: group.name,
+        sortOrder: group.sort_order ?? 0,
+      })),
+    });
+  }, [unitId, targetType, compartmentId, items, groups, sourceName]);
 
   function setItemValue(id: string, value: unknown) {
     setValues((current) => ({ ...current, [id]: value }));
