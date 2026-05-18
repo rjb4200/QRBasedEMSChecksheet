@@ -1,27 +1,29 @@
-## ADDED Requirements
+## Purpose
+The daily report email includes an archive-style daily ledger PDF attachment generated from the same archive daily record data as the archive print page.
+
+## Requirements
 
 ### Requirement: Daily report includes checksheet PDF attachment
-The system SHALL attach a PDF containing all unit check sheets for the report date to the daily email report.
+The system SHALL attach an archive-style daily ledger PDF for the report date to the daily email report.
 
 #### Scenario: Report email with attachment
 - **WHEN** the daily report email sends successfully
-- **THEN** the email SHALL include a PDF attachment named `daily-checksheets-{date}.pdf`
+- **THEN** the email SHALL include a PDF attachment named `daily-check-archive-{date}.pdf`
 
 ### Requirement: PDF uses existing checksheet document data
-The PDF attachment SHALL use the same daily checksheet document data rules as the existing printable checksheet page.
+The PDF attachment SHALL use the same archive daily record data as the archive print page at `/admin/archives/print`.
 
 #### Scenario: Generate PDF for report date
-- **WHEN** the system generates the daily checksheet PDF for a date
-- **THEN** the PDF SHALL include all units included by the existing daily checksheet document logic for that date
+- **WHEN** the system generates the daily archive PDF for a date
+- **THEN** the PDF SHALL include all units, statuses, check states, exceptions, crew names, and comments from the archive daily record data for that date
 
 ### Requirement: PDF preserves three-column print layout
-The PDF attachment SHALL preserve the existing printable checksheet layout, including one unit per page and three-column compartment/item layout.
+The PDF attachment SHALL use a landscape letter table layout matching the archive print page content rather than per-unit three-column compartment layouts.
 
 #### Scenario: PDF layout generation
-- **WHEN** the daily checksheet PDF is generated
-- **THEN** each unit SHALL render as a separate print page
-- **AND** compartments/items SHALL use the three-column printable layout
-- **AND** exceptions SHALL be visually emphasized
+- **WHEN** the daily archive PDF is generated
+- **THEN** the PDF SHALL render as a landscape table with columns for unit service, check status, sections, exceptions, comments, and crew
+- **AND** the PDF SHALL include WFD branding in the header
 
 ### Requirement: PDF generation failure prevents partial report send
 The system SHALL not send a daily report email if required PDF generation fails.
@@ -30,10 +32,3 @@ The system SHALL not send a daily report email if required PDF generation fails.
 - **WHEN** the daily report job cannot generate the required PDF attachment
 - **THEN** the system SHALL not send the email
 - **AND** the system SHALL log or record the failure
-
-### Requirement: n8n-oriented PDF assumptions are removed
-The PDF attachment generation SHALL be owned by the app's daily report flow rather than an n8n workflow.
-
-#### Scenario: Daily report PDF generation path
-- **WHEN** the daily report needs a checksheet PDF
-- **THEN** the app SHALL generate or retrieve the PDF without requiring n8n
