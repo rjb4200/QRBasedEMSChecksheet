@@ -72,11 +72,11 @@
 - [x] 10.1 Run `npm run lint` and fix any issues
 - [x] 10.2 Run `npm run typecheck` and fix any issues
 - [x] 10.3 Run `npm run build` and verify no build errors
-- [ ] 10.4 Manual test: add a manual item, verify it persists on refresh
-- [ ] 10.5 Manual test: toggle manual item addressed checkbox, verify state persists
-- [ ] 10.6 Manual test: delete a manual item, verify removal
-- [ ] 10.7 Manual test: copy output includes manual items
-- [ ] 10.8 Manual test: print output includes manual items
-- [ ] 10.9 Manual test: header icon buttons are tappable on mobile viewport
-- [ ] 10.10 Manual test: Share button opens native share dialog on mobile (iOS Safari / Android Chrome)
-- [ ] 10.11 Manual test: Share button falls back to clipboard copy on desktop browsers without Web Share API
+- [x] 10.4 Manual test: add a manual item, verify it persists on refresh
+- [x] 10.5 Manual test: toggle manual item addressed checkbox, verify state persists
+- [x] 10.6 Manual test: delete a manual item, verify removal
+- [x] 10.7 Manual test: copy output includes manual items
+- [x] 10.8 Manual test: print output includes manual items
+- [x] 10.9 Manual test: header icon buttons are tappable on mobile viewport
+- [x] 10.10 Manual test: Share button opens native share dialog on mobile (iOS Safari / Android Chrome)
+- [x] 10.11 Manual test: Share button falls back to clipboard copy on desktop browsers without Web Share API
