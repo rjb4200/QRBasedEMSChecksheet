@@ -1,3 +1,6 @@
+## Purpose
+Define the Past Checkoff Records view behavior including daily summary counts, historical unit inclusion via ledger records, shift reset ledger writing, fallback behavior when ledgers are missing, archive metadata exposure, print/export branding, and completion count display including crew-name targets.
+
 ## Requirements
 
 ### Requirement: Past records count units over 95 percent as complete
@@ -218,3 +221,10 @@ Printed checksheets, CSV/PDF report outputs, and daily PDF/email reports SHALL i
 #### Scenario: Printing or emailing records without exceptions
 - **WHEN** a printed checksheet, PDF export, or daily email report includes a unit with no exceptions
 - **THEN** the output SHALL omit the Restocking List section for that unit
+
+### Requirement: Previous shift display includes crew-name target
+The "Previous shift" section on unit dashboard pages SHALL include the crew-name lock target in the completed and total check counts when displaying archive data.
+
+#### Scenario: Archive has counts without crew target
+- **WHEN** a previous shift archive exists with completed and total compartment counts
+- **THEN** the unit page display SHALL show completed + (crew locked ? 1 : 0) of total + 1
