@@ -8,7 +8,6 @@ import { shouldShowMonthlyCheckReminder } from "@/lib/monthly-check";
 import { MonthlyCheckReminderBanner } from "@/components/monthly-check-banner";
 import { buildRestockingList, type ManualRestockItem } from "@/lib/restocking-list";
 import { RestockingListSection } from "@/components/restocking-list-section";
-import { PreviousExceptionsPanel } from "@/components/previous-exceptions-panel";
 
 const statusStyles = {
   grey: "border-slate-300 bg-slate-200 text-slate-800",
@@ -102,8 +101,6 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
             unitName={unit?.name}
           />
         ) : null}
-
-        <PreviousExceptionsPanel unitId={id} />
 
         <CrewNameLock completedCompartments={completedCompartments} initialLocked={crewComplete} initialProviderNames={crew?.provider_names ?? ""} totalChecks={total} unitId={id} />
 
