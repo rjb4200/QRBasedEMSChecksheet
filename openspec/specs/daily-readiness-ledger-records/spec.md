@@ -1,3 +1,6 @@
+## Purpose
+The daily readiness ledger records provide a date-focused view of unit readiness, showing check status, crew information, comments, and exceptions for each unit on a selected operational date.
+
 ## Requirements
 
 ### Requirement: Records page is selected-date first
@@ -81,3 +84,14 @@ The Records page SHALL distinguish a complete ledger-backed daily record from a 
 - **WHEN** no daily unit ledger rows exist for the selected date
 - **THEN** the Records page SHALL build a best-effort record only from date-specific historical data
 - **AND** the page SHALL indicate that full daily ledger coverage is unavailable for that date
+
+### Requirement: Check status timestamp shows time only
+The system SHALL display only the time portion of the submission timestamp under the Check Status column for checked units, omitting the date which is already present in the page header.
+
+#### Scenario: Checked unit with submission time
+- **WHEN** a unit is in checked status and has a submission timestamp
+- **THEN** the Check Status display SHALL show only the time (e.g., "2:30:00 PM") without the date
+
+#### Scenario: Checked unit without submission time
+- **WHEN** a unit is in checked status but has no submission timestamp
+- **THEN** the Check Status display SHALL show "Not recorded"
