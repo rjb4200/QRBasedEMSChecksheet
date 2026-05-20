@@ -38,9 +38,9 @@
 - [x] 6.1 Run `npm run lint` and fix any issues
 - [x] 6.2 Run `npm run typecheck` and fix any issues
 - [x] 6.3 Run `npm run build` and verify no build errors
-- [ ] 6.4 Manual test: row read-only default, edit, save, and cancel behavior
-- [ ] 6.5 Manual test: quantity field disabled for checkbox and condition types
-- [ ] 6.6 Manual test: usage badge count accuracy
-- [ ] 6.7 Manual test: delete safety behavior unchanged
-- [ ] 6.8 Manual test: icon button accessibility labels
-- [ ] 6.9 Manual test: mobile layout
+- [x] 6.4 Manual test: row read-only default, edit, save, and cancel behavior
+- [x] 6.5 Manual test: quantity field disabled for checkbox and condition types
+- [x] 6.6 Manual test: usage badge count accuracy
+- [x] 6.7 Manual test: delete safety behavior unchanged
+- [x] 6.8 Manual test: icon button accessibility labels
+- [x] 6.9 Manual test: mobile layout
