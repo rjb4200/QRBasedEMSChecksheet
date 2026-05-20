@@ -4,9 +4,9 @@ When printing daily checksheets, OOS (Out of Service) and archived units should 
 
 ## What Changes
 
-- Exclude archived units (where archived_at is not null) from daily checksheet print output
-- Exclude OOS units (where oos_at is not null) from daily checksheet print output
-- Only active units (both archived_at and oos_at are null) should appear on printed checksheets
+- Exclude archived units (tracked by `deleted_at` / archived ledger state) from daily checksheet print output
+- Exclude OOS units (where `status = out_of_service`) from daily checksheet print output
+- Only active in-service, non-archived units should appear on printed checksheets
 
 ## Capabilities
 
@@ -21,5 +21,5 @@ When printing daily checksheets, OOS (Out of Service) and archived units should 
 ## Impact
 
 - Updates to checksheet print document generation to filter out archived and OOS units
-- Uses existing archived_at and oos_at columns on the units table
+- Uses existing `deleted_at` and `status` fields on units, plus archived ledger state when available
 - No database changes required

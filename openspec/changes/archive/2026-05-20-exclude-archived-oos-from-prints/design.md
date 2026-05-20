@@ -17,13 +17,14 @@ The daily checksheet print functionality currently includes all units regardless
 
 ### 1. Filter Implementation
 
-**Decision:** Add WHERE clause conditions to filter out archived and OOS units in the print query.
+**Decision:** Add active-unit filters to the checksheet document source so archived and OOS units never become printable sources.
 
-**Rationale:** The units table already has archived_at and oos_at columns. Adding simple NULL checks in the query WHERE clause is the most straightforward and performant approach.
+**Rationale:** The current data model uses `deleted_at` for archived units and `status = out_of_service` for OOS units. Filtering those states at the document-source layer is the smallest correct change and also lets ledger-backed prints exclude archived rows.
 
 **Implementation:**
-- `archived_at IS NULL` - only include non-archived units
-- `oos_at IS NULL` - only include non-OOS units
+- `deleted_at IS NULL` - only load non-archived units from `units`
+- `status = 'in_service'` - only include active units
+- `daily_unit_ledgers.archived = false` - exclude archived ledger rows when the print uses ledger-backed sources
 
 ### 2. Historical Prints
 
@@ -37,7 +38,7 @@ The daily checksheet print functionality currently includes all units regardless
 
 ## Migration Plan
 
-1. Update print query to add archived_at and oos_at filters
+1. Update the checksheet document unit source filtering to exclude `deleted_at` units, `out_of_service` units, and archived ledger rows
 2. Test with active, archived, and OOS units
 3. Deploy to production
 
