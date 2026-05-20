@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { deleteEquipment, saveEquipment } from "./actions";
+import { saveEquipment } from "./actions";
 import { EquipmentBackToTop, EquipmentPageSizeSelector } from "./equipment-catalog-controls";
+import { EditableCatalogRow } from "./editable-catalog-row";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { SaveButton } from "@/components/save-feedback";
 
@@ -53,10 +54,16 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
     countQuery = countQuery.eq("category", params.category);
   }
 
-  const [{ count }, { data: categories }] = await Promise.all([
+  const [{ count }, { data: categories }, { data: compUsage }, { data: kitUsage }] = await Promise.all([
     countQuery,
     supabase.from("equipment_catalog").select("category").order("category"),
+    supabase.from("unit_compartment_items").select("equipment_id"),
+    supabase.from("kit_items").select("equipment_id"),
   ]);
+
+  const usageMap = new Map<string, number>();
+  for (const row of (compUsage ?? [])) { usageMap.set(row.equipment_id, (usageMap.get(row.equipment_id) ?? 0) + 1); }
+  for (const row of (kitUsage ?? [])) { usageMap.set(row.equipment_id, (usageMap.get(row.equipment_id) ?? 0) + 1); }
 
   const totalCount = count ?? 0;
   const totalPages = pageSize === "all" ? 1 : Math.max(Math.ceil(totalCount / pageSize), 1);
@@ -87,6 +94,8 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
 
   const uniqueCategories = Array.from(new Set((categories ?? []).map((item) => item.category)));
 
+  const catalogItems = (equipment ?? []).map((item) => ({ ...item, usageCount: usageMap.get(item.id) ?? 0 }));
+
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
       <section id="equipment-catalog-top" className="mx-auto max-w-6xl space-y-6">
@@ -103,7 +112,12 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
             {uniqueCategories.map((category) => <option key={category} value={category}>{category}</option>)}
           </select>
           <input name="pageSize" type="hidden" value={currentPageSizeParam} />
-          <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Filter</button>
+          <button className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" title="Filter equipment catalog" aria-label="Filter equipment catalog" type="submit">
+            <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" strokeLinecap="round" />
+            </svg>
+            Filter
+          </button>
           <Link className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-950 sm:col-span-3" href={`/admin/equipment?pageSize=${currentPageSizeParam}`}>Clear filters</Link>
         </form>
 
@@ -131,23 +145,8 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
 
         <div className="grid gap-3">
           {visibleCount === 0 ? <div className="rounded-3xl bg-white p-6 text-slate-600 shadow-sm">No results match these filters.</div> : null}
-          {(equipment ?? []).map((item) => (
-            <div key={item.id} className="grid gap-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm lg:grid-cols-[1fr_160px_140px_120px_auto]">
-              <form action={saveEquipment} className="contents">
-                <input name="id" type="hidden" value={item.id} />
-                <input className="rounded-2xl border border-slate-300 px-4 py-3 font-semibold" name="name" defaultValue={item.name} />
-                <input className="rounded-2xl border border-slate-300 px-4 py-3" name="category" defaultValue={item.category} />
-                <select className="rounded-2xl border border-slate-300 px-4 py-3" name="inputType" defaultValue={item.input_type}>
-                  {inputTypes.map((type) => <option key={type} value={type}>{type}</option>)}
-                </select>
-                <input className="rounded-2xl border border-slate-300 px-4 py-3" name="defaultParLevel" defaultValue={item.default_par_level ?? ""} min="0" step="1" type="number" />
-                <SaveButton className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950">Save</SaveButton>
-              </form>
-              <form action={deleteEquipment} className="lg:col-start-5">
-                <input name="id" type="hidden" value={item.id} />
-                <button className="w-full rounded-2xl border border-red-200 px-5 py-3 font-bold text-red-700" type="submit">Delete</button>
-              </form>
-            </div>
+          {catalogItems.map((item) => (
+            <EditableCatalogRow key={item.id} item={item} />
           ))}
         </div>
         <EquipmentBackToTop />
