@@ -6,6 +6,8 @@ type FleetUnit = {
   name: string;
   unit_kind: string;
   status: string;
+  oosAt?: string | null;
+  oosByName?: string | null;
   total: number;
   completed: number;
   inProgress: number;
@@ -23,6 +25,20 @@ function formatCompletionTime(value: string | null | undefined) {
 
   return new Intl.DateTimeFormat("en-US", {
     timeZone: "America/New_York",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(value));
+}
+
+function formatOosTimestamp(value: string | null | undefined) {
+  if (!value) return null;
+
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    month: "numeric",
+    day: "numeric",
+    year: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
@@ -59,6 +75,8 @@ export function FleetMatrix({ units }: { units: FleetUnit[]; admin?: boolean }) 
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {units.map((unit) => {
         const primaryBadge = getPrimaryBadge(unit);
+        const isOutOfService = unit.status === "out_of_service";
+        const oosTimestamp = formatOosTimestamp(unit.oosAt);
         const progressColor = unit.status === "out_of_service"
           ? "bg-slate-400"
           : unit.total > 0 && unit.completed >= unit.total
@@ -68,14 +86,20 @@ export function FleetMatrix({ units }: { units: FleetUnit[]; admin?: boolean }) 
               : "bg-red-700";
 
         return (
-          <article key={unit.id} className="rounded-3xl bg-white p-5 shadow-sm">
+          <article key={unit.id} className={`rounded-3xl p-5 shadow-sm ${isOutOfService ? "border border-slate-200 bg-slate-50 opacity-70" : "bg-white"}`}>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-700">{unit.unit_kind}</p>
                 <h2 className="mt-2 text-3xl font-black">{unit.name}</h2>
                 <p className="mt-1 capitalize text-slate-600">{unit.status.replace("_", " ")}</p>
+                {isOutOfService && (oosTimestamp || unit.oosByName) ? (
+                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.15em] text-slate-500">
+                    {oosTimestamp ? `OOS ${oosTimestamp}` : "OOS"}
+                    {unit.oosByName ? ` • ${unit.oosByName}` : ""}
+                  </p>
+                ) : null}
               </div>
-              <div className="rounded-2xl bg-slate-950 px-4 py-3 text-xl font-black text-white">{unit.percentage}%</div>
+              <div className={`rounded-2xl px-4 py-3 text-xl font-black text-white ${isOutOfService ? "bg-slate-500" : "bg-slate-950"}`}>{unit.percentage}%</div>
             </div>
             <div className="mt-4 flex flex-wrap gap-2" aria-label={`Operational status badges for ${unit.name}`}>
               <StatusBadge ariaLabel={primaryBadge.ariaLabel} className={primaryBadge.className}>{primaryBadge.label}</StatusBadge>

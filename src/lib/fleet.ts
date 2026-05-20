@@ -7,6 +7,8 @@ type UnitRow = {
   name: string;
   unit_kind: string;
   status: string;
+  oos_at: string | null;
+  oos_by_name: string | null;
   unit_compartments?: { id: string }[] | null;
   unit_kits?: { id: string }[] | null;
 };
@@ -109,7 +111,7 @@ export async function getFleetStatus(supabase: SupabaseClient) {
   await refreshDailyUnitLedgers(supabase, shift);
 
   const [{ data: units }, { data: ledgers }, { data: checks }, { data: crews }, { data: comments }, { data: compartmentItems }, { data: kitItems }, { data: unitKits }] = await Promise.all([
-    supabase.from("units").select("id, name, unit_kind, status, unit_compartments(id), unit_kits(id)").is("deleted_at", null).order("name"),
+    supabase.from("units").select("id, name, unit_kind, status, oos_at, oos_by_name, unit_compartments(id), unit_kits(id)").is("deleted_at", null).order("name"),
     supabase.from("daily_unit_ledgers").select("unit_id, unit_name, unit_status, total_compartments, archived, status_note").eq("shift_date", shift.shiftDate).eq("shift_period", shift.shiftPeriod).order("unit_name"),
     supabase.from("compartment_checks").select("unit_id, compartment_id, unit_kit_id, status, completed_at, updated_at, item_data").eq("shift_date", shift.shiftDate).eq("shift_period", shift.shiftPeriod),
     supabase.from("daily_unit_crews").select("unit_id, provider_names, locked, updated_at").eq("shift_date", shift.shiftDate).eq("shift_period", shift.shiftPeriod),
@@ -150,14 +152,16 @@ export async function getFleetStatus(supabase: SupabaseClient) {
           status: ledger.unit_status,
           archived: Boolean(ledger.archived),
           statusNote: ledger.status_note,
+          oosAt: liveUnit?.oos_at ?? null,
+          oosByName: liveUnit?.oos_by_name ?? null,
           unit_compartments: liveUnit?.unit_compartments ?? [],
           unit_kits: liveUnit?.unit_kits ?? [],
           ledgerTotalCompartments: ledger.total_compartments,
         };
       }),
-      ...unitRows.filter((unit) => !ledgerUnitIds.has(unit.id)).map((unit) => ({ ...unit, archived: false, statusNote: null, ledgerTotalCompartments: null })),
+      ...unitRows.filter((unit) => !ledgerUnitIds.has(unit.id)).map((unit) => ({ ...unit, oosAt: unit.oos_at, oosByName: unit.oos_by_name, archived: false, statusNote: null, ledgerTotalCompartments: null })),
     ]
-    : unitRows.map((unit) => ({ ...unit, archived: false, statusNote: null, ledgerTotalCompartments: null }));
+    : unitRows.map((unit) => ({ ...unit, oosAt: unit.oos_at, oosByName: unit.oos_by_name, archived: false, statusNote: null, ledgerTotalCompartments: null }));
 
   return unitSources.filter(isFleetPanelVisibleUnit).map((unit) => {
     const unitChecks = checkRows.filter((check) => check.unit_id === unit.id);
@@ -189,6 +193,8 @@ export async function getFleetStatus(supabase: SupabaseClient) {
       hasComments: commentUnitIds.has(unit.id),
       crewComplete,
       archived: unit.archived,
+      oosAt: unit.oosAt,
+      oosByName: unit.oosByName,
       statusNote: unit.statusNote,
       percentage: total === 0 ? 0 : Math.round((completed / total) * 100),
     };

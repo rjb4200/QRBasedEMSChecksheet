@@ -117,20 +117,23 @@ export async function toggleUnitStatus(formData: FormData) {
     statusNote: formData.get("status_note") || undefined,
   });
   const supabase = createAdminClient();
-  const { data: before } = await supabase.from("units").select("name, status").eq("id", parsed.id).maybeSingle();
-  const { error } = await supabase.from("units").update({ status: parsed.status }).eq("id", parsed.id);
+  const actor = await getCurrentAdminLogActor();
+  const { data: before } = await supabase.from("units").select("name, status, oos_at, oos_by_name").eq("id", parsed.id).maybeSingle();
+  const nextOosAt = parsed.status === "out_of_service" ? new Date().toISOString() : null;
+  const nextOosByName = parsed.status === "out_of_service" ? actor.actorName ?? "Admin" : null;
+  const { error } = await supabase.from("units").update({ status: parsed.status, oos_at: nextOosAt, oos_by_name: nextOosByName }).eq("id", parsed.id);
   if (error) throw new Error(error.message);
   await upsertTodayUnitLedger(supabase, parsed.id, { status: parsed.status, statusNote: parsed.status === "in_service" ? null : parsed.statusNote });
   await logSystemEvent({
-    ...(await getCurrentAdminLogActor()),
+    ...actor,
     actorType: "admin",
     area: "fleet",
     action: "unit.status_changed",
     targetType: "unit",
     targetId: parsed.id,
     targetName: before?.name ?? null,
-    beforeData: { status: before?.status ?? null },
-    afterData: { status: parsed.status, status_note: parsed.status === "in_service" ? null : parsed.statusNote ?? null },
+    beforeData: { status: before?.status ?? null, oos_at: before?.oos_at ?? null, oos_by_name: before?.oos_by_name ?? null },
+    afterData: { status: parsed.status, status_note: parsed.status === "in_service" ? null : parsed.statusNote ?? null, oos_at: nextOosAt, oos_by_name: nextOosByName },
   });
   revalidatePath("/");
   revalidatePath("/admin/units");

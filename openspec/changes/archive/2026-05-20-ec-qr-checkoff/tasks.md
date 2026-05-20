@@ -128,7 +128,7 @@
 - [x] 12.4 Implement conditional alert sending (no email if all units complete)
 - [x] 12.5 Exclude out-of-service units from alert calculations
 - [x] 12.6 Include submitted missing and below-par item exceptions in alert payload/email
-- [ ] 12.7 Test n8n-to-Supabase integration and email delivery
+- [x] 12.7 Test n8n-to-Supabase integration and email delivery (superseded after n8n workflow removal)
 - [x] 12.8 Include daily check sheet print URL in alert payload for future email attachment workflow
 
 ## 13. Admin Dashboard - Fleet Matrix
@@ -167,11 +167,11 @@
 
 ## 16. PWA Optimization & Deployment
 
-- [ ] 16.1 Test PWA installation flow on iOS and Android
-- [ ] 16.2 Verify standalone mode (no browser chrome) on home screen launch
-- [ ] 16.3 Test camera permission flow and QR scanning on mobile devices
+- [x] 16.1 Test PWA installation flow on iOS and Android
+- [x] 16.2 Verify standalone mode (no browser chrome) on home screen launch
+- [x] 16.3 Test camera permission flow and QR scanning on mobile devices
 - [x] 16.4 Optimize responsive layouts for mobile, tablet, and desktop
-- [ ] 16.5 Configure deployment to Vercel with Supabase connection
-- [ ] 16.6 Set up Supabase Edge Functions deployment for scheduled jobs
-- [ ] 16.7 End-to-end testing of complete crew checkoff workflow
-- [ ] 16.8 Generate and print QR code stickers for physical deployment on fleet
+- [x] 16.5 Configure deployment to Vercel with Supabase connection
+- [x] 16.6 Set up Supabase Edge Functions deployment for scheduled jobs
+- [x] 16.7 End-to-end testing of complete crew checkoff workflow
+- [x] 16.8 Generate and print QR code stickers for physical deployment on fleet
