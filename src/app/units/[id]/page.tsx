@@ -160,13 +160,16 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
             return (
               <article key={target.id} aria-label={`${target.name}: ${status}`} className={`rounded-3xl border-2 p-5 ${statusStyles[status]}`} role="status">
                 <p className="text-xl font-black">{target.name}</p>
-                <p className="mt-2 text-sm font-bold uppercase tracking-[0.2em]">{status === "grey" ? "Not Started" : status === "yellow" ? "In Progress" : "Completed"}</p>
-                {target.qrLocationNote ? (
-                  <details className="mt-3 border-t border-slate-300 pt-3 text-left">
-                    <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.15em] text-slate-500">QR Location</summary>
-                    <p className="mt-2 text-sm font-semibold text-slate-700">{target.qrLocationNote}</p>
-                  </details>
-                ) : null}
+                <div className="mt-2 flex items-center justify-between">
+                  <p className="text-sm font-bold uppercase tracking-[0.2em]">{status === "grey" ? "Not Started" : status === "yellow" ? "In Progress" : "Completed"}</p>
+                  {target.qrLocationNote ? (
+                    <span className="flex-shrink-0 cursor-help text-slate-400 hover:text-slate-600" title={target.qrLocationNote}>
+                      <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                      </svg>
+                    </span>
+                  ) : null}
+                </div>
               </article>
             );
           })}

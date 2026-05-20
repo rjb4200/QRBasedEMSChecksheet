@@ -2,6 +2,7 @@ import Link from "next/link";
 import { addUnitCompartment, addUnitItem, assignKitToUnit, cloneKitToUnitCompartment, createCompartmentGroup, deleteCompartmentGroup, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, removeKitFromUnit, toggleUnitStatus, updateCompartmentGroup, updateCompartmentQrLocationNote, updateUnitItemGroup, updateUnitKitQrLocationNote, updateUnitMonthlyCheckDay, uploadCompartmentPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { groupItems } from "@/lib/item-groups";
+import { QrSaveButton } from "./qr-save-button";
 
 export default async function UnitDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -123,7 +124,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                       QR Location
                       <input className="flex-1 rounded-xl border border-slate-300 px-3 py-2" defaultValue={assignment.qr_location_note ?? ""} name="qrLocationNote" placeholder="e.g. Inside driver door pocket" type="text" />
                     </label>
-                    <button className="rounded-xl bg-red-700 px-3 py-2 text-sm font-bold text-white" type="submit">Save</button>
+                    <QrSaveButton />
                   </form>
 
                   <div className="mt-4 grid gap-3">
@@ -179,7 +180,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                   QR Location
                   <input className="flex-1 rounded-xl border border-slate-300 px-3 py-2" defaultValue={compartment.qr_location_note ?? ""} name="qrLocationNote" placeholder="e.g. Inside driver door pocket" type="text" />
                 </label>
-                <button className="rounded-xl bg-red-700 px-3 py-2 text-sm font-bold text-white" type="submit">Save</button>
+                <QrSaveButton />
               </form>
 
               <div className="mt-4 rounded-2xl bg-slate-100 p-3">
