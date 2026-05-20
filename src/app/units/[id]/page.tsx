@@ -9,6 +9,7 @@ import { MonthlyCheckReminderBanner } from "@/components/monthly-check-banner";
 import { buildRestockingList, type ManualRestockItem } from "@/lib/restocking-list";
 import { RestockingListSection } from "@/components/restocking-list-section";
 import { CheckoffPrefetch } from "@/components/checkoff-prefetch";
+import { UnitSummaryCacheHint } from "@/components/unit-summary-cache-hint";
 
 const statusStyles = {
   grey: "border-slate-300 bg-slate-200 text-slate-800",
@@ -103,6 +104,15 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   const crewComplete = Boolean(crew?.locked && crew.provider_names?.trim());
   const completedCompartments = checks?.filter((check) => check.status === "completed").length ?? 0;
   const total = targets.length + 1;
+  const prefetchTargets = targets
+    .map((target) => {
+      const status = (checkMap.get(target.id) ?? "not_started") as "not_started" | "in_progress" | "completed" | "incomplete" | "exception";
+      const priority = status === "not_started" ? 0 : status === "in_progress" ? 1 : status === "incomplete" ? 2 : status === "exception" ? 3 : 4;
+      return { id: target.id, type: target.type, status, priority };
+    })
+    .filter((target) => target.status !== "completed")
+    .sort((a, b) => a.priority - b.priority)
+    .map(({ id, type, status }) => ({ id, type, status }));
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-6 text-slate-950">
@@ -124,6 +134,8 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
         {shouldShowMonthlyCheckReminder(unit?.monthly_check_day ?? null) ? <MonthlyCheckReminderBanner /> : null}
 
         <ShiftResetWarning />
+
+        <UnitSummaryCacheHint shiftDate={currentShift.shiftDate} shiftPeriod={currentShift.shiftPeriod} unitId={id} />
 
         {restockingList.length > 0 || manualItems.length > 0 ? (
           <RestockingListSection
@@ -186,10 +198,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
         </form>
       </section>
       <CheckoffPrefetch
-        targets={targets.map((t) => ({
-          id: t.id,
-          type: t.type,
-        }))}
+        targets={prefetchTargets}
         unitId={id}
       />
     </main>

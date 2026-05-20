@@ -1,5 +1,7 @@
-const CACHE_PREFIX = "qrCheckoff.formSetup";
-const TTL_MS = 10 * 60 * 1000; // 10 minutes
+const FORM_SETUP_CACHE_PREFIX = "qrCheckoff.formSetup";
+const UNIT_SUMMARY_CACHE_PREFIX = "qrCheckoff.unitSummary";
+const FORM_SETUP_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const UNIT_SUMMARY_TTL_MS = 60 * 1000; // 60 seconds
 
 type CacheTargetType = "compartment" | "kit";
 
@@ -25,8 +27,33 @@ type CachedFormSetup = {
   };
 };
 
+export type CachedUnitSummaryData = {
+  unitId: string;
+  unitName: string;
+  shiftDate: string;
+  shiftPeriod: string;
+  completedCount: number;
+  totalCount: number;
+  targetStatuses: Array<{
+    id: string;
+    name: string;
+    type: CacheTargetType;
+    status: "not_started" | "in_progress" | "completed" | "incomplete" | "exception";
+  }>;
+};
+
+type CachedUnitSummary = {
+  cachedAt: number;
+  expiresAt: number;
+  data: CachedUnitSummaryData;
+};
+
 function cacheKey(unitId: string, targetType: CacheTargetType, targetId: string) {
-  return `${CACHE_PREFIX}:${unitId}:${targetType}:${targetId}`;
+  return `${FORM_SETUP_CACHE_PREFIX}:${unitId}:${targetType}:${targetId}`;
+}
+
+function unitSummaryCacheKey(unitId: string, shiftDate: string, shiftPeriod: string) {
+  return `${UNIT_SUMMARY_CACHE_PREFIX}:${unitId}:${shiftDate}:${shiftPeriod}`;
 }
 
 export function readCachedFormSetup(unitId: string, targetType: CacheTargetType, targetId: string): CachedFormSetup | null {
@@ -44,6 +71,10 @@ export function readCachedFormSetup(unitId: string, targetType: CacheTargetType,
   }
 }
 
+export function hasFreshCachedFormSetup(unitId: string, targetType: CacheTargetType, targetId: string) {
+  return Boolean(readCachedFormSetup(unitId, targetType, targetId));
+}
+
 export function writeCachedFormSetup(
   unitId: string,
   targetType: CacheTargetType,
@@ -53,7 +84,7 @@ export function writeCachedFormSetup(
   try {
     const entry: CachedFormSetup = {
       cachedAt: Date.now(),
-      expiresAt: Date.now() + TTL_MS,
+      expiresAt: Date.now() + FORM_SETUP_TTL_MS,
       data,
     };
     localStorage.setItem(cacheKey(unitId, targetType, targetId), JSON.stringify(entry));
@@ -62,12 +93,44 @@ export function writeCachedFormSetup(
   }
 }
 
+export function readCachedUnitSummary(unitId: string, shiftDate: string, shiftPeriod: string): CachedUnitSummary | null {
+  try {
+    const key = unitSummaryCacheKey(unitId, shiftDate, shiftPeriod);
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const entry = JSON.parse(raw) as CachedUnitSummary;
+    if (Date.now() > entry.expiresAt) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    if (entry.data.unitId !== unitId || entry.data.shiftDate !== shiftDate || entry.data.shiftPeriod !== shiftPeriod) {
+      return null;
+    }
+    return entry;
+  } catch {
+    return null;
+  }
+}
+
+export function writeCachedUnitSummary(unitId: string, shiftDate: string, shiftPeriod: string, data: CachedUnitSummaryData) {
+  try {
+    const entry: CachedUnitSummary = {
+      cachedAt: Date.now(),
+      expiresAt: Date.now() + UNIT_SUMMARY_TTL_MS,
+      data,
+    };
+    localStorage.setItem(unitSummaryCacheKey(unitId, shiftDate, shiftPeriod), JSON.stringify(entry));
+  } catch {
+    // localStorage full or unavailable — degrade silently
+  }
+}
+
 export function evictStaleCaches(unitId: string) {
   try {
-    const prefix = `${CACHE_PREFIX}:${unitId}:`;
+    const prefixes = [`${FORM_SETUP_CACHE_PREFIX}:${unitId}:`, `${UNIT_SUMMARY_CACHE_PREFIX}:${unitId}:`];
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const key = localStorage.key(i);
-      if (key?.startsWith(prefix)) {
+      if (key && prefixes.some((prefix) => key.startsWith(prefix))) {
         const raw = localStorage.getItem(key);
         if (raw) {
           try {

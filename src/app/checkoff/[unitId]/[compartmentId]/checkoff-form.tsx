@@ -5,6 +5,7 @@ import { saveCheckData, submitCheckData } from "./actions";
 import { groupItems, type ItemGroup } from "@/lib/item-groups";
 import { buildRestockingList } from "@/lib/restocking-list";
 import { writeCachedFormSetup } from "@/lib/checkoff-cache";
+import { prefetchUnitSummary } from "@/components/unit-summary-prefetch";
 
 type CheckoffItem = {
   id: string;
@@ -26,6 +27,8 @@ type Props = {
   carriedForwardData?: Record<string, unknown>;
   initialSectionComment?: string;
   readOnly?: boolean;
+  shiftDate: string;
+  shiftPeriod: string;
   sourceName: string;
 };
 
@@ -70,7 +73,7 @@ function ParLabel({ parLevel, needsAttention }: { parLevel: number | null; needs
   );
 }
 
-export function CheckoffForm({ unitId, compartmentId, targetType = "compartment", items, groups = [], initialData, previousData, carriedForwardData = {}, initialSectionComment = "", readOnly = false, sourceName }: Props) {
+export function CheckoffForm({ unitId, compartmentId, targetType = "compartment", items, groups = [], initialData, previousData, carriedForwardData = {}, initialSectionComment = "", readOnly = false, shiftDate, shiftPeriod, sourceName }: Props) {
   const startTimeRef = useRef(Date.now());
   const [isPending, startTransition] = useTransition();
   const defaults = useMemo(() => Object.fromEntries(items.map((item) => {
@@ -214,7 +217,10 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
       {!readOnly ? (
         <button className="w-full rounded-3xl bg-green-700 px-5 py-5 text-xl font-black text-white disabled:opacity-60" disabled={isPending} onClick={() => {
           const seconds = Math.round((Date.now() - startTimeRef.current) / 1000);
-          startTransition(() => void submitCheckData(unitId, compartmentId, values, seconds, targetType, sectionComment, sourceName));
+          startTransition(() => {
+            void prefetchUnitSummary(unitId, shiftDate, shiftPeriod);
+            void submitCheckData(unitId, compartmentId, values, seconds, targetType, sectionComment, sourceName);
+          });
         }} type="button">
           {isPending ? "Saving..." : `Submit ${targetType === "kit" ? "Kit" : "Compartment"}`}
         </button>

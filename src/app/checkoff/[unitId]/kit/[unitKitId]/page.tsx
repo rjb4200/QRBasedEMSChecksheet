@@ -6,6 +6,7 @@ import { getCurrentShift } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { shouldShowMonthlyCheckReminder } from "@/lib/monthly-check";
 import { MonthlyCheckReminderBanner } from "@/components/monthly-check-banner";
+import { UnitSummaryPrefetch } from "@/components/unit-summary-prefetch";
 
 function isStale(lastActivityAt?: string | null) {
   if (!lastActivityAt) return false;
@@ -132,11 +133,14 @@ export default async function KitCheckoffPage({ params, searchParams }: { params
           previousData={previousItemData}
           initialSectionComment={sectionComment?.comment ?? ""}
           readOnly={readOnly}
+          shiftDate={currentShift.shiftDate}
+          shiftPeriod={currentShift.shiftPeriod}
           sourceName={kit.name}
           targetType="kit"
           unitId={unitId}
         />
       </section>
+      <UnitSummaryPrefetch shiftDate={currentShift.shiftDate} shiftPeriod={currentShift.shiftPeriod} unitId={unitId} />
     </main>
   );
 }
