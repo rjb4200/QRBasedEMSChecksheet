@@ -37,10 +37,10 @@
 - [x] 5.1 Run `npm run lint` and fix any issues
 - [x] 5.2 Run `npm run typecheck` and fix any issues
 - [x] 5.3 Run `npm run build` and verify no build errors
-- [ ] 5.4 Manual test: add reminder text to a compartment and confirm it appears only when expanded
-- [ ] 5.5 Manual test: add reminder text to a unit-assigned kit and confirm it appears only when expanded
-- [ ] 5.6 Manual test: confirm the same kit can have different reminder text on different units
-- [ ] 5.7 Manual test: clear reminder text and confirm no QR reminder UI appears
-- [ ] 5.8 Manual test: verify mobile layout
-- [ ] 5.9 Manual test: confirm expand/collapse remains smooth
-- [ ] 5.10 Manual test: confirm no effect on checkoff behavior
+- [x] 5.4 Manual test: add reminder text to a compartment and confirm it appears only when expanded
+- [x] 5.5 Manual test: add reminder text to a unit-assigned kit and confirm it appears only when expanded
+- [x] 5.6 Manual test: confirm the same kit can have different reminder text on different units
+- [x] 5.7 Manual test: clear reminder text and confirm no QR reminder UI appears
+- [x] 5.8 Manual test: verify mobile layout
+- [x] 5.9 Manual test: confirm expand/collapse remains smooth
+- [x] 5.10 Manual test: confirm no effect on checkoff behavior
