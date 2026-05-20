@@ -22,15 +22,26 @@ The dimmed styling combined with the OOS badge SHALL make it clear that OOS unit
 - **THEN** the OOS units SHALL be visually distinct from active units
 - **AND** the combination of dimmed styling and OOS badge SHALL immediately communicate these units are out of service
 
-### Requirement: OOS units show current OOS metadata
-The fleet matrix SHALL display when an OOS unit was set out of service and which admin set it OOS.
+### Requirement: OOS badge shows "Out of Service" not "Archived"
+The fleet matrix SHALL show "Out of Service" on the status badge for units that are OOS but not deleted. The "Archived" label SHALL only appear for units whose `deleted_at` column is set.
 
-#### Scenario: OOS unit shows timestamp and admin
-- **WHEN** a unit has `status = out_of_service`
-- **AND** OOS metadata is present on the unit
-- **THEN** the unit card SHALL show the OOS timestamp
-- **AND** the unit card SHALL show the admin attribution for who set the unit OOS
+#### Scenario: OOS unit badge says "Out of Service"
+- **WHEN** a unit has `status = out_of_service` and `deleted_at IS NULL`
+- **THEN** the badge on the fleet card SHALL read "Out of Service"
 
-#### Scenario: Unit returns to service
-- **WHEN** a unit status changes from `out_of_service` to `in_service`
-- **THEN** the unit SHALL no longer display OOS timestamp or admin attribution on the fleet matrix
+#### Scenario: Archived unit is excluded from fleet panel
+- **WHEN** a unit has `deleted_at IS NOT NULL`
+- **THEN** that unit SHALL NOT appear on the fleet matrix
+
+### Requirement: OOS metadata is persisted on units
+The system SHALL store current OOS timestamp and admin attribution directly on the `units` table using `oos_at` and `oos_by_name` columns.
+
+#### Scenario: Unit set OOS records metadata
+- **WHEN** an admin sets a unit status to `out_of_service`
+- **THEN** `oos_at` SHALL be set to the current timestamp
+- **AND** `oos_by_name` SHALL be set to the admin actor name
+
+#### Scenario: Unit returns to service clears metadata
+- **WHEN** an admin sets a unit status to `in_service`
+- **THEN** `oos_at` SHALL be set to null
+- **AND** `oos_by_name` SHALL be set to null
