@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { addUnitCompartment, addUnitItem, assignKitToUnit, cloneKitToUnitCompartment, createCompartmentGroup, deleteCompartmentGroup, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, removeKitFromUnit, toggleUnitStatus, updateCompartmentGroup, updateUnitItemGroup, updateUnitMonthlyCheckDay, uploadCompartmentPhoto } from "../actions";
+import { addUnitCompartment, addUnitItem, assignKitToUnit, cloneKitToUnitCompartment, createCompartmentGroup, deleteCompartmentGroup, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, removeKitFromUnit, toggleUnitStatus, updateCompartmentGroup, updateCompartmentQrLocationNote, updateUnitItemGroup, updateUnitKitQrLocationNote, updateUnitMonthlyCheckDay, uploadCompartmentPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { groupItems } from "@/lib/item-groups";
 
@@ -7,7 +7,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const supabase = await createAdminClient();
   const [{ data: unit }, { data: equipment }, { data: sourceCompartments }, { data: kits }] = await Promise.all([
-    supabase.from("units").select("id, name, status, monthly_check_day, unit_compartments(id, name, sort_order, photo_url, unit_compartment_item_groups(id, name, sort_order, created_at), unit_compartment_items(id, group_id, sort_order, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, kits(id, name, description, photo_url, kit_item_groups(id, name, sort_order, created_at), kit_items(id, group_id, par_level, input_type, sort_order, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
+    supabase.from("units").select("id, name, status, monthly_check_day, unit_compartments(id, name, sort_order, photo_url, qr_location_note, unit_compartment_item_groups(id, name, sort_order, created_at), unit_compartment_items(id, group_id, sort_order, par_level, input_type, equipment_catalog(name))), unit_kits(id, sort_order, qr_location_note, kits(id, name, description, photo_url, kit_item_groups(id, name, sort_order, created_at), kit_items(id, group_id, par_level, input_type, sort_order, equipment_catalog(name))))").eq("id", id).is("deleted_at", null).single(),
     supabase.from("equipment_catalog").select("id, name, default_par_level, input_type").order("name"),
     supabase.from("unit_compartments").select("id, name, units(name)").order("name"),
     supabase.from("kits").select("id, name, active").eq("active", true).order("name"),
@@ -115,6 +115,17 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                     </div>
                   </summary>
                   {kit?.photo_url ? <img alt={kit.name} className="mt-4 max-h-52 rounded-2xl object-cover" src={kit.photo_url} /> : null}
+
+                  <form action={updateUnitKitQrLocationNote} className="mt-4 flex items-center gap-2 rounded-2xl bg-slate-100 p-3">
+                    <input name="unitId" type="hidden" value={id} />
+                    <input name="unitKitId" type="hidden" value={assignment.id} />
+                    <label className="flex flex-1 items-center gap-2 text-sm font-bold text-slate-600">
+                      QR Location
+                      <input className="flex-1 rounded-xl border border-slate-300 px-3 py-2" defaultValue={assignment.qr_location_note ?? ""} name="qrLocationNote" placeholder="e.g. Inside driver door pocket" type="text" />
+                    </label>
+                    <button className="rounded-xl bg-red-700 px-3 py-2 text-sm font-bold text-white" type="submit">Save</button>
+                  </form>
+
                   <div className="mt-4 grid gap-3">
                     {kitSections.map((section) => (
                       <details key={section.group?.id ?? "ungrouped"} className="rounded-2xl bg-slate-50 p-3" open>
@@ -159,6 +170,16 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                 <input name="compartmentId" type="hidden" value={compartment.id} />
                 <input accept="image/png,image/jpeg,image/webp" className="flex-1 rounded-xl bg-white px-3 py-2" name="photo" type="file" />
                 <button className="rounded-xl bg-red-700 px-4 py-2 font-bold text-white" type="submit">Upload Photo</button>
+              </form>
+
+              <form action={updateCompartmentQrLocationNote} className="mt-4 flex items-center gap-2 rounded-2xl bg-slate-100 p-3">
+                <input name="unitId" type="hidden" value={id} />
+                <input name="compartmentId" type="hidden" value={compartment.id} />
+                <label className="flex flex-1 items-center gap-2 text-sm font-bold text-slate-600">
+                  QR Location
+                  <input className="flex-1 rounded-xl border border-slate-300 px-3 py-2" defaultValue={compartment.qr_location_note ?? ""} name="qrLocationNote" placeholder="e.g. Inside driver door pocket" type="text" />
+                </label>
+                <button className="rounded-xl bg-red-700 px-3 py-2 text-sm font-bold text-white" type="submit">Save</button>
               </form>
 
               <div className="mt-4 rounded-2xl bg-slate-100 p-3">

@@ -154,6 +154,38 @@ export async function updateUnitMonthlyCheckDay(formData: FormData) {
   revalidatePath(`/admin/units/${parsed.id}`);
 }
 
+export async function updateCompartmentQrLocationNote(formData: FormData) {
+  const parsed = z.object({
+    unitId: z.string().uuid(),
+    compartmentId: z.string().uuid(),
+    qrLocationNote: z.string().nullable(),
+  }).parse({
+    unitId: formData.get("unitId"),
+    compartmentId: formData.get("compartmentId"),
+    qrLocationNote: (formData.get("qrLocationNote") as string)?.trim() || null,
+  });
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("unit_compartments").update({ qr_location_note: parsed.qrLocationNote }).eq("id", parsed.compartmentId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/units/${parsed.unitId}`);
+}
+
+export async function updateUnitKitQrLocationNote(formData: FormData) {
+  const parsed = z.object({
+    unitId: z.string().uuid(),
+    unitKitId: z.string().uuid(),
+    qrLocationNote: z.string().nullable(),
+  }).parse({
+    unitId: formData.get("unitId"),
+    unitKitId: formData.get("unitKitId"),
+    qrLocationNote: (formData.get("qrLocationNote") as string)?.trim() || null,
+  });
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("unit_kits").update({ qr_location_note: parsed.qrLocationNote }).eq("id", parsed.unitKitId);
+  if (error) throw new Error(error.message);
+  revalidatePath(`/admin/units/${parsed.unitId}`);
+}
+
 export async function deleteUnit(formData: FormData) {
   const id = z.string().uuid().parse(formData.get("id"));
   const supabase = createAdminClient();

@@ -23,7 +23,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   const supabase = createAdminClient();
   const currentShift = getCurrentShift();
   const [{ data: unit }, { data: checks }, { data: crew }, { data: comment }, { data: sectionComments }, addressedRows, manualItemsData] = await Promise.all([
-    supabase.from("units").select("id, name, status, monthly_check_day, unit_compartments(id, name, sort_order, unit_compartment_items(id, equipment_id, par_level, input_type)), unit_kits(id, sort_order, kits(id, name, kit_items(id, equipment_id, par_level, input_type)))").eq("id", id).is("deleted_at", null).single(),
+    supabase.from("units").select("id, name, status, monthly_check_day, unit_compartments(id, name, sort_order, qr_location_note, unit_compartment_items(id, equipment_id, par_level, input_type)), unit_kits(id, sort_order, qr_location_note, kits(id, name, kit_items(id, equipment_id, par_level, input_type)))").eq("id", id).is("deleted_at", null).single(),
     supabase.from("compartment_checks").select("compartment_id, unit_kit_id, status, item_data").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
     supabase.from("daily_unit_crews").select("provider_names, locked").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_comments").select("comment").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
@@ -62,6 +62,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
     name: compartment.name,
     type: "compartment" as const,
     sortOrder: compartment.sort_order ?? 0,
+    qrLocationNote: compartment.qr_location_note ?? null,
     items: (compartment.unit_compartment_items ?? []).map((item: any) => ({
       ...item,
       name: equipmentNameMap.get(item.equipment_id) ?? item.name ?? "Unknown item",
@@ -74,6 +75,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
       name: kit?.name ?? "Shared kit",
       type: "kit" as const,
       sortOrder: assignment.sort_order ?? 0,
+      qrLocationNote: assignment.qr_location_note ?? null,
       items: (kit?.kit_items ?? []).map((item: any) => ({
         ...item,
         name: equipmentNameMap.get(item.equipment_id) ?? item.name ?? "Unknown item",
@@ -159,6 +161,12 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
               <article key={target.id} aria-label={`${target.name}: ${status}`} className={`rounded-3xl border-2 p-5 ${statusStyles[status]}`} role="status">
                 <p className="text-xl font-black">{target.name}</p>
                 <p className="mt-2 text-sm font-bold uppercase tracking-[0.2em]">{status === "grey" ? "Not Started" : status === "yellow" ? "In Progress" : "Completed"}</p>
+                {target.qrLocationNote ? (
+                  <details className="mt-3 border-t border-slate-300 pt-3 text-left">
+                    <summary className="cursor-pointer text-xs font-bold uppercase tracking-[0.15em] text-slate-500">QR Location</summary>
+                    <p className="mt-2 text-sm font-semibold text-slate-700">{target.qrLocationNote}</p>
+                  </details>
+                ) : null}
               </article>
             );
           })}

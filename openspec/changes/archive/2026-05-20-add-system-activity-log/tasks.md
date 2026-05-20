@@ -50,10 +50,10 @@
 - [x] 7.1 Run `npm run lint` and fix any issues
 - [x] 7.2 Run `npm run typecheck` and fix any issues
 - [x] 7.3 Run `npm run build` and verify no build errors
-- [ ] 7.4 Manual test: change unit status, confirm log row appears
-- [ ] 7.5 Manual test: lock crew signatures, confirm log row appears
-- [ ] 7.6 Manual test: trigger daily report with force=true, confirm success/failure row appears
-- [ ] 7.7 Manual test: visit /admin/system-log, verify filters work
-- [ ] 7.8 Manual test: expand a log row to see details
-- [ ] 7.9 Manual test: crew user cannot access /admin/system-log
+- [x] 7.4 Manual test: change unit status, confirm log row appears
+- [x] 7.5 Manual test: lock crew signatures, confirm log row appears
+- [x] 7.6 Manual test: trigger daily report with force=true, confirm success/failure row appears
+- [x] 7.7 Manual test: visit /admin/system-log, verify filters work
+- [x] 7.8 Manual test: expand a log row to see details
+- [x] 7.9 Manual test: crew user cannot access /admin/system-log
 - [x] 7.10 Manual test: insert an old test log row, run cleanup, confirm logs older than 3 months are deleted and newer logs remain
