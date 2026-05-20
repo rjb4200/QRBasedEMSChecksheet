@@ -46,11 +46,11 @@
 - [x] 6.1 Run `npm run lint` and fix any issues
 - [x] 6.2 Run `npm run typecheck` and fix any issues
 - [x] 6.3 Run `npm run build` and verify no build errors
-- [ ] 6.4 Manual test: open EC1 compartment by QR/NFC and confirm unit summary prefetch runs
-- [ ] 6.5 Manual test: submit a compartment/kit and confirm same-unit summary cache refreshes
-- [ ] 6.6 Manual test: navigate back to EC1 unit page and confirm cached summary appears quickly then server refresh applies
-- [ ] 6.7 Manual test: open EC1 unit page with unchecked targets and confirm only EC1 setup prefetch runs
-- [ ] 6.8 Manual test: open another EC1 QR/NFC target and confirm cached setup can render quickly while live data applies
-- [ ] 6.9 Manual test: confirm completed/in-progress status, exceptions, restock list, comments, crew signatures, and unit service status remain accurate from server
-- [ ] 6.10 Manual test: confirm EC2/other units are not prefetched while working EC1
-- [ ] 6.11 Manual test: confirm prefetch pauses/stops when tab is hidden or user navigates away
+- [x] 6.4 Manual test: open EC1 compartment by QR/NFC and confirm unit summary prefetch runs
+- [x] 6.5 Manual test: submit a compartment/kit and confirm same-unit summary cache refreshes
+- [x] 6.6 Manual test: navigate back to EC1 unit page and confirm cached summary appears quickly then server refresh applies
+- [x] 6.7 Manual test: open EC1 unit page with unchecked targets and confirm only EC1 setup prefetch runs
+- [x] 6.8 Manual test: open another EC1 QR/NFC target and confirm cached setup can render quickly while live data applies
+- [x] 6.9 Manual test: confirm completed/in-progress status, exceptions, restock list, comments, crew signatures, and unit service status remain accurate from server
+- [x] 6.10 Manual test: confirm EC2/other units are not prefetched while working EC1
+- [x] 6.11 Manual test: confirm prefetch pauses/stops when tab is hidden or user navigates away
