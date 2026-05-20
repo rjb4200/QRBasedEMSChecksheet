@@ -36,10 +36,10 @@
 - [x] 5.1 Run `npm run lint` and fix any issues
 - [x] 5.2 Run `npm run typecheck` and fix any issues
 - [x] 5.3 Run `npm run build` and verify no build errors
-- [ ] 5.4 Manual test: default Equipment Catalog renders a paged list instead of the full list
-- [ ] 5.5 Manual test: page-size selector changes visible row count and persists for the session
-- [ ] 5.6 Manual test: next/previous pagination works with search and category filters
-- [ ] 5.7 Manual test: sorting remains stable across pages
-- [ ] 5.8 Manual test: All option displays all matching rows only after explicit selection
-- [ ] 5.9 Manual test: back-to-top appears after scrolling and works on desktop/mobile
-- [ ] 5.10 Manual test: create, edit, and delete equipment still work from paginated pages
+- [x] 5.4 Manual test: default Equipment Catalog renders a paged list instead of the full list
+- [x] 5.5 Manual test: page-size selector changes visible row count and persists for the session
+- [x] 5.6 Manual test: next/previous pagination works with search and category filters
+- [x] 5.7 Manual test: sorting remains stable across pages
+- [x] 5.8 Manual test: All option displays all matching rows only after explicit selection
+- [x] 5.9 Manual test: back-to-top appears after scrolling and works on desktop/mobile
+- [x] 5.10 Manual test: create, edit, and delete equipment still work from paginated pages
