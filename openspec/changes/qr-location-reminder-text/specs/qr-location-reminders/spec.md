@@ -33,17 +33,17 @@ The admin unit edit page SHALL provide optional QR Location Reminder fields for 
 - **WHEN** an admin views an assigned kit on Admin -> Units -> Edit Unit
 - **THEN** an optional QR Location Reminder field SHALL be available for that assigned kit
 
-### Requirement: Unit dashboard shows compact location icon with tooltip
-The unit dashboard SHALL show a small map-pin icon inline with the status text for targets that have QR location reminder text. The icon SHALL display the reminder text as a hover tooltip and SHALL NOT take additional vertical space.
+### Requirement: Unit dashboard shows compact location icon that expands on tap
+The unit dashboard SHALL show a small map-pin icon inline with the status text for targets that have QR location reminder text. Tapping or clicking the icon SHALL expand the reminder text inline below the status line.
 
 #### Scenario: Reminder exists for target
 - **WHEN** a compartment or assigned kit has QR location reminder text
 - **THEN** the unit dashboard SHALL show a small map-pin icon on the right side of the status text for that target
 - **AND** no additional text label SHALL be shown
 
-#### Scenario: Icon hover shows reminder
-- **WHEN** a user hovers over the map-pin icon
-- **THEN** the system SHALL display the QR location reminder text as a tooltip
+#### Scenario: Icon tap expands reminder on mobile
+- **WHEN** a user taps the map-pin icon on a touch device
+- **THEN** the system SHALL expand the reminder text inline below the status line
 
 #### Scenario: Reminder is empty
 - **WHEN** a compartment or assigned kit has no QR location reminder text
