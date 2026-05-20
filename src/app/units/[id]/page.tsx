@@ -160,7 +160,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
             return (
               <article key={target.id} aria-label={`${target.name}: ${status}`} className={`rounded-3xl border-2 p-5 ${statusStyles[status]}`} role="status">
                 <p className="text-xl font-black">{target.name}</p>
-                <div className="mt-2 flex items-center justify-between">
+                <div className="mt-2 flex items-start justify-between">
                   <p className="text-sm font-bold uppercase tracking-[0.2em]">{status === "grey" ? "Not Started" : status === "yellow" ? "In Progress" : "Completed"}</p>
                   {target.qrLocationNote ? (
                     <details className="text-right">
