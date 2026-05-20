@@ -174,6 +174,33 @@ A normal admin/supervisor workflow usually looks like:
 5. Print records if needed.
 6. Review daily email reports.
 
+## Admin Lockout Recovery
+
+If normal admin accounts are unavailable, the app supports an optional bootstrap recovery admin login.
+
+Bootstrap recovery uses these server-only environment variables:
+
+- `BOOTSTRAP_ADMIN_ENABLED`
+- `BOOTSTRAP_ADMIN_USER`
+- `BOOTSTRAP_ADMIN_PASSWORD`
+
+Important:
+
+- do not use `NEXT_PUBLIC_` for these values
+- do not share the bootstrap password with crews or place it in client-side config
+- use bootstrap only as a recovery path, not as the normal daily admin login
+
+Recommended recovery workflow:
+
+1. Enable bootstrap recovery in the server environment.
+2. Set a strong temporary bootstrap username and password.
+3. Sign in through the normal `/login` page using the bootstrap credentials.
+4. Restore or create the regular admin user account you actually want to keep using.
+5. Test normal admin login.
+6. Disable bootstrap recovery or rotate the bootstrap password immediately after recovery.
+
+If bootstrap recovery is left enabled indefinitely, it becomes an extra standing admin credential and increases risk.
+
 ## Compartments vs Kits
 
 This is one of the most important concepts in the system.

@@ -1,12 +1,19 @@
 import { NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
+import { ADMIN_COOKIE_NAME, getAdminSessionPrincipal } from "@/lib/auth/admin-session";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { hashPassword } from "@/lib/auth/password";
 
 const DEFAULT_ADMIN_USERNAME = "rjb4200";
 const DEFAULT_ADMIN_PASSWORD = "rjb4200";
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
+    const session = await getAdminSessionPrincipal(request.cookies.get(ADMIN_COOKIE_NAME)?.value);
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const supabase = createAdminClient();
 
     const { data: existing } = await supabase

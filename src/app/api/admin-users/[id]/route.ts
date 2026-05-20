@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ADMIN_COOKIE_NAME, getAdminSessionPrincipal } from "@/lib/auth/admin-session";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { isValidEmail, normalizeOptionalEmail } from "@/lib/email/validation";
 import { hashPassword, validatePasswordStrength } from "@/lib/auth/password";
@@ -7,8 +8,20 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-export async function PUT(request: NextRequest, { params }: RouteParams) {
+async function requireAdminSession(request: NextRequest) {
+  const session = await getAdminSessionPrincipal(request.cookies.get(ADMIN_COOKIE_NAME)?.value);
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  return null;
+}
+
+async function updateAdminUser(request: NextRequest, { params }: RouteParams) {
   try {
+    const unauthorized = await requireAdminSession(request);
+    if (unauthorized) return unauthorized;
+
     const { id } = await params;
     const { password, email: rawEmail, receivesDailyReport } = await request.json();
 
@@ -73,8 +86,19 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   }
 }
 
+export async function PUT(request: NextRequest, context: RouteParams) {
+  return updateAdminUser(request, context);
+}
+
+export async function PATCH(request: NextRequest, context: RouteParams) {
+  return updateAdminUser(request, context);
+}
+
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    const unauthorized = await requireAdminSession(request);
+    if (unauthorized) return unauthorized;
+
     const { id } = await params;
     const supabase = createAdminClient();
 
