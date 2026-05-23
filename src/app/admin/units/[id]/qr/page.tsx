@@ -1,5 +1,5 @@
 import QRCode from "qrcode";
-import { QrCodeGrid, RotatedLabelGrid } from "./print-button";
+import { QrCodeGrid, RotatedLabelGrid, getR011Position, R011_LABELS_PER_SHEET } from "./print-button";
 import { getAppOrigin } from "@/lib/app-url";
 import { getOrCreateQrTarget } from "@/lib/qr-targets";
 import { createAdminClient } from "@/lib/supabase/server-admin";
@@ -7,7 +7,9 @@ import { createAdminClient } from "@/lib/supabase/server-admin";
 export default async function UnitQrPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ format?: string }> }) {
   const { id } = await params;
   const { format } = await searchParams;
-  const isRotated = format === "3x2-rotated";
+  const isAveryRotated = format === "3x2-rotated";
+  const isR011Rotated = format === "r011-3x2-rotated";
+  const isRotated = isAveryRotated || isR011Rotated;
   const supabase = createAdminClient();
   const { data: unit } = await supabase
     .from("units")
@@ -156,7 +158,9 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
             <h1 className="mt-2 text-4xl font-black">{unit?.name}</h1>
             <p className="mt-2 text-slate-600">
               {isRotated
-                ? "Avery 94237 layout: 8 labels per sheet with selectable labels and optional duplicate physical copies. Print at 100% scale with headers/footers off."
+                ? isR011Rotated
+                  ? "R011 layout: 10 rotated 3×2 labels per sheet with selectable labels and optional duplicate physical copies. Print at 100% scale with headers/footers off."
+                  : "Avery 94237 layout: 8 labels per sheet with selectable labels and optional duplicate physical copies. Print at 100% scale with headers/footers off."
                 : "Spartan Industrial S004 layout: 3×3 square labels, 6 labels per sheet, with selectable labels and optional duplicate physical copies. Print at 100% scale with headers/footers off."}
             </p>
           </div>
@@ -166,8 +170,11 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
           <a className={`rounded-2xl px-5 py-3 font-bold ${!isRotated ? "bg-red-700 text-white" : "border border-slate-300 text-slate-950"}`} href={`/admin/units/${id}/qr`}>
             Spartan S004 3×3 Labels
           </a>
-          <a className={`rounded-2xl px-5 py-3 font-bold ${isRotated ? "bg-red-700 text-white" : "border border-slate-300 text-slate-950"}`} href={`/admin/units/${id}/qr?format=3x2-rotated`}>
+          <a className={`rounded-2xl px-5 py-3 font-bold ${isAveryRotated ? "bg-red-700 text-white" : "border border-slate-300 text-slate-950"}`} href={`/admin/units/${id}/qr?format=3x2-rotated`}>
             Avery 94237 Labels
+          </a>
+          <a className={`rounded-2xl px-5 py-3 font-bold ${isR011Rotated ? "bg-red-700 text-white" : "border border-slate-300 text-slate-950"}`} href={`/admin/units/${id}/qr?format=r011-3x2-rotated`}>
+            R011 3×2 Labels
           </a>
         </div>
 
@@ -184,7 +191,13 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
         </div>
 
         {isRotated ? (
-          <RotatedLabelGrid codes={codes} unitName={unit?.name ?? "Unit"} />
+          <RotatedLabelGrid
+            codes={codes}
+            unitName={unit?.name ?? "Unit"}
+            labelName={isR011Rotated ? "R011 3x2" : "Avery 94237"}
+            labelsPerSheet={isR011Rotated ? R011_LABELS_PER_SHEET : undefined}
+            positionForIndex={isR011Rotated ? getR011Position : undefined}
+          />
         ) : (
           <QrCodeGrid codes={codes} unitName={unit?.name ?? "Unit"} />
         )}

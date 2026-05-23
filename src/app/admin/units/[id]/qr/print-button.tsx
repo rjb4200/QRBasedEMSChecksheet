@@ -11,6 +11,7 @@ type QrCode = {
 };
 
 const AVERY_94237_LABELS_PER_SHEET = 8;
+const R011_LABELS_PER_SHEET = 10;
 const SPARTAN_S004_LABELS_PER_SHEET = 6;
 
 function getAvery94237Position(index: number) {
@@ -168,6 +169,16 @@ function useLabelPrintSelection(codes: QrCode[], maxPhysicalLabels?: number) {
   };
 }
 
+function getR011Position(index: number) {
+  const row = Math.floor(index / 2);
+  const column = index % 2;
+
+  return {
+    top: `${0.5 + row * 2}in`,
+    left: `${0.625 + column * 4.25}in`,
+  };
+}
+
 function getSpartanS004Position(index: number) {
   const row = Math.floor(index / 2);
   const column = index % 2;
@@ -286,13 +297,25 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
   );
 }
 
-export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
+export function RotatedLabelGrid({
+  codes,
+  unitName,
+  labelName = "Avery 94237",
+  labelsPerSheet = AVERY_94237_LABELS_PER_SHEET,
+  positionForIndex = getAvery94237Position,
+}: {
+  codes: QrCode[];
+  unitName: string;
+  labelName?: string;
+  labelsPerSheet?: number;
+  positionForIndex?: (index: number) => { left: string; top: string };
+}) {
   const [expanded, setExpanded] = useState(true);
-  const selection = useLabelPrintSelection(codes, AVERY_94237_LABELS_PER_SHEET);
+  const selection = useLabelPrintSelection(codes, labelsPerSheet);
 
   const sheets: QrCode[][] = [];
-  for (let index = 0; index < selection.printLabels.length; index += AVERY_94237_LABELS_PER_SHEET) {
-    sheets.push(selection.printLabels.slice(index, index + AVERY_94237_LABELS_PER_SHEET));
+  for (let index = 0; index < selection.printLabels.length; index += labelsPerSheet) {
+    sheets.push(selection.printLabels.slice(index, index + labelsPerSheet));
   }
 
   return (
@@ -305,7 +328,7 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
       </div>
 
       <EmptyPrintMessage show={selection.printAttemptedWithNone} />
-      <SelectionLimitMessage labelName="Avery 94237" max={selection.maxPhysicalLabels} show={selection.limitAttempted || selection.maxReached} />
+      <SelectionLimitMessage labelName={labelName} max={selection.maxPhysicalLabels} show={selection.limitAttempted || selection.maxReached} />
 
       <div className={`${expanded ? "" : "hidden"} grid gap-3 md:grid-cols-2 print:hidden`}>
         {codes.map((code) => (
@@ -342,7 +365,7 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
         {sheets.map((sheet, sheetIndex) => (
           <section className="qr-label-sheet" key={sheetIndex}>
             {sheet.map((code, labelIndex) => (
-              <div key={`${code.id}-${labelIndex}`} className="qr-label" style={getAvery94237Position(labelIndex)}>
+              <div key={`${code.id}-${labelIndex}`} className="qr-label" style={positionForIndex(labelIndex)}>
                 <div className="qr-label-rotated">
                   <img
                     alt={`${unitName} ${code.name} QR code`}
@@ -362,3 +385,5 @@ export function RotatedLabelGrid({ codes, unitName }: { codes: QrCode[]; unitNam
     </div>
   );
 }
+
+export { getR011Position, R011_LABELS_PER_SHEET };
