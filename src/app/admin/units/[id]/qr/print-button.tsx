@@ -174,8 +174,8 @@ function getR011Position(index: number) {
   const column = index % 2;
 
   return {
-    top: `${0.5 + row * 2}in`,
-    left: `${0.625 + column * 4.25}in`,
+    top: `${0.25 + row * 2}in`,
+    left: `${0.75 + column * 4}in`,
   };
 }
 

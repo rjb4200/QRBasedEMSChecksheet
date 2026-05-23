@@ -6,7 +6,7 @@ The QR codes page already supports two label-sheet formats: Spartan S004 3x3 and
 
 **Goals:**
 - Add a third selectable QR label template for R011 rotated 3x2 sheets.
-- Use the provided physical geometry exactly: 3x2 labels, 0.5in top margin, 0.625in left margin, 4.25in horizontal pitch, 2in vertical pitch, 2 columns, 5 rows.
+- Use the provided physical geometry exactly: 3x2 labels, 0.25in top margin, 0.75in left margin, 4in horizontal pitch, 2in vertical pitch, 2 columns, 5 rows.
 - Cap selected physical labels at 10 for the R011 format.
 - Preserve the existing Spartan and Avery template behavior.
 

@@ -66,7 +66,7 @@ The R011 print output SHALL use a letter-size page with zero page margin and abs
 - **THEN** labels SHALL align to two columns and five rows
 - **AND** each label cell SHALL be sized to 3" × 2"
 - **AND** each label's content SHALL be rotated 90 degrees
-- **AND** the first label SHALL start at 0.5in from the top and 0.625in from the left
-- **AND** horizontal positions SHALL advance by a 4.25in pitch
+- **AND** the first label SHALL start at 0.25in from the top and 0.75in from the left
+- **AND** horizontal positions SHALL advance by a 4in pitch
 - **AND** vertical positions SHALL advance by a 2in pitch
 - **AND** visible code text and full URL text SHALL NOT appear on the printed label
