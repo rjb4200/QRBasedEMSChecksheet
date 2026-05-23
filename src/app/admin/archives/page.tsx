@@ -47,14 +47,14 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
           <h1 className="mt-2 text-4xl font-black">Daily Readiness Records</h1>
           <p className="mt-2 max-w-3xl text-slate-600">Review the selected operational date as the historical ledger for unit readiness.</p>
         </div>
-        <form className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-4">
+        <form action="/admin/archives" className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-4" method="get">
           <select className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={params.unitId ?? ""} name="unitId">
             <option value="">All units</option>
             {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
           </select>
           <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={selectedDate} name="date" type="date" />
           <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Filter</button>
-          <Link className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-950" href={`/admin/archives/print?date=${selectedDate}`}>Print Daily Record</Link>
+          <button className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-950" formAction="/admin/archives/print" formMethod="get" type="submit">Print Daily Record</button>
         </form>
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm">
           <p className="font-semibold text-slate-700">Showing {records.length} unit records for {selectedDate}</p>

@@ -45,3 +45,14 @@ The admin login flow SHALL continue to accept persisted `admin_users` credential
 - **WHEN** a persisted admin user submits valid normal admin credentials
 - **THEN** the system SHALL accept the login using the existing admin-user authentication path
 - **AND** daily report recipient settings and Admin Users page behavior SHALL remain unchanged
+
+### Requirement: Admin session enforced at admin-users API boundary
+The admin authentication system SHALL enforce verified admin sessions at the admin-users API route boundary before any service-role database access is performed.
+
+#### Scenario: API route blocks unauthenticated access
+- **WHEN** a request reaches an admin-users API route without a valid admin session cookie
+- **THEN** the route SHALL return 401 before any database operation occurs
+
+#### Scenario: API route allows authenticated access
+- **WHEN** a request reaches an admin-users API route with a valid admin session cookie
+- **THEN** the route SHALL proceed with its server-side database logic
