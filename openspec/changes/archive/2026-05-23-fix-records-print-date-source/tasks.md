@@ -13,10 +13,10 @@
 
 ## 3. Verification
 
-- [ ] 3.1 Manual test: change the Records page date and click Print without clicking Filter first
-- [ ] 3.2 Manual test: select both date and unit, then click Print without clicking Filter first
-- [ ] 3.3 Manual test: click Filter first, then Print, and confirm the same date/unit are used
-- [ ] 3.4 Manual test: open `/admin/archives/print` without `date` and confirm safe default behavior
+- [x] 3.1 Manual test: change the Records page date and click Print without clicking Filter first
+- [x] 3.2 Manual test: select both date and unit, then click Print without clicking Filter first
+- [x] 3.3 Manual test: click Filter first, then Print, and confirm the same date/unit are used
+- [x] 3.4 Manual test: open `/admin/archives/print` without `date` and confirm safe default behavior
 - [x] 3.5 Run `npm run lint`
 - [x] 3.6 Run `npm run typecheck`
 - [x] 3.7 Run `npm run build`

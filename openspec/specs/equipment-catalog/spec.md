@@ -54,6 +54,14 @@ The admin interface SHALL allow editing name, default par level, input type, and
 - **WHEN** admin edits an equipment item's properties
 - **THEN** the changes are saved and reflected in future compartment assignments
 
+#### Scenario: Edit requires explicit row activation
+- **WHEN** the Equipment Catalog page loads
+- **THEN** existing catalog rows SHALL be read-only until the admin clicks Edit for a row
+
+#### Scenario: Non-quantity input disables par editing
+- **WHEN** an admin edits an item whose input type is Checkbox or Condition
+- **THEN** the default par level field SHALL be disabled and visually greyed out
+
 ### Requirement: Admin can delete equipment items
 The admin interface SHALL allow deleting equipment items that are not in use by any active unit.
 
@@ -71,3 +79,10 @@ The equipment catalog SHALL provide search functionality to find items by name.
 #### Scenario: Search for equipment item
 - **WHEN** admin types "gloves" in the search field
 - **THEN** all items with "gloves" in their name are displayed
+
+### Requirement: Equipment catalog rows show assignment usage
+The equipment catalog SHALL show how many active assignments reference each equipment item.
+
+#### Scenario: Catalog row shows usage badge
+- **WHEN** admin views the Equipment Catalog page
+- **THEN** each row SHALL display a usage badge indicating whether the item is unused or how many active assignments use it
