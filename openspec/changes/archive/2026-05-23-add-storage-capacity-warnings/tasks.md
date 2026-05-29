@@ -15,6 +15,6 @@
 - [x] 4.1 Run `npm run lint`
 - [x] 4.2 Run `npm run typecheck`
 - [x] 4.3 Run `npm run build`
-- [ ] 4.4 Manual test: no banner at normal usage
-- [ ] 4.5 Manual test: yellow banner at 90% threshold
-- [ ] 4.6 Manual test: red banner at 95% threshold
+- [x] 4.4 Manual test: no banner at normal usage
+- [x] 4.5 Manual test: yellow banner at 90% threshold
+- [x] 4.6 Manual test: red banner at 95% threshold

@@ -110,3 +110,18 @@ The Fleet Panel SHALL include a collapsed, lazy-loading Recent Comments section 
 - **WHEN** the Fleet Panel initially loads
 - **THEN** no comment data SHALL be fetched from the server
 - **AND** the Fleet Panel render performance SHALL not be affected by the Recent Comments feature
+
+### Requirement: Fleet Panel displays storage capacity warning when thresholds are exceeded
+The admin Fleet Panel SHALL display a storage capacity warning banner below the fleet matrix when database usage exceeds the configured thresholds.
+
+#### Scenario: Fleet Panel shows warning at 90%
+- **WHEN** database usage is at or above 90% of the storage limit
+- **THEN** a warning banner SHALL appear below the Fleet Matrix on the Fleet Panel
+
+#### Scenario: Fleet Panel shows critical warning at 95%
+- **WHEN** database usage is at or above 95% of the storage limit
+- **THEN** a visually distinct critical banner SHALL appear below the Fleet Matrix on the Fleet Panel
+
+#### Scenario: Fleet Panel normal operation
+- **WHEN** database usage is below 90%
+- **THEN** no storage banner SHALL be displayed on the Fleet Panel
