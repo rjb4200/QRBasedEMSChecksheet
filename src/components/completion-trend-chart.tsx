@@ -14,12 +14,13 @@ function formatDate(dateStr: string) {
 
 export default function CompletionTrendChart({ groups }: { groups: DailyRecordGroup[] }) {
   const maxHeight = 128;
+  const ordered = [...groups].reverse();
 
   return (
     <div className="rounded-3xl bg-white p-4 shadow-sm">
       <p className="text-sm font-black uppercase tracking-[0.1em] text-slate-600">Last 14 Days Check Completion</p>
       <div className="mt-3 flex items-end gap-1" style={{ height: maxHeight }}>
-        {groups.map((group) => {
+        {ordered.map((group) => {
           const pct = group.totalInServiceUnits > 0
             ? Math.round((group.completedInServiceUnits / group.totalInServiceUnits) * 100)
             : 0;
