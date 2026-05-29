@@ -14,7 +14,7 @@
 - [x] 4.1 Run `npm run lint`
 - [x] 4.2 Run `npm run typecheck`
 - [x] 4.3 Run `npm run build`
-- [ ] 4.4 Manual test: section collapsed by default, no data loaded
-- [ ] 4.5 Manual test: expand shows comments with loading state
-- [ ] 4.6 Manual test: empty state when no comments
-- [ ] 4.7 Manual test: Fleet Panel load speed unaffected
+- [x] 4.4 Manual test: section collapsed by default, no data loaded
+- [x] 4.5 Manual test: expand shows comments with loading state
+- [x] 4.6 Manual test: empty state when no comments
+- [x] 4.7 Manual test: Fleet Panel load speed unaffected

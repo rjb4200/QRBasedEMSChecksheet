@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 
 type RecentComment = {
   id: string;
@@ -71,11 +70,8 @@ export function RecentComments() {
                 </p>
                 <p className="mt-1 whitespace-pre-wrap text-sm font-semibold text-slate-700">{comment.comment}</p>
               </div>
-            ))}
-            <Link className="inline-block rounded-2xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-600" href="/admin/archives">
-              View all in Records
-            </Link>
-          </div>
+              ))}
+            </div>
         )}
       </div>
     </details>
