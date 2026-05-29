@@ -75,9 +75,14 @@ export function EditableCatalogRow({ item }: { item: CatalogItem }) {
 
   const isQuantityType = editInputType === "quantity";
   const badges = item.usageBadges ?? [];
-  const visibleBadges = badges.slice(0, 3);
-  const overflowCount = badges.length - 3;
-  const isUnused = badges.length === 0;
+  const badgeCount = badges.length;
+  const badgeLabel = badgeCount === 0 ? "Unused" : badgeCount === 1 ? "1 use" : `${badgeCount} uses`;
+  const badgeStyle = badgeCount === 0
+    ? "bg-amber-100 text-amber-800"
+    : "bg-green-100 text-green-800";
+  const tooltipText = badges.length > 0
+    ? badges.map((b) => `${b.unitName} / ${b.targetName}`).join("\n")
+    : "";
 
   function handleEdit() {
     setEditName(item.name);
@@ -100,19 +105,11 @@ export function EditableCatalogRow({ item }: { item: CatalogItem }) {
         <span className="flex items-center px-4 py-3">{item.category}</span>
         <span className="flex items-center px-4 py-3">{item.input_type}</span>
         <span className="flex items-center px-4 py-3">{item.input_type === "quantity" ? (item.default_par_level ?? "—") : "—"}</span>
-        <div className="flex flex-wrap items-center gap-1">
-          {isUnused ? (
-            <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-bold text-amber-800">Unused</span>
-          ) : (
-            <>
-              {visibleBadges.map((badge, i) => (
-                <span key={i} className="rounded-full bg-green-100 px-2 py-1 text-xs font-bold text-green-800">{badge.unitName} / {badge.targetName}</span>
-              ))}
-              {overflowCount > 0 ? (
-                <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600">+{overflowCount} more</span>
-              ) : null}
-            </>
-          )}
+        <div className="flex items-center gap-1">
+          <span
+            className={`rounded-full px-2 py-1 text-xs font-bold cursor-help ${badgeStyle}`}
+            title={tooltipText}
+          >{badgeLabel}</span>
         </div>
         <div className="flex items-center gap-1">
           <button
@@ -182,19 +179,11 @@ export function EditableCatalogRow({ item }: { item: CatalogItem }) {
         type="number"
         placeholder={isQuantityType ? "Par" : "—"}
       />
-      <div className="flex flex-wrap items-center gap-1">
-        {isUnused ? (
-          <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-bold text-amber-800">Unused</span>
-        ) : (
-          <>
-            {visibleBadges.map((badge, i) => (
-              <span key={i} className="rounded-full bg-green-100 px-2 py-1 text-xs font-bold text-green-800">{badge.unitName} / {badge.targetName}</span>
-            ))}
-            {overflowCount > 0 ? (
-              <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-600">+{overflowCount} more</span>
-            ) : null}
-          </>
-        )}
+      <div className="flex items-center gap-1">
+        <span
+          className={`rounded-full px-2 py-1 text-xs font-bold cursor-help ${badgeStyle}`}
+          title={tooltipText}
+        >{badgeLabel}</span>
       </div>
       <div className="flex items-center gap-1">
         <SaveSubmit />
