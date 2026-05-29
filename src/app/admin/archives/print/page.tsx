@@ -102,7 +102,12 @@ export default async function PrintDailyRecordPage({ searchParams }: { searchPar
                 <td className="p-2 align-top">
                   {record.restockingList.length === 0 ? "" : restockingListText(record.restockingList)}
                 </td>
-                <td className="whitespace-pre-wrap p-2 align-top">{record.comments || "-"}</td>
+                <td className="whitespace-pre-wrap p-2 align-top">
+                  {record.comments || "-"}
+                  {record.sectionComments.length > 0 ? (
+                    <>{record.sectionComments.map((sc, i) => <div key={i} className="mt-1"><span className="font-bold">{sc.sourceName}:</span> {sc.comment}</div>)}</>
+                  ) : null}
+                </td>
                 <td className="p-2 align-top">{record.crewLocked ? record.providerNames || "Locked" : "Not locked"}</td>
               </tr>
             ))}
