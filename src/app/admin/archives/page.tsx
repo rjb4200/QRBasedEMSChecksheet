@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { formatDuration, getDailyUnitRecords } from "@/lib/archive-records";
 import { getCurrentShift } from "@/lib/shifts";
+import ClearRecordsSection from "./clear-records-section";
 
 function formatTimestamp(value: string | null) {
   return value ? new Date(value).toLocaleString("en-US", { timeZone: "America/New_York" }) : "Unavailable";
@@ -64,6 +65,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
           <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={selectedDate} name="to" type="date" />
           <button className="rounded-2xl bg-slate-800 px-5 py-3 font-bold text-white" type="submit">Export Package</button>
         </form>
+        <ClearRecordsSection defaultFrom={selectedDate} defaultTo={selectedDate} unitId={params.unitId ?? ""} />
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm">
           <p className="font-semibold text-slate-700">Showing {records.length} unit records for {selectedDate}</p>
           <div className="flex flex-wrap gap-2">
