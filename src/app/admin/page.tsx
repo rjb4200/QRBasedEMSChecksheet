@@ -1,5 +1,6 @@
 import { AutoRefresh } from "@/components/auto-refresh";
 import { FleetMatrix } from "@/components/fleet-matrix";
+import { RecentComments } from "@/components/recent-comments";
 import { getCheckoffDiscrepanciesForRange, getDiscrepancyRange, groupDiscrepanciesByDate } from "@/lib/discrepancies";
 import { getFleetStatus } from "@/lib/fleet";
 import { getCurrentShift } from "@/lib/shifts";
@@ -35,6 +36,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
             <a className="rounded-2xl border border-slate-300 px-5 py-3 font-bold" href="/admin/docs">Admin Guide</a>
           </div>
         </section>
+
+        <RecentComments />
 
         <section className="rounded-3xl bg-white p-5 shadow-sm">
           <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">

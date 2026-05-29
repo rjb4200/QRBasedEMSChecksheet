@@ -1,0 +1,40 @@
+## ADDED Requirements
+
+### Requirement: Fleet Panel includes a collapsed Recent Comments section
+The Fleet Panel SHALL include a collapsed-by-default Recent Comments section between the daily checksheet print bar and the Exceptions section.
+
+#### Scenario: Section is collapsed by default
+- **WHEN** the Fleet Panel loads
+- **THEN** the Recent Comments section SHALL be collapsed
+- **AND** no comments SHALL be loaded from the server
+
+### Requirement: Comments lazy-load when section is expanded
+The Recent Comments section SHALL fetch and display section comments from the last 7 rolling days only when expanded by the user.
+
+#### Scenario: Section expands and loads comments
+- **WHEN** the user expands the Recent Comments section
+- **THEN** the system SHALL fetch section comments from the last 7 days
+- **AND** display a loading indicator while fetching
+
+### Requirement: Comments display with unit, source, date, and text
+Each comment row SHALL display the unit name, source compartment or kit name, relative date/time, and comment text, ordered newest first.
+
+#### Scenario: Comment rows render
+- **WHEN** comments are loaded
+- **THEN** each comment SHALL show the unit name, source name, date/time, and comment text
+- **AND** comments SHALL be ordered newest first
+
+### Requirement: Empty state when no comments exist
+The Recent Comments section SHALL display an empty state when no section comments exist in the last 7 days.
+
+#### Scenario: No recent comments
+- **WHEN** the section is expanded and no comments exist
+- **THEN** the section SHALL display "No comments in the last 7 days."
+
+### Requirement: Results limited with Records link
+The Recent Comments section SHALL limit results to 50 most recent comments and SHALL include a link to Records for deeper review.
+
+#### Scenario: Limited results with link
+- **WHEN** the section is expanded
+- **THEN** at most 50 comments SHALL be displayed
+- **AND** a link to the Records page SHALL be visible
