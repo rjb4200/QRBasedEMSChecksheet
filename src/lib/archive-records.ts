@@ -19,6 +19,11 @@ export type ArchiveSearchParams = {
   to?: string;
 };
 
+export type SectionComment = {
+  sourceName: string;
+  comment: string;
+};
+
 export type DailyUnitRecord = {
   archiveId: string | null;
   date: string;
@@ -37,6 +42,7 @@ export type DailyUnitRecord = {
   completionPercentage: number;
   exceptions: DailyUnitException[];
   restockingList: RestockingGroup[];
+  sectionComments: SectionComment[];
   providerNames: string;
   comments: string;
   crewLocked: boolean;
@@ -138,6 +144,14 @@ type CommentRow = {
   comment: string | null;
 };
 
+type SectionCommentRow = {
+  shift_date: string;
+  shift_period: string;
+  unit_id: string;
+  source_name: string;
+  comment: string;
+};
+
 type DailyRecordReadModelInput = {
   date: string;
   ledgers: LedgerRow[];
@@ -145,6 +159,7 @@ type DailyRecordReadModelInput = {
   crews: CrewRow[];
   checks: CheckRow[];
   comments: CommentRow[];
+  sectionComments?: SectionCommentRow[];
   itemMap?: Map<string, ItemRow>;
   unitStatusMap?: Map<string, string>;
 };
@@ -245,10 +260,15 @@ function getCheckRestockingGroups(checks: CheckRow[], itemMap: Map<string, ItemR
   return buildRestockingList(targets);
 }
 
-export function buildLedgerBackedDailyUnitRecords({ date, ledgers, archives, crews, checks, comments, itemMap = new Map(), unitStatusMap = new Map() }: DailyRecordReadModelInput) {
+export function buildLedgerBackedDailyUnitRecords({ date, ledgers, archives, crews, checks, comments, sectionComments = [], itemMap = new Map(), unitStatusMap = new Map() }: DailyRecordReadModelInput) {
   const archiveMap = new Map(archives.map((archive) => [`${archive.unit_id}:${archive.shift_date}:${archive.shift_period}`, archive]));
   const crewMap = new Map(crews.map((crew) => [`${crew.unit_id}:${crew.shift_date}:${crew.shift_period}`, crew]));
   const commentMap = new Map(comments.map((comment) => [`${comment.unit_id}:${comment.shift_date}:${comment.shift_period}`, comment.comment?.trim() ?? ""]));
+  const sectionCommentMap = new Map<string, SectionComment[]>();
+  for (const sc of sectionComments) {
+    const key = `${sc.unit_id}:${sc.shift_date}:${sc.shift_period}`;
+    sectionCommentMap.set(key, [...(sectionCommentMap.get(key) ?? []), { sourceName: sc.source_name, comment: sc.comment }]);
+  }
   const checkMap = new Map<string, CheckRow[]>();
 
   for (const check of checks) {
@@ -300,6 +320,7 @@ export function buildLedgerBackedDailyUnitRecords({ date, ledgers, archives, cre
       completionPercentage,
       exceptions,
       restockingList,
+      sectionComments: sectionCommentMap.get(key) ?? [],
       providerNames: crew?.provider_names ?? "",
       comments,
       crewLocked,
@@ -363,6 +384,13 @@ export async function getLedgerBackedDailyUnitRecordsForDate(params: { date: str
     .eq("shift_date", params.date)
     .eq("shift_period", "daily");
 
+  let sectionCommentsQuery = supabase
+    .from("daily_section_comments")
+    .select("shift_date, shift_period, unit_id, source_name, comment")
+    .eq("shift_date", params.date)
+    .eq("shift_period", "daily")
+    .order("source_name");
+
   let archivesQuery = supabase
     .from("shift_archives")
     .select("id, shift_date, shift_period, unit_id, status, completion_percentage, completed_compartments, total_compartments, operational_date, started_at, submitted_at, last_activity_at, time_to_complete_seconds, shift_calendar(shift_name), users(full_name, email), units(name)")
@@ -374,15 +402,17 @@ export async function getLedgerBackedDailyUnitRecordsForDate(params: { date: str
     checksQuery = checksQuery.eq("unit_id", params.unitId);
     crewsQuery = crewsQuery.eq("unit_id", params.unitId);
     commentsQuery = commentsQuery.eq("unit_id", params.unitId);
+    sectionCommentsQuery = sectionCommentsQuery.eq("unit_id", params.unitId);
     archivesQuery = archivesQuery.eq("unit_id", params.unitId);
   }
 
-  const [{ data: ledgers }, { data: archives }, { data: crews }, { data: checks }, { data: comments }, { data: compartmentItems }, { data: kitItems }] = await Promise.all([
+  const [{ data: ledgers }, { data: archives }, { data: crews }, { data: checks }, { data: comments }, { data: sectionComments }, { data: compartmentItems }, { data: kitItems }] = await Promise.all([
     ledgerQuery,
     archivesQuery,
     crewsQuery,
     checksQuery,
     commentsQuery,
+    sectionCommentsQuery,
     supabase.from("unit_compartment_items").select("id, par_level, input_type, equipment_catalog(name)"),
     supabase.from("kit_items").select("id, par_level, input_type, equipment_catalog(name)"),
   ]);
@@ -395,6 +425,7 @@ export async function getLedgerBackedDailyUnitRecordsForDate(params: { date: str
     crews: (crews ?? []) as CrewRow[],
     checks: (checks ?? []) as CheckRow[],
     comments: (comments ?? []) as CommentRow[],
+    sectionComments: (sectionComments ?? []) as SectionCommentRow[],
     itemMap,
   });
 }
@@ -461,7 +492,18 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
     commentsQuery = commentsQuery.eq("unit_id", params.unitId);
   }
 
-  const [{ data: units }, { data: ledgers }, { data: archives }, { data: crews }, { data: checks }, { data: comments }] = await Promise.all([
+  let sectionCommentsQuery = supabase
+    .from("daily_section_comments")
+    .select("shift_date, shift_period, unit_id, source_name, comment")
+    .gte("shift_date", range.from)
+    .lte("shift_date", range.to)
+    .order("source_name");
+
+  if (params.unitId) {
+    sectionCommentsQuery = sectionCommentsQuery.eq("unit_id", params.unitId);
+  }
+
+  const [{ data: units }, { data: ledgers }, { data: archives }, { data: crews }, { data: checks }, { data: comments }, { data: sectionComments }] = await Promise.all([
     unitsQuery,
     ledgerQuery,
     supabase
@@ -477,6 +519,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
       .lte("shift_date", range.to),
     checksQuery,
     commentsQuery,
+    sectionCommentsQuery,
   ]);
 
   const unitRows = (units ?? []) as UnitRow[];
@@ -490,6 +533,11 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
   const dates = eachDate(new Date(`${range.from}T00:00:00.000Z`), new Date(`${range.to}T00:00:00.000Z`)).reverse();
   const ledgerMap = new Map<string, LedgerRow[]>();
   const checkMap = new Map<string, CheckRow[]>();
+  const sectionCommentMap = new Map<string, SectionComment[]>();
+  for (const sc of (sectionComments ?? []) as SectionCommentRow[]) {
+    const key = `${sc.unit_id}:${sc.shift_date}:${sc.shift_period}`;
+    sectionCommentMap.set(key, [...(sectionCommentMap.get(key) ?? []), { sourceName: sc.source_name, comment: sc.comment }]);
+  }
   const records: DailyUnitRecord[] = [];
 
   for (const ledger of ledgerRows) {
@@ -513,6 +561,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
         crews: ((crews ?? []) as CrewRow[]).filter((row) => row.shift_date === date),
         checks: checkRows.filter((row) => row.shift_date === date),
         comments: ((comments ?? []) as CommentRow[]).filter((row) => row.shift_date === date),
+        sectionComments: ((sectionComments ?? []) as SectionCommentRow[]).filter((row) => row.shift_date === date),
         unitStatusMap,
       }));
 
@@ -569,6 +618,7 @@ export async function getDailyUnitRecords(params: ArchiveSearchParams) {
         completionPercentage,
         exceptions: [],
         restockingList: [],
+        sectionComments: sectionCommentMap.get(`${unit.id}:${date}:daily`) ?? [],
         providerNames: crew?.provider_names ?? "",
         comments,
         crewLocked,

@@ -112,6 +112,14 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
               </div>
               {record.restockingList.length > 0 ? <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-950"><p className="font-black">Restocking List</p>{record.restockingList.map((group) => <div key={group.sourceId} className="mt-2"><p className="font-bold">{group.sourceName}</p>{group.entries.map((entry) => <p key={`${group.sourceId}-${entry.itemId}`} className="ml-3">{entry.itemName} - {entry.detail}</p>)}</div>)}</div> : null}
               {record.comments ? <div className="mt-4 whitespace-pre-wrap rounded-2xl bg-slate-100 p-3 text-sm text-slate-700"><p className="mb-1 font-black text-slate-950">Comments</p>{record.comments}</div> : null}
+              {record.sectionComments.length > 0 ? (
+                <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                  <p className="mb-1 font-black text-slate-950">Section Comments</p>
+                  {record.sectionComments.map((sc, i) => (
+                    <p key={i} className="mt-1"><span className="font-bold">{sc.sourceName}:</span> {sc.comment}</p>
+                  ))}
+                </div>
+              ) : null}
               <div className="mt-4 flex flex-wrap gap-2">
                 {record.archiveId ? <Link className="rounded-2xl border border-slate-300 px-4 py-2 font-bold !text-pink-600 visited:!text-pink-600" href={`/admin/archives/${record.archiveId}`}>View</Link> : <span className="rounded-2xl border border-slate-200 px-4 py-2 font-bold text-slate-400">No archive</span>}
                 <Link className="rounded-2xl bg-red-700 px-4 py-2 font-bold text-white" href={`/admin/archives/print?date=${record.date}`}>Print</Link>
