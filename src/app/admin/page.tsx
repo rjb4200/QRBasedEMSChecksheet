@@ -1,6 +1,7 @@
 import { AutoRefresh } from "@/components/auto-refresh";
 import { FleetMatrix } from "@/components/fleet-matrix";
 import { RecentComments } from "@/components/recent-comments";
+import { StorageWarningBanner } from "@/components/storage-warning-banner";
 import { getCheckoffDiscrepanciesForRange, getDiscrepancyRange, groupDiscrepanciesByDate } from "@/lib/discrepancies";
 import { getFleetStatus } from "@/lib/fleet";
 import { getCurrentShift } from "@/lib/shifts";
@@ -28,6 +29,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         </div>
 
         <FleetMatrix admin units={units} />
+
+        <StorageWarningBanner />
 
         <section className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm">
           <p className="font-bold text-slate-700">Daily check sheets for {currentShift.shiftDate}</p>
