@@ -52,3 +52,15 @@ Email alerts SHALL be triggered by an n8n scheduled workflow that queries the sy
 #### Scenario: n8n workflow executes at scheduled time
 - **WHEN** the n8n cron schedule triggers at 09:00
 - **THEN** the workflow queries the database and sends emails for incomplete units
+
+### Requirement: Daily email includes section comments alongside unchecked units and exceptions
+The daily email report SHALL include compartment and kit section comments for the report date alongside the existing unchecked unit and exception content.
+
+#### Scenario: Email contains section comments section
+- **WHEN** the daily email report is generated for a date with section comments
+- **THEN** the email content SHALL include a Section Comments section
+- **AND** comments SHALL be grouped by unit name
+
+#### Scenario: Email preserves existing content
+- **WHEN** section comments are added to the daily email
+- **THEN** the existing unchecked units, exceptions, and attachment sections SHALL remain unchanged

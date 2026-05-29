@@ -1,0 +1,13 @@
+## ADDED Requirements
+
+### Requirement: Daily email includes section comments alongside unchecked units and exceptions
+The daily email report SHALL include compartment and kit section comments for the report date alongside the existing unchecked unit and exception content.
+
+#### Scenario: Email contains section comments section
+- **WHEN** the daily email report is generated for a date with section comments
+- **THEN** the email content SHALL include a Section Comments section
+- **AND** comments SHALL be grouped by unit name
+
+#### Scenario: Email preserves existing content
+- **WHEN** section comments are added to the daily email
+- **THEN** the existing unchecked units, exceptions, and attachment sections SHALL remain unchanged

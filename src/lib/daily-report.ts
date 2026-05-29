@@ -15,11 +15,18 @@ export type DailyReportUncheckedUnit = {
   completionPercentage: number;
 };
 
+export type DailyReportSectionComment = {
+  unitName: string;
+  sourceName: string;
+  comment: string;
+};
+
 export type DailyEmailReport = {
   reportDate: string;
   generatedAt: string;
   uncheckedUnits: DailyReportUncheckedUnit[];
   exceptions: CheckoffDiscrepancy[];
+  sectionComments: DailyReportSectionComment[];
   recipients: DailyReportRecipient[];
 };
 
@@ -101,10 +108,11 @@ export async function getUncheckedUnits(reportDate: string): Promise<DailyReport
 }
 
 export async function getDailyEmailReport(reportDate = getDailyReportDate()): Promise<DailyEmailReport> {
-  const [uncheckedUnits, exceptions, recipients] = await Promise.all([
+  const [uncheckedUnits, exceptions, recipients, sectionCommentsRaw] = await Promise.all([
     getUncheckedUnits(reportDate),
     getCheckoffDiscrepanciesForRange(reportDate, reportDate),
     getDailyReportRecipients(),
+    getSectionCommentsForDate(reportDate),
   ]);
 
   return {
@@ -112,6 +120,24 @@ export async function getDailyEmailReport(reportDate = getDailyReportDate()): Pr
     generatedAt: new Date().toISOString(),
     uncheckedUnits,
     exceptions,
+    sectionComments: sectionCommentsRaw,
     recipients,
   };
+}
+
+async function getSectionCommentsForDate(reportDate: string): Promise<DailyReportSectionComment[]> {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("daily_section_comments")
+    .select("unit_id, source_name, comment, units(name)")
+    .eq("shift_date", reportDate)
+    .eq("shift_period", "daily")
+    .order("unit_id")
+    .order("source_name");
+
+  return ((data ?? []) as any[]).map((row) => ({
+    unitName: Array.isArray(row.units) ? row.units[0]?.name ?? "Unknown unit" : row.units?.name ?? "Unknown unit",
+    sourceName: row.source_name,
+    comment: row.comment,
+  }));
 }
