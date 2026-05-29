@@ -11,7 +11,7 @@
 - [x] 3.1 Run `npm run lint`
 - [x] 3.2 Run `npm run typecheck`
 - [x] 3.3 Run `npm run build`
-- [ ] 3.4 Manual test: named badges appear for used items
-- [ ] 3.5 Manual test: Unused badge appears for unused items
-- [ ] 3.6 Manual test: +N more appears for heavily used items
-- [ ] 3.7 Manual test: existing edit/save/cancel/delete still works
+- [x] 3.4 Manual test: named badges appear for used items
+- [x] 3.5 Manual test: Unused badge appears for unused items
+- [x] 3.6 Manual test: +N more appears for heavily used items
+- [x] 3.7 Manual test: existing edit/save/cancel/delete still works

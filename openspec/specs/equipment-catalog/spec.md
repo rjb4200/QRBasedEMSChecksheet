@@ -81,8 +81,13 @@ The equipment catalog SHALL provide search functionality to find items by name.
 - **THEN** all items with "gloves" in their name are displayed
 
 ### Requirement: Equipment catalog rows show assignment usage
-The equipment catalog SHALL show how many active assignments reference each equipment item.
+The equipment catalog SHALL show how many active assignments reference each equipment item via a count badge, with a hover tooltip listing the specific unit and compartment/kit names.
 
 #### Scenario: Catalog row shows usage badge
 - **WHEN** admin views the Equipment Catalog page
 - **THEN** each row SHALL display a usage badge indicating whether the item is unused or how many active assignments use it
+- **AND** hovering over the badge SHALL list each `{unitName} / {targetName}` for used items
+
+#### Scenario: Hover tooltip shows all usages
+- **WHEN** admin hovers over the usage badge on a used item
+- **THEN** a tooltip SHALL list all unit/compartment usages
