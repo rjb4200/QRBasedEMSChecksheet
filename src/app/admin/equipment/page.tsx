@@ -57,13 +57,29 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
   const [{ count }, { data: categories }, { data: compUsage }, { data: kitUsage }] = await Promise.all([
     countQuery,
     supabase.from("equipment_catalog").select("category").order("category"),
-    supabase.from("unit_compartment_items").select("equipment_id"),
-    supabase.from("kit_items").select("equipment_id"),
+    supabase.from("unit_compartment_items").select("equipment_id, unit_compartments(name, units(name))"),
+    supabase.from("kit_items").select("equipment_id, kits(name, unit_kits(units(name)))"),
   ]);
 
-  const usageMap = new Map<string, number>();
-  for (const row of (compUsage ?? [])) { usageMap.set(row.equipment_id, (usageMap.get(row.equipment_id) ?? 0) + 1); }
-  for (const row of (kitUsage ?? [])) { usageMap.set(row.equipment_id, (usageMap.get(row.equipment_id) ?? 0) + 1); }
+  const usageBadgesMap = new Map<string, { unitName: string; targetName: string }[]>();
+  for (const row of (compUsage ?? []) as any[]) {
+    const comp = Array.isArray(row.unit_compartments) ? row.unit_compartments[0] : row.unit_compartments;
+    const unit = comp?.units ? (Array.isArray(comp.units) ? comp.units[0] : comp.units) : null;
+    const badge = { unitName: unit?.name ?? "Unknown", targetName: comp?.name ?? "Unknown" };
+    const existing = usageBadgesMap.get(row.equipment_id) ?? [];
+    usageBadgesMap.set(row.equipment_id, [...existing, badge]);
+  }
+  for (const row of (kitUsage ?? []) as any[]) {
+    const kit = Array.isArray(row.kits) ? row.kits[0] : row.kits;
+    const unitKits = kit?.unit_kits ? (Array.isArray(kit.unit_kits) ? kit.unit_kits : [kit.unit_kits]) : [];
+    for (const uk of unitKits) {
+      const unit = Array.isArray(uk.units) ? uk.units[0] : uk.units;
+      const badge = { unitName: unit?.name ?? "Unknown", targetName: `${kit?.name ?? "Unknown"} (Kit)` };
+      const existing = usageBadgesMap.get(row.equipment_id) ?? [];
+      const dup = existing.some((e) => e.unitName === badge.unitName && e.targetName === badge.targetName);
+      if (!dup) usageBadgesMap.set(row.equipment_id, [...existing, badge]);
+    }
+  }
 
   const totalCount = count ?? 0;
   const totalPages = pageSize === "all" ? 1 : Math.max(Math.ceil(totalCount / pageSize), 1);
@@ -94,7 +110,7 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
 
   const uniqueCategories = Array.from(new Set((categories ?? []).map((item) => item.category)));
 
-  const catalogItems = (equipment ?? []).map((item) => ({ ...item, usageCount: usageMap.get(item.id) ?? 0 }));
+  const catalogItems = (equipment ?? []).map((item) => ({ ...item, usageBadges: usageBadgesMap.get(item.id) ?? [] }));
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
