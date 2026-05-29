@@ -62,14 +62,6 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
           <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Filter</button>
           <button className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-950" formAction="/admin/archives/print" formMethod="get" type="submit">Print Daily Record</button>
         </form>
-        <form action="/admin/archives/export-package" className="flex flex-wrap items-center gap-3 rounded-3xl bg-white p-4 shadow-sm" method="get">
-          <input type="hidden" name="unitId" value={params.unitId ?? ""} />
-          <span className="text-sm font-semibold text-slate-600">Export Package:</span>
-          <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={selectedDate} name="from" type="date" />
-          <span className="text-slate-400">to</span>
-          <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={selectedDate} name="to" type="date" />
-          <button className="rounded-2xl bg-slate-800 px-5 py-3 font-bold text-white" type="submit">Export Package</button>
-        </form>
         <section className="grid gap-3 md:grid-cols-5">
           <div className="rounded-3xl bg-white p-4 shadow-sm">
             <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Checked</p>
@@ -141,6 +133,14 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
             <Link className="rounded-2xl border border-slate-300 px-5 py-3 font-bold text-slate-950" href={`/admin/archives/export?${csvParams.toString()}&mode=detailed`}>Detailed CSV</Link>
           </div>
         </div>
+        <form action="/admin/archives/export-package" className="flex flex-wrap items-center gap-3 rounded-3xl bg-white p-4 shadow-sm" method="get">
+          <input type="hidden" name="unitId" value={params.unitId ?? ""} />
+          <span className="text-sm font-semibold text-slate-600">Export Package:</span>
+          <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={selectedDate} name="from" type="date" />
+          <span className="text-slate-400">to</span>
+          <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={selectedDate} name="to" type="date" />
+          <button className="rounded-2xl bg-slate-800 px-5 py-3 font-bold text-white" type="submit">Export Package</button>
+        </form>
         <ClearRecordsSection defaultFrom={selectedDate} defaultTo={selectedDate} unitId={params.unitId ?? ""} />
       </section>
     </main>
