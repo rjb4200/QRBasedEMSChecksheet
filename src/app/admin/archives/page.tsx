@@ -2,6 +2,7 @@ import Link from "next/link";
 import { formatDuration, getDailyUnitRecords } from "@/lib/archive-records";
 import { getCurrentShift } from "@/lib/shifts";
 import ClearRecordsSection from "./clear-records-section";
+import CompletionTrendChart from "@/components/completion-trend-chart";
 
 function formatTimestamp(value: string | null) {
   return value ? new Date(value).toLocaleString("en-US", { timeZone: "America/New_York" }) : "Unavailable";
@@ -28,7 +29,10 @@ const checkStatusClasses = {
 export default async function ArchivesPage({ searchParams }: { searchParams: Promise<{ unitId?: string; date?: string; from?: string; to?: string }> }) {
   const params = await searchParams;
   const selectedDate = params.date ?? params.from ?? getCurrentShift().shiftDate;
-  const { range, records, units } = await getDailyUnitRecords({ unitId: params.unitId, from: selectedDate, to: selectedDate });
+  const [{ range, records, units }, { groups: trendGroups }] = await Promise.all([
+    getDailyUnitRecords({ unitId: params.unitId, from: selectedDate, to: selectedDate }),
+    getDailyUnitRecords({}), // fleet-wide 14-day trend, unaffected by unit filter
+  ]);
   const summary = records.reduce((counts, record) => {
     counts[record.checkStatus] += 1;
     return counts;
@@ -48,6 +52,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
           <h1 className="mt-2 text-4xl font-black">Daily Readiness Records</h1>
           <p className="mt-2 max-w-3xl text-slate-600">Review the selected operational date as the historical ledger for unit readiness.</p>
         </div>
+        <CompletionTrendChart groups={trendGroups} />
         <form action="/admin/archives" className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-4" method="get">
           <select className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={params.unitId ?? ""} name="unitId">
             <option value="">All units</option>
@@ -65,14 +70,6 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
           <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={selectedDate} name="to" type="date" />
           <button className="rounded-2xl bg-slate-800 px-5 py-3 font-bold text-white" type="submit">Export Package</button>
         </form>
-        <ClearRecordsSection defaultFrom={selectedDate} defaultTo={selectedDate} unitId={params.unitId ?? ""} />
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm">
-          <p className="font-semibold text-slate-700">Showing {records.length} unit records for {selectedDate}</p>
-          <div className="flex flex-wrap gap-2">
-            <Link className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" href={`/admin/archives/export?${csvParams.toString()}&mode=simple`}>Simple CSV</Link>
-            <Link className="rounded-2xl border border-slate-300 px-5 py-3 font-bold text-slate-950" href={`/admin/archives/export?${csvParams.toString()}&mode=detailed`}>Detailed CSV</Link>
-          </div>
-        </div>
         <section className="grid gap-3 md:grid-cols-5">
           <div className="rounded-3xl bg-white p-4 shadow-sm">
             <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Checked</p>
@@ -137,6 +134,14 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
             </article>
           ))}
         </div>
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm">
+          <p className="font-semibold text-slate-700">Showing {records.length} unit records for {selectedDate}</p>
+          <div className="flex flex-wrap gap-2">
+            <Link className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" href={`/admin/archives/export?${csvParams.toString()}&mode=simple`}>Simple CSV</Link>
+            <Link className="rounded-2xl border border-slate-300 px-5 py-3 font-bold text-slate-950" href={`/admin/archives/export?${csvParams.toString()}&mode=detailed`}>Detailed CSV</Link>
+          </div>
+        </div>
+        <ClearRecordsSection defaultFrom={selectedDate} defaultTo={selectedDate} unitId={params.unitId ?? ""} />
       </section>
     </main>
   );
