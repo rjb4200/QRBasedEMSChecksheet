@@ -15,10 +15,10 @@
 
 ## 3. Validation
 
-- [ ] 3.1 Manual test: section comments appear on Records for the correct date
-- [ ] 3.2 Manual test: section comments are labeled with source names
-- [ ] 3.3 Manual test: no section comments block when none exist
-- [ ] 3.4 Manual test: unit-level comments remain separate
+- [x] 3.1 Manual test: section comments appear on Records for the correct date
+- [x] 3.2 Manual test: section comments are labeled with source names
+- [x] 3.3 Manual test: no section comments block when none exist
+- [x] 3.4 Manual test: unit-level comments remain separate
 - [x] 3.5 Run `npm run lint`
 - [x] 3.6 Run `npm run typecheck`
 - [x] 3.7 Run `npm run build`
