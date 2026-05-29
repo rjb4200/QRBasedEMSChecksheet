@@ -175,7 +175,9 @@ export default function ClearRecordsSection({ defaultFrom, defaultTo, unitId }: 
               : `No records found for ${from} to ${to}.`}
           </p>
           <div className="mt-3 grid gap-2 md:grid-cols-2">
-            {Object.entries(counts).map(([key, count]) => (
+            {Object.entries(counts)
+              .filter(([, count]) => count > 0)
+              .map(([key, count]) => (
               <div key={key} className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm">
                 <span className="font-semibold text-slate-700">{TABLE_LABELS[key] || key}</span>
                 <span className={`font-black ${count > 0 ? "text-red-700" : "text-slate-400"}`}>{count.toLocaleString()}</span>

@@ -8,7 +8,7 @@ DECLARE
   unit_filter text := '';
 BEGIN
   IF unit_id IS NOT NULL THEN
-    unit_filter := ' AND unit_id = ''' || unit_id || '''';
+    unit_filter := ' AND unit_id = ' || quote_literal(unit_id);
   END IF;
 
   EXECUTE format('SELECT jsonb_build_object(
@@ -45,7 +45,7 @@ DECLARE
   unit_filter text := '';
 BEGIN
   IF unit_id IS NOT NULL THEN
-    unit_filter := ' AND unit_id = ''' || unit_id || '''';
+    unit_filter := ' AND unit_id = ' || quote_literal(unit_id);
   END IF;
 
   EXECUTE format('SELECT jsonb_build_object(
