@@ -114,10 +114,6 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                   ))}
                 </div>
               ) : null}
-              <div className="mt-4 flex flex-wrap gap-2">
-                {record.archiveId ? <Link className="rounded-2xl border border-slate-300 px-4 py-2 font-bold !text-pink-600 visited:!text-pink-600" href={`/admin/archives/${record.archiveId}`}>View</Link> : <span className="rounded-2xl border border-slate-200 px-4 py-2 font-bold text-slate-400">No archive</span>}
-                <Link className="rounded-2xl bg-red-700 px-4 py-2 font-bold text-white" href={`/admin/archives/print?date=${record.date}`}>Print</Link>
-              </div>
             </article>
           ))}
         </div>
