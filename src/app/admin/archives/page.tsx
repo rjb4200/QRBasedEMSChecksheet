@@ -38,11 +38,6 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
     return counts;
   }, { checked: 0, incomplete: 0, not_started: 0, not_required: 0 });
   const totalExceptions = records.reduce((count, record) => count + record.exceptions.length, 0);
-  const csvParams = new URLSearchParams();
-  if (params.unitId) csvParams.set("unitId", params.unitId);
-  csvParams.set("from", range.from);
-  csvParams.set("to", range.to);
-  csvParams.set("date", selectedDate);
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
@@ -128,18 +123,16 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm">
           <p className="font-semibold text-slate-700">Showing {records.length} unit records for {selectedDate}</p>
-          <div className="flex flex-wrap gap-2">
-            <Link className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" href={`/admin/archives/export?${csvParams.toString()}&mode=simple`}>Simple CSV</Link>
-            <Link className="rounded-2xl border border-slate-300 px-5 py-3 font-bold text-slate-950" href={`/admin/archives/export?${csvParams.toString()}&mode=detailed`}>Detailed CSV</Link>
-          </div>
         </div>
         <form action="/admin/archives/export-package" className="flex flex-wrap items-center gap-3 rounded-3xl bg-white p-4 shadow-sm" method="get">
           <input type="hidden" name="unitId" value={params.unitId ?? ""} />
-          <span className="text-sm font-semibold text-slate-600">Export Package:</span>
+          <span className="text-sm font-semibold text-slate-600">Export:</span>
           <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={selectedDate} name="from" type="date" />
           <span className="text-slate-400">to</span>
           <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={selectedDate} name="to" type="date" />
-          <button className="rounded-2xl bg-slate-800 px-5 py-3 font-bold text-white" type="submit">Export Package</button>
+          <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" formAction="/admin/archives/export?mode=simple" formMethod="get" type="submit">Simple CSV</button>
+          <button className="rounded-2xl border border-slate-300 px-5 py-3 font-bold text-slate-950" formAction="/admin/archives/export?mode=detailed" formMethod="get" type="submit">Detailed CSV</button>
+          <button className="rounded-2xl bg-slate-800 px-5 py-3 font-bold text-white" type="submit">Full Package</button>
         </form>
         <ClearRecordsSection defaultFrom={selectedDate} defaultTo={selectedDate} unitId={params.unitId ?? ""} />
       </section>
