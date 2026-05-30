@@ -143,21 +143,26 @@ export default function ClearRecordsSection({ availability, defaultFrom, default
         <p className="mt-1 text-xs text-red-100">These actions permanently delete operational records. Exported records cannot be recovered after deletion.</p>
       </div>
 
-      <label className="mb-4 flex cursor-pointer flex-wrap items-center gap-3 rounded-2xl border border-red-200 bg-white px-4 py-3">
-        <span className={`relative inline-flex h-8 w-14 shrink-0 items-center rounded-full p-1 transition ${controlsUnlocked ? "bg-red-700" : "bg-slate-300"}`}>
-          <input
-            checked={controlsUnlocked}
-            className="peer sr-only"
-            onChange={(e) => setControlsUnlocked(e.target.checked)}
-            type="checkbox"
-          />
+      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-red-200 bg-white px-4 py-3">
+        <button
+          aria-checked={controlsUnlocked}
+          className={`relative inline-flex h-8 w-14 shrink-0 items-center rounded-full p-1 transition ${controlsUnlocked ? "bg-red-700" : "bg-slate-300"}`}
+          onClick={() => setControlsUnlocked((unlocked) => !unlocked)}
+          role="switch"
+          type="button"
+        >
           <span className={`h-6 w-6 rounded-full bg-white shadow transition ${controlsUnlocked ? "translate-x-6" : "translate-x-0"}`} />
-        </span>
-        <span>
+          <span className="sr-only">Unlock DELETE controls</span>
+        </button>
+        <button
+          className="text-left"
+          onClick={() => setControlsUnlocked((unlocked) => !unlocked)}
+          type="button"
+        >
           <span className="block text-sm font-black text-red-800">Unlock DELETE controls</span>
           <span className="block text-xs font-semibold text-red-700">I understand deleted records cannot be recovered.</span>
-        </span>
-      </label>
+        </button>
+      </div>
 
       <div className={`rounded-2xl transition ${controlsUnlocked ? "opacity-100" : "opacity-45 grayscale"}`} aria-disabled={!controlsUnlocked}>
       <div className="flex flex-wrap items-end gap-3">
