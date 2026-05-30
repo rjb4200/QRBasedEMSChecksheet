@@ -121,9 +121,6 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
             </article>
           ))}
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm">
-          <p className="font-semibold text-slate-700">Showing {records.length} unit records for {selectedDate}</p>
-        </div>
         <form action="/admin/archives/export-package" className="flex flex-wrap items-center gap-3 rounded-3xl bg-white p-4 shadow-sm" method="get">
           <input type="hidden" name="unitId" value={params.unitId ?? ""} />
           <span className="text-sm font-semibold text-slate-600">Export:</span>
