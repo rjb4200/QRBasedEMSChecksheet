@@ -36,12 +36,17 @@ function createQuery(data: unknown[] = []) {
   return query;
 }
 
-function mockRecentCommentsQueries(comments: unknown[] = [], crews: unknown[] = []) {
-  const commentsQuery = createQuery(comments);
+function mockRecentCommentsQueries(sectionComments: unknown[] = [], generalComments: unknown[] = [], crews: unknown[] = []) {
+  const sectionQuery = createQuery(sectionComments);
+  const generalQuery = createQuery(generalComments);
   const crewsQuery = createQuery(crews);
-  const from = vi.fn((table: string) => table === "daily_unit_crews" ? crewsQuery : commentsQuery);
+  const from = vi.fn((table: string) => {
+    if (table === "daily_unit_comments") return generalQuery;
+    if (table === "daily_unit_crews") return crewsQuery;
+    return sectionQuery;
+  });
   createAdminClient.mockReturnValue({ from });
-  return { from, commentsQuery, crewsQuery };
+  return { from, sectionQuery, generalQuery, crewsQuery };
 }
 
 describe("recent comments route", () => {
@@ -58,9 +63,11 @@ describe("recent comments route", () => {
     expect(response.status).toBe(401);
   });
 
-  it("loads the three newest comments for compact mode", async () => {
-    const { commentsQuery, crewsQuery } = mockRecentCommentsQueries([
-      { id: "comment-1", shift_date: "2026-05-29", shift_period: "daily", unit_id: "unit-1", source_name: "Cab", comment: "Needs restock", created_at: "2026-05-29T12:00:00Z", units: { name: "EC1" } },
+  it("loads the three newest merged comments for compact mode", async () => {
+    const { sectionQuery, generalQuery } = mockRecentCommentsQueries([
+      { id: "s-1", shift_date: "2026-05-29", shift_period: "daily", unit_id: "unit-1", source_name: "Cab", comment: "Needs restock", created_at: "2026-05-29T12:00:00Z", units: { name: "EC1" } },
+    ], [
+      { id: "g-1", shift_date: "2026-05-29", shift_period: "daily", unit_id: "unit-1", comment: "Unit cleaned", created_at: "2026-05-29T11:00:00Z", units: { name: "EC1" } },
     ], [
       { unit_id: "unit-1", shift_date: "2026-05-29", shift_period: "daily", provider_names: "Smith / Jones" },
     ]);
@@ -69,28 +76,72 @@ describe("recent comments route", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(commentsQuery.limit).toHaveBeenCalledWith(3);
-    expect(commentsQuery.gte).not.toHaveBeenCalled();
-    expect(commentsQuery.order).toHaveBeenCalledWith("created_at", { ascending: false });
-    expect(crewsQuery.in).toHaveBeenCalledWith("unit_id", ["unit-1"]);
-    expect(crewsQuery.in).toHaveBeenCalledWith("shift_date", ["2026-05-29"]);
-    expect(body.comments[0]).toMatchObject({ id: "comment-1", unitName: "EC1", sourceName: "Cab", crewNames: "Smith / Jones" });
+    expect(sectionQuery.limit).toHaveBeenCalledWith(3);
+    expect(generalQuery.limit).toHaveBeenCalledWith(3);
+    expect(sectionQuery.gte).not.toHaveBeenCalled();
+    expect(generalQuery.gte).not.toHaveBeenCalled();
+    expect(body.comments).toHaveLength(2);
+  });
+
+  it("labels general unit comments with source 'General'", async () => {
+    mockRecentCommentsQueries([], [
+      { id: "g-1", shift_date: "2026-05-29", shift_period: "daily", unit_id: "unit-1", comment: "Unit cleaned", created_at: "2026-05-29T11:00:00Z", units: { name: "EC1" } },
+    ]);
+
+    const response = await GET(authenticatedRequest("http://localhost/api/admin/recent-comments?mode=compact"));
+    const body = await response.json();
+
+    expect(body.comments[0]).toMatchObject({ sourceName: "General", comment: "Unit cleaned", unitName: "EC1" });
+  });
+
+  it("orders merged comments newest first", async () => {
+    mockRecentCommentsQueries([
+      { id: "s-1", shift_date: "2026-05-29", shift_period: "daily", unit_id: "unit-1", source_name: "Cab", comment: "Section comment", created_at: "2026-05-29T11:00:00Z", units: { name: "EC1" } },
+    ], [
+      { id: "g-1", shift_date: "2026-05-29", shift_period: "daily", unit_id: "unit-1", comment: "General comment", created_at: "2026-05-29T12:00:00Z", units: { name: "EC1" } },
+    ]);
+
+    const response = await GET(authenticatedRequest("http://localhost/api/admin/recent-comments?mode=compact"));
+    const body = await response.json();
+
+    expect(body.comments[0].comment).toBe("General comment");
+    expect(body.comments[1].comment).toBe("Section comment");
+  });
+
+  it("applies compact limit after merging both sources", async () => {
+    mockRecentCommentsQueries([
+      { id: "s-1", shift_date: "2026-05-29", shift_period: "daily", unit_id: "unit-1", source_name: "Cab", comment: "S1", created_at: "2026-05-29T12:00:00Z", units: { name: "EC1" } },
+      { id: "s-2", shift_date: "2026-05-29", shift_period: "daily", unit_id: "unit-1", source_name: "Pump", comment: "S2", created_at: "2026-05-29T11:00:00Z", units: { name: "EC1" } },
+    ], [
+      { id: "g-1", shift_date: "2026-05-29", shift_period: "daily", unit_id: "unit-1", comment: "G1", created_at: "2026-05-29T10:00:00Z", units: { name: "EC1" } },
+      { id: "g-2", shift_date: "2026-05-29", shift_period: "daily", unit_id: "unit-1", comment: "G2", created_at: "2026-05-29T09:00:00Z", units: { name: "EC1" } },
+    ]);
+
+    const response = await GET(authenticatedRequest("http://localhost/api/admin/recent-comments?mode=compact"));
+    const body = await response.json();
+
+    expect(body.comments).toHaveLength(3);
+    expect(body.comments[0].comment).toBe("S1");
+    expect(body.comments[1].comment).toBe("S2");
+    expect(body.comments[2].comment).toBe("G1");
   });
 
   it("loads last 10 days with a 50 row limit for expanded mode", async () => {
-    const { commentsQuery } = mockRecentCommentsQueries();
+    const { sectionQuery, generalQuery } = mockRecentCommentsQueries();
 
     const response = await GET(authenticatedRequest("http://localhost/api/admin/recent-comments?mode=expanded"));
 
     expect(response.status).toBe(200);
-    expect(commentsQuery.limit).toHaveBeenCalledWith(50);
-    expect(commentsQuery.gte).toHaveBeenCalledWith("shift_date", expect.any(String));
+    expect(sectionQuery.limit).toHaveBeenCalledWith(50);
+    expect(generalQuery.limit).toHaveBeenCalledWith(50);
+    expect(sectionQuery.gte).toHaveBeenCalledWith("shift_date", expect.any(String));
+    expect(generalQuery.gte).toHaveBeenCalledWith("shift_date", expect.any(String));
   });
 
   it("omits crew names when no matching non-blank crew exists", async () => {
     mockRecentCommentsQueries([
       { id: "comment-1", shift_date: "2026-05-29", shift_period: "daily", unit_id: "unit-1", source_name: "Cab", comment: "Needs restock", created_at: "2026-05-29T12:00:00Z", units: { name: "EC1" } },
-    ], [
+    ], [], [
       { unit_id: "unit-1", shift_date: "2026-05-29", shift_period: "daily", provider_names: "  " },
     ]);
 

@@ -11,24 +11,42 @@ export async function GET(request: NextRequest) {
   const supabase = createAdminClient();
   const mode = request.nextUrl.searchParams.get("mode") === "expanded" ? "expanded" : "compact";
   const limit = mode === "expanded" ? 50 : 3;
+  const internalLimit = mode === "expanded" ? 50 : 3;
 
-  let query = supabase
+  let sectionQuery = supabase
     .from("daily_section_comments")
     .select("id, shift_date, shift_period, unit_id, source_name, comment, created_at, units(name)")
     .eq("shift_period", "daily")
     .order("created_at", { ascending: false })
-    .limit(limit);
+    .limit(internalLimit);
+
+  let generalQuery = supabase
+    .from("daily_unit_comments")
+    .select("id, shift_date, shift_period, unit_id, comment, created_at, units(name)")
+    .eq("shift_period", "daily")
+    .order("created_at", { ascending: false })
+    .limit(internalLimit);
 
   if (mode === "expanded") {
     const tenDaysAgo = new Date();
     tenDaysAgo.setUTCDate(tenDaysAgo.getUTCDate() - 10);
-    query = query.gte("shift_date", tenDaysAgo.toISOString().slice(0, 10));
+    const minDate = tenDaysAgo.toISOString().slice(0, 10);
+    sectionQuery = sectionQuery.gte("shift_date", minDate);
+    generalQuery = generalQuery.gte("shift_date", minDate);
   }
 
-  const { data } = await query;
-  const rows = (data ?? []) as any[];
-  const unitIds = Array.from(new Set(rows.map((row) => row.unit_id).filter(Boolean)));
-  const shiftDates = Array.from(new Set(rows.map((row) => row.shift_date).filter(Boolean)));
+  const [{ data: sectionData }, { data: generalData }] = await Promise.all([sectionQuery, generalQuery]);
+
+  const sectionRows = (sectionData ?? []) as any[];
+  const generalRows = (generalData ?? []) as any[];
+
+  const allRows = [
+    ...sectionRows.map((row) => ({ ...row, _kind: "section" as const })),
+    ...generalRows.map((row) => ({ ...row, _kind: "general" as const })),
+  ];
+
+  const unitIds = Array.from(new Set(allRows.map((row) => row.unit_id).filter(Boolean)));
+  const shiftDates = Array.from(new Set(allRows.map((row) => row.shift_date).filter(Boolean)));
   const crewNamesByCommentKey = new Map<string, string>();
 
   if (unitIds.length > 0 && shiftDates.length > 0) {
@@ -47,19 +65,33 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const comments = rows.map((row) => {
+  const commentRows = allRows.map((row) => {
     const crewNames = crewNamesByCommentKey.get(`${row.unit_id}:${row.shift_date}:${row.shift_period}`);
+    const unitName = Array.isArray(row.units) ? row.units[0]?.name ?? "Unknown unit" : row.units?.name ?? "Unknown unit";
 
     return {
-      id: row.id,
-      unitName: Array.isArray(row.units) ? row.units[0]?.name ?? "Unknown unit" : row.units?.name ?? "Unknown unit",
-      sourceName: row.source_name,
+      id: row._kind === "general" ? `general-${row.id}` : row.id,
+      unitName,
+      sourceName: row._kind === "general" ? "General" : row.source_name,
       comment: row.comment,
       createdAt: row.created_at,
       shiftDate: row.shift_date,
-      ...(crewNames ? { crewNames } : {}),
+      crewNames,
     };
   });
+
+  commentRows.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const limited = commentRows.slice(0, limit);
+
+  const comments = limited.map(({ id, unitName, sourceName, comment, createdAt, shiftDate, crewNames }) => ({
+    id,
+    unitName,
+    sourceName,
+    comment,
+    createdAt,
+    shiftDate,
+    ...(crewNames ? { crewNames } : {}),
+  }));
 
   return NextResponse.json({ comments });
 }
