@@ -207,3 +207,31 @@ The Records page SHALL display a completion trend chart under the header and SHA
 #### Scenario: Existing controls remain functional after reorder
 - **WHEN** the Records page layout is reorganized
 - **THEN** the unit filter, date input, Print Daily Record, Simple CSV, Detailed CSV, and Export Package buttons SHALL all continue to function with their existing behavior
+
+## ADDED Requirements
+
+### Requirement: All export formats consolidated into a single Export form row
+The Records page SHALL present Simple CSV, Detailed CSV, and Full Package as submit buttons in a single Export form row sharing the same from/to date inputs and unit filter.
+
+#### Scenario: Export form contains all three format buttons
+- **WHEN** an admin views the Records page
+- **THEN** the Export form SHALL display "Simple CSV", "Detailed CSV", and "Full Package" as submit buttons alongside the from/to date inputs
+
+#### Scenario: Standalone CSV link row is removed
+- **WHEN** the export formats are consolidated
+- **THEN** the previous standalone "Simple CSV" and "Detailed CSV" link row SHALL no longer appear on the page
+
+#### Scenario: All three buttons use the same date inputs
+- **WHEN** an admin enters from and to dates in the Export form
+- **THEN** clicking any of the three export buttons SHALL use the same from/to/unitId values
+
+### Requirement: Per-unit action buttons removed from Records page cards
+The Records page SHALL NOT display individual "View", "No archive", or "Print" buttons on each unit record card.
+
+#### Scenario: Unit cards show no action buttons
+- **WHEN** an admin views the Records page with unit records
+- **THEN** each unit record card SHALL display record data without per-unit "View"/"No archive" or "Print" action buttons
+
+#### Scenario: Print Daily Record button remains
+- **WHEN** the per-unit buttons are removed
+- **THEN** the "Print Daily Record" button in the filter form SHALL continue to print the full daily record for the selected date
