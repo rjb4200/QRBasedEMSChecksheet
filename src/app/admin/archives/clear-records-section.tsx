@@ -20,6 +20,7 @@ const TABLE_LABELS: Record<string, string> = {
 type ClearState = "idle" | "previewing" | "ready" | "exporting" | "confirming" | "clearing" | "done" | "error";
 
 export default function ClearRecordsSection({ availability, defaultFrom, defaultTo, unitId }: { availability: RotationDateAvailability | null; defaultFrom: string; defaultTo: string; unitId: string }) {
+  const [controlsUnlocked, setControlsUnlocked] = useState(false);
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
   const [state, setState] = useState<ClearState>("idle");
@@ -37,6 +38,15 @@ export default function ClearRecordsSection({ availability, defaultFrom, default
     setError(null);
     setResult(null);
   }, [defaultFrom, defaultTo, unitId]);
+
+  useEffect(() => {
+    if (!controlsUnlocked) {
+      setState("idle");
+      setCounts(null);
+      setError(null);
+      setResult(null);
+    }
+  }, [controlsUnlocked]);
 
   const handlePreview = useCallback(async () => {
     setState("previewing");
@@ -133,12 +143,29 @@ export default function ClearRecordsSection({ availability, defaultFrom, default
         <p className="mt-1 text-xs text-red-100">These actions permanently delete operational records. Exported records cannot be recovered after deletion.</p>
       </div>
 
+      <label className="mb-4 flex cursor-pointer flex-wrap items-center gap-3 rounded-2xl border border-red-200 bg-white px-4 py-3">
+        <span className={`relative inline-flex h-8 w-14 shrink-0 items-center rounded-full p-1 transition ${controlsUnlocked ? "bg-red-700" : "bg-slate-300"}`}>
+          <input
+            checked={controlsUnlocked}
+            className="peer sr-only"
+            onChange={(e) => setControlsUnlocked(e.target.checked)}
+            type="checkbox"
+          />
+          <span className={`h-6 w-6 rounded-full bg-white shadow transition ${controlsUnlocked ? "translate-x-6" : "translate-x-0"}`} />
+        </span>
+        <span>
+          <span className="block text-sm font-black text-red-800">Unlock DELETE controls</span>
+          <span className="block text-xs font-semibold text-red-700">I understand deleted records cannot be recovered.</span>
+        </span>
+      </label>
+
+      <div className={`rounded-2xl transition ${controlsUnlocked ? "opacity-100" : "opacity-45 grayscale"}`} aria-disabled={!controlsUnlocked}>
       <div className="flex flex-wrap items-end gap-3">
         <div>
           <label className="mb-1 block text-xs font-black uppercase text-red-700">DELETE RECORDS From</label>
           <input
             className="rounded-2xl border border-red-200 px-4 py-3"
-            disabled={state !== "idle" && state !== "ready" && state !== "error"}
+            disabled={!controlsUnlocked || (state !== "idle" && state !== "ready" && state !== "error")}
             onChange={(e) => { setFrom(e.target.value); setState("idle"); setCounts(null); setError(null); }}
             type="date"
             value={from}
@@ -148,7 +175,7 @@ export default function ClearRecordsSection({ availability, defaultFrom, default
           <label className="mb-1 block text-xs font-black uppercase text-red-700">To</label>
           <input
             className="rounded-2xl border border-red-200 px-4 py-3"
-            disabled={state !== "idle" && state !== "ready" && state !== "error"}
+            disabled={!controlsUnlocked || (state !== "idle" && state !== "ready" && state !== "error")}
             onChange={(e) => { setTo(e.target.value); setState("idle"); setCounts(null); setError(null); }}
             type="date"
             value={to}
@@ -157,6 +184,7 @@ export default function ClearRecordsSection({ availability, defaultFrom, default
         {(state === "idle" || state === "error") && (
           <button
             className="rounded-2xl bg-red-800 px-5 py-3 font-bold text-white"
+            disabled={!controlsUnlocked}
             onClick={handlePreview}
             type="button"
           >
@@ -166,12 +194,14 @@ export default function ClearRecordsSection({ availability, defaultFrom, default
         {state === "ready" && counts && (
           <button
             className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white"
+            disabled={!controlsUnlocked}
             onClick={handleExportAndClear}
             type="button"
           >
             Export and DELETE
           </button>
         )}
+      </div>
       </div>
 
       <div className="mt-3 rounded-2xl border border-red-200 bg-white px-4 py-3 text-sm">
