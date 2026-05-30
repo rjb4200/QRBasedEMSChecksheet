@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import SlideToConfirm from "@/components/slide-to-confirm";
+import type { RotationDateAvailability } from "@/lib/data-rotation";
 
 type RotationCounts = Record<string, number>;
 
@@ -18,7 +19,7 @@ const TABLE_LABELS: Record<string, string> = {
 
 type ClearState = "idle" | "previewing" | "ready" | "exporting" | "confirming" | "clearing" | "done" | "error";
 
-export default function ClearRecordsSection({ defaultFrom, defaultTo, unitId }: { defaultFrom: string; defaultTo: string; unitId: string }) {
+export default function ClearRecordsSection({ availability, defaultFrom, defaultTo, unitId }: { availability: RotationDateAvailability | null; defaultFrom: string; defaultTo: string; unitId: string }) {
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
   const [state, setState] = useState<ClearState>("idle");
@@ -27,6 +28,15 @@ export default function ClearRecordsSection({ defaultFrom, defaultTo, unitId }: 
   const [result, setResult] = useState<{ totalCleared: number; exportFilename: string } | null>(null);
 
   const totalRecords = counts ? Object.values(counts).reduce((sum, c) => sum + (typeof c === "number" ? c : 0), 0) : 0;
+
+  useEffect(() => {
+    setFrom(defaultFrom);
+    setTo(defaultTo);
+    setState("idle");
+    setCounts(null);
+    setError(null);
+    setResult(null);
+  }, [defaultFrom, defaultTo, unitId]);
 
   const handlePreview = useCallback(async () => {
     setState("previewing");
@@ -161,6 +171,17 @@ export default function ClearRecordsSection({ defaultFrom, defaultTo, unitId }: 
           >
             Export and DELETE
           </button>
+        )}
+      </div>
+
+      <div className="mt-3 rounded-2xl border border-red-200 bg-white px-4 py-3 text-sm">
+        {availability ? (
+          <>
+            <p className="font-black text-red-800">Eligible records available: {availability.oldestDate} to {availability.newestDate}</p>
+            <p className="mt-1 text-red-700">Default DELETE range starts at the oldest eligible records and is capped at 60 days. Exact row counts appear after Preview Records.</p>
+          </>
+        ) : (
+          <p className="font-black text-red-800">No eligible historical records are currently available for deletion.</p>
         )}
       </div>
 

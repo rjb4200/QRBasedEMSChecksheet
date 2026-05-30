@@ -14,10 +14,40 @@ export type RotationCounts = {
   daily_email_report_runs: number;
 };
 
+export type RotationDateAvailability = {
+  oldestDate: string;
+  newestDate: string;
+};
+
+const ROTATION_DATE_TABLES = [
+  { table: "compartment_checks", column: "shift_date", unitScoped: true },
+  { table: "shift_archives", column: "shift_date", unitScoped: true },
+  { table: "daily_unit_ledgers", column: "shift_date", unitScoped: true },
+  { table: "daily_unit_crews", column: "shift_date", unitScoped: true },
+  { table: "daily_unit_comments", column: "shift_date", unitScoped: true },
+  { table: "daily_section_comments", column: "shift_date", unitScoped: true },
+  { table: "daily_restock_items", column: "shift_date", unitScoped: true },
+  { table: "daily_email_report_runs", column: "report_date", unitScoped: false },
+] as const;
+
 function daysBetween(from: string, to: string) {
   const fromDate = new Date(`${from}T00:00:00.000Z`);
   const toDate = new Date(`${to}T00:00:00.000Z`);
   return Math.round((toDate.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function toDateInputValue(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function addDays(value: string, days: number) {
+  const date = new Date(`${value}T00:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return toDateInputValue(date);
+}
+
+function earliestDate(...values: string[]) {
+  return values.sort()[0];
 }
 
 export function validateRotationRange(from: string, to: string) {
@@ -55,6 +85,58 @@ export async function previewRotationCounts(from: string, to: string, unitId?: s
 
   if (error) throw new Error(`Failed to preview rotation counts: ${error.message}`);
   return data as unknown as RotationCounts;
+}
+
+async function getBoundaryDate(params: { table: string; column: string; direction: "oldest" | "newest"; beforeDate: string; unitId?: string; unitScoped: boolean }) {
+  const supabase = createAdminClient();
+  let query = supabase
+    .from(params.table)
+    .select(params.column)
+    .lt(params.column, params.beforeDate)
+    .order(params.column, { ascending: params.direction === "oldest" })
+    .limit(1);
+
+  if (params.unitId && params.unitScoped) {
+    query = query.eq("unit_id", params.unitId);
+  }
+
+  const { data, error } = await query;
+  if (error) throw new Error(`Failed to load rotation date availability: ${error.message}`);
+
+  const row = Array.isArray(data) ? data[0] : null;
+  const value = row?.[params.column as keyof typeof row];
+  return typeof value === "string" ? value : null;
+}
+
+export async function getRotationDateAvailability(unitId?: string): Promise<RotationDateAvailability | null> {
+  const today = getCurrentShift().shiftDate;
+  const boundaryDates = await Promise.all(
+    ROTATION_DATE_TABLES.flatMap((table) => [
+      getBoundaryDate({ ...table, direction: "oldest", beforeDate: today, unitId }),
+      getBoundaryDate({ ...table, direction: "newest", beforeDate: today, unitId }),
+    ]),
+  );
+  const dates = boundaryDates.filter((date): date is string => Boolean(date));
+
+  if (dates.length === 0) {
+    return null;
+  }
+
+  return {
+    oldestDate: dates.sort()[0],
+    newestDate: dates.sort().at(-1) ?? dates[0],
+  };
+}
+
+export function getDefaultRotationRange(availability: RotationDateAvailability | null, fallbackDate: string) {
+  if (!availability) {
+    return { from: fallbackDate, to: fallbackDate };
+  }
+
+  return {
+    from: availability.oldestDate,
+    to: earliestDate(addDays(availability.oldestDate, 60), availability.newestDate),
+  };
 }
 
 export async function clearOperationalRecords(from: string, to: string, unitId?: string) {

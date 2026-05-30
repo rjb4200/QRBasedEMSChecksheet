@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatDuration, getDailyUnitRecords } from "@/lib/archive-records";
+import { getDefaultRotationRange, getRotationDateAvailability } from "@/lib/data-rotation";
 import { getCurrentShift } from "@/lib/shifts";
 import ClearRecordsSection from "./clear-records-section";
 import CompletionTrendChart from "@/components/completion-trend-chart";
@@ -29,10 +30,12 @@ const checkStatusClasses = {
 export default async function ArchivesPage({ searchParams }: { searchParams: Promise<{ unitId?: string; date?: string; from?: string; to?: string }> }) {
   const params = await searchParams;
   const selectedDate = params.date ?? params.from ?? getCurrentShift().shiftDate;
-  const [{ range, records, units }, { groups: trendGroups }] = await Promise.all([
+  const [{ range, records, units }, { groups: trendGroups }, deleteAvailability] = await Promise.all([
     getDailyUnitRecords({ unitId: params.unitId, from: selectedDate, to: selectedDate }),
     getDailyUnitRecords({}), // fleet-wide 14-day trend, unaffected by unit filter
+    getRotationDateAvailability(params.unitId),
   ]);
+  const deleteRange = getDefaultRotationRange(deleteAvailability, selectedDate);
   const summary = records.reduce((counts, record) => {
     counts[record.checkStatus] += 1;
     return counts;
@@ -127,7 +130,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
           <button className="rounded-2xl border border-slate-300 px-5 py-3 font-bold text-slate-950" formAction="/admin/archives/export?mode=detailed" formMethod="get" type="submit">Detailed CSV</button>
           <button className="rounded-2xl bg-slate-800 px-5 py-3 font-bold text-white" type="submit">Full Package</button>
         </form>
-        <ClearRecordsSection defaultFrom={selectedDate} defaultTo={selectedDate} unitId={params.unitId ?? ""} />
+        <ClearRecordsSection availability={deleteAvailability} defaultFrom={deleteRange.from} defaultTo={deleteRange.to} unitId={params.unitId ?? ""} />
       </section>
     </main>
   );
