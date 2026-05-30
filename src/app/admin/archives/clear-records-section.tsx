@@ -63,12 +63,12 @@ export default function ClearRecordsSection({ defaultFrom, defaultTo, unitId }: 
 
       const res = await fetch(`/admin/archives/export-package?${params.toString()}`);
       if (!res.ok) {
-        throw new Error("Export failed. Records were not cleared.");
+        throw new Error("Export failed. Records were not deleted.");
       }
 
       const blob = await res.blob();
       if (blob.size === 0) {
-        throw new Error("Export package is empty. Records were not cleared.");
+        throw new Error("Export package is empty. Records were not deleted.");
       }
 
       const downloadUrl = URL.createObjectURL(blob);
@@ -97,14 +97,14 @@ export default function ClearRecordsSection({ defaultFrom, defaultTo, unitId }: 
         body: JSON.stringify({ from, to, unitId: unitId || undefined }),
       });
       if (!res.ok) {
-        const body = await res.json().catch(() => ({ error: "Clear operation failed" }));
-        throw new Error(body.error || "Clear operation failed");
+        const body = await res.json().catch(() => ({ error: "DELETE operation failed" }));
+        throw new Error(body.error || "DELETE operation failed");
       }
       const data = await res.json();
       setResult({ totalCleared: data.totalCleared, exportFilename: data.exportFilename });
       setState("done");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Clear operation failed");
+      setError(err instanceof Error ? err.message : "DELETE operation failed");
       setState("error");
     }
   }, [from, to, unitId]);
@@ -117,12 +117,17 @@ export default function ClearRecordsSection({ defaultFrom, defaultTo, unitId }: 
   }, []);
 
   return (
-    <div className="rounded-3xl bg-white p-4 shadow-sm">
+    <div className="rounded-3xl border-2 border-red-300 bg-red-50/30 p-4 shadow-sm">
+      <div className="mb-4 rounded-2xl bg-red-700 px-4 py-3">
+        <p className="text-sm font-black uppercase tracking-[0.2em] text-white">⚠️ DANGER ZONE — Data Destruction</p>
+        <p className="mt-1 text-xs text-red-100">These actions permanently delete operational records. Exported records cannot be recovered after deletion.</p>
+      </div>
+
       <div className="flex flex-wrap items-end gap-3">
         <div>
-          <label className="mb-1 block text-xs font-black uppercase text-red-700">Clear Records From</label>
+          <label className="mb-1 block text-xs font-black uppercase text-red-700">DELETE RECORDS From</label>
           <input
-            className="rounded-2xl border border-slate-300 px-4 py-3"
+            className="rounded-2xl border border-red-200 px-4 py-3"
             disabled={state !== "idle" && state !== "ready" && state !== "error"}
             onChange={(e) => { setFrom(e.target.value); setState("idle"); setCounts(null); setError(null); }}
             type="date"
@@ -130,9 +135,9 @@ export default function ClearRecordsSection({ defaultFrom, defaultTo, unitId }: 
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-black uppercase text-slate-500">To</label>
+          <label className="mb-1 block text-xs font-black uppercase text-red-700">To</label>
           <input
-            className="rounded-2xl border border-slate-300 px-4 py-3"
+            className="rounded-2xl border border-red-200 px-4 py-3"
             disabled={state !== "idle" && state !== "ready" && state !== "error"}
             onChange={(e) => { setTo(e.target.value); setState("idle"); setCounts(null); setError(null); }}
             type="date"
@@ -141,11 +146,11 @@ export default function ClearRecordsSection({ defaultFrom, defaultTo, unitId }: 
         </div>
         {(state === "idle" || state === "error") && (
           <button
-            className="rounded-2xl bg-slate-800 px-5 py-3 font-bold text-white"
+            className="rounded-2xl bg-red-800 px-5 py-3 font-bold text-white"
             onClick={handlePreview}
             type="button"
           >
-            Preview
+            Preview Records
           </button>
         )}
         {state === "ready" && counts && (
@@ -154,7 +159,7 @@ export default function ClearRecordsSection({ defaultFrom, defaultTo, unitId }: 
             onClick={handleExportAndClear}
             type="button"
           >
-            Export and Clear
+            Export and DELETE
           </button>
         )}
       </div>
@@ -168,10 +173,10 @@ export default function ClearRecordsSection({ defaultFrom, defaultTo, unitId }: 
       )}
 
       {counts && (state === "ready" || state === "confirming" || state === "clearing" || state === "done") && (
-        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4">
+        <div className="mt-4 rounded-2xl border-2 border-red-300 bg-red-50 p-4">
           <p className="text-sm font-black text-red-800">
             {totalRecords > 0
-              ? `${totalRecords.toLocaleString()} records across ${Object.values(counts).filter((c) => c > 0).length} tables will be permanently deleted for ${from} to ${to}.`
+              ? `${totalRecords.toLocaleString()} records across ${Object.values(counts).filter((c) => c > 0).length} tables will be PERMANENTLY DELETED for ${from} to ${to}.`
               : `No records found for ${from} to ${to}.`}
           </p>
           <div className="mt-3 grid gap-2 md:grid-cols-2">
@@ -180,7 +185,7 @@ export default function ClearRecordsSection({ defaultFrom, defaultTo, unitId }: 
               .map(([key, count]) => (
               <div key={key} className="flex items-center justify-between rounded-xl bg-white px-3 py-2 text-sm">
                 <span className="font-semibold text-slate-700">{TABLE_LABELS[key] || key}</span>
-                <span className={`font-black ${count > 0 ? "text-red-700" : "text-slate-400"}`}>{count.toLocaleString()}</span>
+                <span className="font-black text-red-700">{count.toLocaleString()}</span>
               </div>
             ))}
           </div>
@@ -189,9 +194,9 @@ export default function ClearRecordsSection({ defaultFrom, defaultTo, unitId }: 
             <div className="mt-4">
               <p className="mb-2 text-xs font-black uppercase text-red-800">Slide to permanently delete</p>
               <SlideToConfirm
-                confirmedLabel={`Deleting ${totalRecords.toLocaleString()} records...`}
+                confirmedLabel={`DELETING ${totalRecords.toLocaleString()} records...`}
                 disabled={state !== "confirming"}
-                label={`Slide to delete ${totalRecords.toLocaleString()} records`}
+                label={`Slide to DELETE ${totalRecords.toLocaleString()} records`}
                 loading={state === "clearing"}
                 onConfirm={handleConfirmClear}
               />
@@ -199,19 +204,19 @@ export default function ClearRecordsSection({ defaultFrom, defaultTo, unitId }: 
           )}
 
           {state === "clearing" && (
-            <div className="mt-4 rounded-2xl bg-white p-4 text-center text-sm font-semibold text-red-700">Clearing records...</div>
+            <div className="mt-4 rounded-2xl bg-white p-4 text-center text-sm font-semibold text-red-700">DELETING records...</div>
           )}
 
           {state === "done" && result && (
             <div className="mt-4 rounded-2xl bg-green-100 p-4">
-              <p className="text-sm font-black text-green-800">Records cleared successfully.</p>
+              <p className="text-sm font-black text-green-800">Records DELETED successfully.</p>
               <p className="mt-1 text-sm text-green-700">{result.totalCleared.toLocaleString()} records deleted. Export saved as {result.exportFilename}.</p>
               <button
                 className="mt-3 rounded-xl border border-green-300 px-4 py-2 text-sm font-bold text-green-800"
                 onClick={handleReset}
                 type="button"
               >
-                Clear another range
+                DELETE another range
               </button>
             </div>
           )}
