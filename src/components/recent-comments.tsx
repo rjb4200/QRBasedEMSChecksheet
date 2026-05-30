@@ -36,34 +36,50 @@ function formatRelativeDate(dateStr: string) {
 }
 
 export function RecentComments() {
-  const [comments, setComments] = useState<RecentComment[] | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [compactComments, setCompactComments] = useState<RecentComment[] | null>(null);
+  const [expandedComments, setExpandedComments] = useState<RecentComment[] | null>(null);
+  const [compactLoading, setCompactLoading] = useState(true);
+  const [expandedLoading, setExpandedLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (!open || comments !== null) return;
-
-    setLoading(true);
-    fetch("/api/admin/recent-comments")
+    setCompactLoading(true);
+    fetch("/api/admin/recent-comments?mode=compact")
       .then((res) => res.json())
-      .then((data) => setComments(data.comments ?? []))
-      .catch(() => setComments([]))
-      .finally(() => setLoading(false));
-  }, [open, comments]);
+      .then((data) => setCompactComments(data.comments ?? []))
+      .catch(() => setCompactComments([]))
+      .finally(() => setCompactLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (!open || expandedComments !== null) return;
+
+    setExpandedLoading(true);
+    fetch("/api/admin/recent-comments?mode=expanded")
+      .then((res) => res.json())
+      .then((data) => setExpandedComments(data.comments ?? []))
+      .catch(() => setExpandedComments([]))
+      .finally(() => setExpandedLoading(false));
+  }, [open, expandedComments]);
+
+  const visibleComments = open ? expandedComments : compactComments;
+  const loading = open ? expandedLoading : compactLoading;
+  const emptyMessage = open ? "No comments in the last 10 days." : "No recent comments to preview.";
 
   return (
-    <details className="rounded-3xl bg-white p-5 shadow-sm" onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
-      <summary className="cursor-pointer">
-        <h2 className="inline text-sm font-bold uppercase tracking-[0.25em] text-red-700">Recent Comments — Last 7 Days</h2>
-      </summary>
+    <section className="rounded-3xl bg-white p-5 shadow-sm">
+      <button className="flex w-full items-center justify-between gap-3 text-left" onClick={() => setOpen((value) => !value)} type="button">
+        <h2 className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Recent Comments — {open ? "Last 10 Days" : "Latest 3"}</h2>
+        <span className="text-sm font-black text-slate-500">{open ? "Hide" : "Show 10 days"}</span>
+      </button>
       <div className="mt-4">
         {loading ? (
           <p className="text-sm font-semibold text-slate-500">Loading...</p>
-        ) : comments === null ? null : comments.length === 0 ? (
-          <p className="text-sm font-semibold text-slate-500">No comments in the last 7 days.</p>
+        ) : visibleComments === null ? null : visibleComments.length === 0 ? (
+          <p className="text-sm font-semibold text-slate-500">{emptyMessage}</p>
         ) : (
           <div className="space-y-3">
-            {comments.map((comment) => (
+            {visibleComments.map((comment) => (
               <div key={comment.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
                 <p className="text-xs font-bold text-slate-500">
                   {formatRelativeDate(comment.createdAt)} | {comment.unitName} | {comment.sourceName}
@@ -74,6 +90,6 @@ export function RecentComments() {
             </div>
         )}
       </div>
-    </details>
+    </section>
   );
 }

@@ -9,17 +9,23 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = createAdminClient();
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setUTCDate(sevenDaysAgo.getUTCDate() - 7);
-  const minDate = sevenDaysAgo.toISOString().slice(0, 10);
+  const mode = request.nextUrl.searchParams.get("mode") === "expanded" ? "expanded" : "compact";
+  const limit = mode === "expanded" ? 50 : 3;
 
-  const { data } = await supabase
+  let query = supabase
     .from("daily_section_comments")
-    .select("shift_date, unit_id, source_name, comment, created_at, units(name)")
-    .gte("shift_date", minDate)
+    .select("id, shift_date, unit_id, source_name, comment, created_at, units(name)")
     .eq("shift_period", "daily")
     .order("created_at", { ascending: false })
-    .limit(50);
+    .limit(limit);
+
+  if (mode === "expanded") {
+    const tenDaysAgo = new Date();
+    tenDaysAgo.setUTCDate(tenDaysAgo.getUTCDate() - 10);
+    query = query.gte("shift_date", tenDaysAgo.toISOString().slice(0, 10));
+  }
+
+  const { data } = await query;
 
   const comments = ((data ?? []) as any[]).map((row) => ({
     id: row.id,
