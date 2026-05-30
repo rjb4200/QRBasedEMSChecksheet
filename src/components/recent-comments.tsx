@@ -9,6 +9,7 @@ type RecentComment = {
   comment: string;
   createdAt: string;
   shiftDate: string;
+  crewNames?: string;
 };
 
 function formatRelativeDate(dateStr: string) {
@@ -84,6 +85,9 @@ export function RecentComments() {
                 <p className="text-xs font-bold text-slate-500">
                   {formatRelativeDate(comment.createdAt)} | {comment.unitName} | {comment.sourceName}
                 </p>
+                {comment.crewNames ? (
+                  <p className="mt-2 inline-flex rounded-full bg-red-100 px-2 py-1 text-xs font-black text-red-800">Crew: {comment.crewNames}</p>
+                ) : null}
                 <p className="mt-1 whitespace-pre-wrap text-sm font-semibold text-slate-700">{comment.comment}</p>
               </div>
               ))}
