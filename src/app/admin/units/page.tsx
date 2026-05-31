@@ -19,7 +19,6 @@ export default async function AdminUnitsPage() {
         </div>
 
         <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Units</p>
           <DestructiveActionsToggle>
             <div className="mt-4 grid gap-3">
             {(units ?? []).map((unit) => {
