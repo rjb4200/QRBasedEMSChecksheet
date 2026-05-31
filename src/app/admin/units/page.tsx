@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createUnit, deleteUnit, toggleUnitStatus } from "./actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
-import { IconEdit, IconTrash } from "@/components/icons";
+import { IconEdit, IconQr, IconTrash } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +49,9 @@ export default async function AdminUnitsPage() {
                   <input name="status" type="hidden" value={unit.status === "in_service" ? "out_of_service" : "in_service"} />
                   <button className="rounded-2xl border border-slate-300 px-5 py-3 font-bold" type="submit">{unit.status === "in_service" ? "Set OOS" : "Set In-Service"}</button>
                 </form>
-                <Link className="rounded-2xl border border-slate-300 px-5 py-3 font-bold" href={`/admin/units/${unit.id}/qr`}>QR Codes</Link>
+                <Link aria-label={`QR Codes for ${unit.name}`} className="rounded-2xl border border-slate-300 p-3 text-slate-600 hover:text-slate-900" href={`/admin/units/${unit.id}/qr`} title={`QR Codes for ${unit.name}`}>
+                  <IconQr />
+                </Link>
                 <Link aria-label={`Edit ${unit.name}`} className="rounded-2xl border border-slate-300 p-3 text-slate-600 hover:text-slate-900" href={`/admin/units/${unit.id}`} title={`Edit ${unit.name}`}>
                   <IconEdit />
                 </Link>
