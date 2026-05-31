@@ -100,17 +100,12 @@ The admin Fleet page SHALL display submitted checkoff items that are missing or 
 - **THEN** the Fleet page exceptions panel lists the unit, compartment, item, submitted quantity, and expected par count
 
 ### Requirement: Fleet Panel includes Recent Comments section between print bar and Exceptions
-The Fleet Panel SHALL include a collapsed, lazy-loading Recent Comments section positioned after the daily checksheet print bar and before the Exceptions section.
+The Fleet Panel SHALL include a compact Recent Comments section positioned after the daily checksheet print bar and before the Exceptions section, showing a preview of the three most recent comments.
 
 #### Scenario: Fleet Panel layout includes Recent Comments
 - **WHEN** the Fleet Panel renders
 - **THEN** the Recent Comments section SHALL appear between the print bar and the Exceptions section
-- **AND** it SHALL be collapsed by default
-
-#### Scenario: Fleet Panel load speed unaffected
-- **WHEN** the Fleet Panel initially loads
-- **THEN** no comment data SHALL be fetched from the server
-- **AND** the Fleet Panel render performance SHALL not be affected by the Recent Comments feature
+- **AND** it SHALL display up to the three most recent comments in compact mode
 
 ### Requirement: Fleet Panel displays storage capacity warning when thresholds are exceeded
 The admin Fleet Panel SHALL display a storage capacity warning banner below the fleet matrix when database usage exceeds the configured thresholds.
