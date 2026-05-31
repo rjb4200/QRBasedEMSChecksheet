@@ -22,12 +22,11 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       <AutoRefresh />
       <section className="mx-auto max-w-7xl space-y-6">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Admin Dashboard</p>
+          <h1 className="text-4xl font-black">Admin Dashboard</h1>
         </div>
 
         <div className="rounded-3xl bg-white p-5 shadow-sm">
-          <h1 className="text-4xl font-black">Fleet Matrix</h1>
-
+          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Fleet Matrix</p>
           <FleetMatrix admin units={units} />
 
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 p-4">
