@@ -126,23 +126,15 @@ export default async function SystemLogPage({ searchParams }: { searchParams: Pr
           {rows.length === 0 ? <div className="rounded-3xl bg-white p-6 text-slate-600 shadow-sm">No system log rows match these filters.</div> : null}
           {rows.map((row) => (
             <details key={row.id} className={`rounded-3xl bg-white p-5 shadow-sm ${row.result === "failure" ? "ring-2 ring-red-200" : ""}`}>
-              <summary className="cursor-pointer list-none">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className={`rounded-full px-3 py-1 text-xs font-black uppercase ring-1 ${resultClasses(row.result)}`}>{row.result}</span>
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black uppercase text-slate-600">{row.area}</span>
-                      <span className="text-sm font-semibold text-slate-500">{formatTimestamp(row.created_at)}</span>
-                    </div>
-                    <h2 className="mt-2 text-xl font-black">{row.action}</h2>
-                    <p className="mt-1 text-sm text-slate-600">{formatLogSummary(row)}</p>
-                  </div>
-                  <div className="text-sm font-semibold text-slate-500 lg:text-right">
-                    <p>{row.target_type ?? "No target"}</p>
-                    <p className="break-all">{row.target_id ?? ""}</p>
-                  </div>
-                </div>
-              </summary>
+               <summary className="cursor-pointer list-none">
+                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                   <span className={`rounded-full px-3 py-1 text-xs font-black uppercase ring-1 ${resultClasses(row.result)}`}>{row.result}</span>
+                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black uppercase text-slate-600">{row.area}</span>
+                   <span className="text-sm font-semibold text-slate-500">{formatTimestamp(row.created_at)}</span>
+                   <span className="text-sm font-black text-slate-800">{row.action}</span>
+                   <span className="text-sm text-slate-600">— {formatLogSummary(row)}</span>
+                 </div>
+               </summary>
               <div className="mt-5 grid gap-4 border-t border-slate-200 pt-5 lg:grid-cols-2">
                 <div className="rounded-2xl bg-slate-100 p-4 lg:col-span-2">
                   <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Message</p>
