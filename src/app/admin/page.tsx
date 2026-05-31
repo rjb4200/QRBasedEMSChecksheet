@@ -62,31 +62,40 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
                   <span>{group.date}</span>
                   <span className="rounded-full bg-red-700 px-3 py-1 text-sm text-white">{group.items.length}</span>
                 </summary>
-                {group.items.length === 0 ? <p className="border-t border-slate-200 p-4 text-sm font-semibold text-slate-500">No missing or below-par items submitted this day.</p> : null}
-                {group.items.length > 0 ? <div className="overflow-x-auto">
-                  <table className="w-full min-w-[760px] text-left text-sm">
-                    <thead className="bg-slate-950 text-white">
-                      <tr>
-                        <th className="p-3">Unit</th>
-                        <th className="p-3">Compartment</th>
-                        <th className="p-3">Item</th>
-                        <th className="p-3">Issue</th>
-                        <th className="p-3">Value</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {group.items.map((item) => (
-                        <tr key={`${item.shiftDate}-${item.compartmentId}-${item.itemId}`} className="border-t border-slate-200">
-                          <td className="p-3 font-black">{item.unitName}</td>
-                          <td className="p-3 font-semibold">{item.compartmentName}</td>
-                          <td className="p-3">{item.itemName}</td>
-                          <td className="p-3 capitalize text-red-700">{item.inputType === "checkbox" ? "Missing" : item.inputType === "condition" ? "Condition issue" : "Below par"}</td>
-                          <td className="p-3 font-semibold">{item.actual} / {item.expected}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div> : null}
+                {group.items.length === 0 ? <p className="border-t border-slate-200 p-4 text-sm font-semibold text-slate-500">No missing or below-par items submitted this day.</p> : (
+                  <div className="divide-y divide-slate-100">
+                    {Array.from(
+                      (() => {
+                        const byUnit = new Map<string, typeof group.items>();
+                        for (const item of group.items) {
+                          const list = byUnit.get(item.unitName) ?? [];
+                          list.push(item);
+                          byUnit.set(item.unitName, list);
+                        }
+                        return byUnit;
+                      })(),
+                    ).map(([unitName, items]) => (
+                      <details key={unitName} className="group">
+                        <summary className="flex cursor-pointer items-center justify-between gap-4 px-4 py-2 marker:text-slate-400 hover:bg-slate-50">
+                          <span className="text-sm font-black text-slate-700">{unitName}</span>
+                          <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-black text-slate-600">{items.length}</span>
+                        </summary>
+                        {items.map((item) => (
+                          <div key={`${item.shiftDate}-${item.compartmentId}-${item.itemId}`} className="border-t border-slate-100 px-4 py-2">
+                            <p className="text-sm">
+                              <span className="font-semibold text-slate-800">{item.itemName}</span>
+                              <span className="text-slate-400"> &middot; {item.compartmentName}</span>
+                              <span className="ml-2 text-slate-500">—</span>
+                              <span className={`ml-2 font-semibold ${item.inputType === "checkbox" ? "text-red-700" : item.inputType === "condition" ? "text-red-700" : "text-amber-700"}`}>
+                                {item.inputType === "checkbox" ? "Missing" : item.inputType === "condition" ? "Condition issue" : `Below par (${item.actual}/${item.expected})`}
+                              </span>
+                            </p>
+                          </div>
+                        ))}
+                      </details>
+                    ))}
+                  </div>
+                )}
               </details>
             ))}
           </div>
