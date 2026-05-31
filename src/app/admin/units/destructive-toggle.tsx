@@ -15,9 +15,6 @@ export function DestructiveActionsToggle({ children }: { children: React.ReactNo
     <DestroyEnabledContext.Provider value={enabled}>
       <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Units</p>
       <div className="mt-2 flex justify-end gap-3">
-        <span className="text-xs font-semibold text-red-700">
-          {enabled ? "Unit deletion is now available." : "Unit deletion is disabled."}
-        </span>
         <span className="text-sm font-black text-red-800">
           {enabled ? "Destructive actions unlocked" : "Destructive actions locked"}
         </span>
