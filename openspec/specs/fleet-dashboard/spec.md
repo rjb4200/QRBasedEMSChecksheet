@@ -128,10 +128,11 @@ The admin Fleet Panel SHALL display a storage capacity warning banner below the 
 - **THEN** no storage banner SHALL be displayed on the Fleet Panel
 
 ### Requirement: Fleet operations share a visual panel
-The Fleet Panel SHALL display the unit card grid and daily checksheet print bar within a shared white rounded panel with a red "Fleet Matrix" label at the top.
+The Fleet Panel SHALL display the unit card grid and daily checksheet print bar within a shared white rounded panel with a red "Fleet Matrix" label at the top, while the page title "Admin Dashboard" appears outside and above the panel.
 
 #### Scenario: Fleet operations panel renders
 - **WHEN** the Fleet Panel loads
-- **THEN** the unit cards and print bar SHALL appear inside a single shared container with white background
-- **AND** the panel SHALL show "Fleet Matrix" as a compact red label
+- **THEN** the page title "Admin Dashboard" SHALL appear above the panel
+- **AND** the unit cards and print bar SHALL appear inside a single shared container with white background
+- **AND** the panel SHALL show "Fleet Matrix" as a compact red label at the top
 - **AND** unit cards SHALL have visible borders for contrast against the white panel
