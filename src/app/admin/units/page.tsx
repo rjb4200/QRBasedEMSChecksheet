@@ -17,7 +17,6 @@ export default async function AdminUnitsPage() {
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Admin</p>
           <h1 className="mt-2 text-4xl font-black">Units</h1>
-          <p className="mt-2 text-slate-600">Build each unit independently from scratch or by copying an existing unit.</p>
         </div>
 
         <DestructiveActionsToggle>
@@ -60,6 +59,10 @@ export default async function AdminUnitsPage() {
         </DestructiveActionsToggle>
 
         <form action={createUnit} className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-[1fr_120px_240px_auto]">
+          <div className="md:col-span-4">
+            <h2 className="text-lg font-black text-slate-800">Create a New Unit</h2>
+            <p className="mt-1 text-sm text-slate-600">Build each unit independently from scratch or by copying an existing unit.</p>
+          </div>
           <input className="rounded-2xl border border-slate-300 px-4 py-3" name="name" placeholder="Unit name (EC1, Medic 1)" required />
           <input className="rounded-2xl border border-slate-300 px-4 py-3" name="unitKind" placeholder="Type" defaultValue="EC" />
           <select className="rounded-2xl border border-slate-300 px-4 py-3" name="sourceUnitId">
