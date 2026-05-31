@@ -86,7 +86,7 @@ export function FleetMatrix({ units }: { units: FleetUnit[]; admin?: boolean }) 
               : "bg-red-700";
 
         return (
-          <article key={unit.id} className={`rounded-3xl p-5 shadow-sm ${isOutOfService ? "border border-slate-200 bg-slate-50 opacity-70" : "bg-white"}`}>
+          <article key={unit.id} className={`rounded-3xl p-5 shadow-sm border border-slate-200 ${isOutOfService ? "bg-slate-50 opacity-70" : "bg-white"}`}>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-red-700">{unit.unit_kind}</p>
