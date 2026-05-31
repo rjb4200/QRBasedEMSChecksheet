@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminUnitsPage() {
   const supabase = createAdminClient();
-  const { data: units } = await supabase.from("units").select("id, name, unit_kind, status, unit_compartments(id), unit_kits(id)").is("deleted_at", null).order("name");
+  const { data: units } = await supabase.from("units").select("id, name, unit_kind, status, oos_at, oos_by_name, unit_compartments(id), unit_kits(id)").is("deleted_at", null).order("name");
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
@@ -28,11 +28,19 @@ export default async function AdminUnitsPage() {
         </form>
 
         <div className="grid gap-3">
-          {(units ?? []).map((unit) => (
-            <div key={unit.id} className="flex flex-col justify-between gap-4 rounded-3xl bg-white p-5 shadow-sm sm:flex-row sm:items-center">
+          {(units ?? []).map((unit) => {
+            const isOos = unit.status === "out_of_service";
+            return (
+            <div key={unit.id} className={`flex flex-col justify-between gap-4 rounded-3xl p-5 shadow-sm sm:flex-row sm:items-center ${isOos ? "border border-slate-200 bg-slate-50" : "bg-white"}`}>
               <div>
-                <h2 className="text-xl font-black">{unit.name}</h2>
-                <p className="text-sm text-slate-600">{unit.unit_kind} | {(unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0)} checks | {unit.status.replace("_", " ")}</p>
+                <h2 className={`text-xl font-black ${isOos ? "text-slate-500" : ""}`}>{unit.name}</h2>
+                <p className={`text-sm ${isOos ? "text-slate-400" : "text-slate-600"}`}>{unit.unit_kind} | {(unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0)} checks | {unit.status.replace("_", " ")}</p>
+                {isOos && (unit.oos_at || unit.oos_by_name) ? (
+                  <p className="mt-1 text-xs font-semibold text-slate-400">
+                    Marked {unit.oos_at ? new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", month: "numeric", day: "numeric", year: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(unit.oos_at)) : ""}
+                    {unit.oos_by_name ? ` by ${unit.oos_by_name}` : ""}
+                  </p>
+                ) : null}
               </div>
               <div className="flex flex-wrap gap-2">
                 <Link className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" href={`/admin/units/${unit.id}`}>Edit</Link>
@@ -48,7 +56,8 @@ export default async function AdminUnitsPage() {
                 </form>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     </main>
