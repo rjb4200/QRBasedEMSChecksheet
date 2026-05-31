@@ -15,12 +15,13 @@ export default async function AdminUnitsPage() {
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
       <section className="mx-auto max-w-6xl space-y-6">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Admin</p>
-          <h1 className="mt-2 text-4xl font-black">Units</h1>
+          <h1 className="text-4xl font-black">Unit Management</h1>
         </div>
 
-        <DestructiveActionsToggle>
-          <div className="grid gap-3">
+        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Units</p>
+          <DestructiveActionsToggle>
+            <div className="mt-4 grid gap-3">
             {(units ?? []).map((unit) => {
               const isOos = unit.status === "out_of_service";
               return (
@@ -57,10 +58,11 @@ export default async function AdminUnitsPage() {
             })}
           </div>
         </DestructiveActionsToggle>
+        </div>
 
         <form action={createUnit} className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-[1fr_120px_240px_auto]">
           <div className="md:col-span-4">
-            <h2 className="text-lg font-black text-slate-800">Create a New Unit</h2>
+            <h2 className="text-lg font-black text-red-700">Create a New Unit</h2>
             <p className="mt-1 text-sm text-slate-600">Create a new unit from scratch or copy compartments, kits, and items from an existing unit to quickly build a new apparatus.</p>
           </div>
           <input className="rounded-2xl border border-slate-300 px-4 py-3" name="name" placeholder="Unit name (EC1, Medic 1)" required />
