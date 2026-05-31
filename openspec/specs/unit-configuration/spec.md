@@ -130,11 +130,11 @@ The admin units list page SHALL use red accent styling for the Set OOS button on
 - **THEN** the Set OOS button SHALL use muted slate styling
 
 ### Requirement: Destructive actions require a global toggle
-The admin units list page SHALL require an admin to enable a destructive actions toggle before any delete icon appears on unit rows.
+The admin units list page SHALL require an admin to enable a destructive actions toggle before any delete icon appears on unit rows. The toggle SHALL be positioned inside a shared white panel below the "Units" red label, with the label text on the left and the switch on the right.
 
 #### Scenario: Toggle is off by default
 - **WHEN** the admin units list page loads
-- **THEN** the destructive actions toggle SHALL be off
+- **THEN** the destructive actions toggle SHALL be off with right-aligned label text and switch
 - **AND** no delete icons SHALL appear on any unit row
 
 #### Scenario: Admin enables destructive actions
@@ -167,3 +167,13 @@ The admin units list page SHALL display the Create unit form below the unit list
 - **WHEN** the admin units list page renders
 - **THEN** the Create unit form SHALL appear after the unit list
 - **AND** the form SHALL be preceded by a section subheading and description
+
+### Requirement: Admin units page uses shared panel and red section labels
+The admin units list page SHALL use "Unit Management" as the page heading and display the unit list inside a shared white rounded panel with a slate border, with the "Units" red label and destructive toggle positioned at the top of that panel. The "Create a New Unit" section heading SHALL use red text styling.
+
+#### Scenario: Page renders with proper layout
+- **WHEN** the admin units list page renders
+- **THEN** the page heading SHALL display "Unit Management"
+- **AND** the unit list SHALL appear inside a shared panel with `border-slate-200`
+- **AND** the "Units" red label and destructive toggle SHALL be positioned at the top of the panel
+- **AND** the "Create a New Unit" heading SHALL use red text
