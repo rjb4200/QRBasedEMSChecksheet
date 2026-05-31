@@ -21,24 +21,26 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
       <AutoRefresh />
       <section className="mx-auto max-w-7xl space-y-6">
-        <div>
+        <div className="rounded-3xl bg-white p-5 shadow-sm">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Admin Dashboard</p>
-            <h1 className="mt-2 text-4xl font-black">Fleet Matrix</h1>
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Admin Dashboard</p>
+              <h1 className="mt-2 text-4xl font-black">Fleet Matrix</h1>
+            </div>
+          </div>
+
+          <FleetMatrix admin units={units} />
+
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 p-4">
+            <p className="font-bold text-slate-700">Daily check sheets for {currentShift.shiftDate}</p>
+            <div className="flex flex-wrap gap-2">
+              <a className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" href={`/admin/checksheets/print?date=${currentShift.shiftDate}`}>Print Today's Check Sheets</a>
+              <a className="rounded-2xl border border-slate-300 px-5 py-3 font-bold" href="/admin/docs">Admin Guide</a>
+            </div>
           </div>
         </div>
 
-        <FleetMatrix admin units={units} />
-
         <StorageWarningBanner />
-
-        <section className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm">
-          <p className="font-bold text-slate-700">Daily check sheets for {currentShift.shiftDate}</p>
-          <div className="flex flex-wrap gap-2">
-            <a className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" href={`/admin/checksheets/print?date=${currentShift.shiftDate}`}>Print Today's Check Sheets</a>
-            <a className="rounded-2xl border border-slate-300 px-5 py-3 font-bold" href="/admin/docs">Admin Guide</a>
-          </div>
-        </section>
 
         <RecentComments />
 
