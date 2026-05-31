@@ -60,11 +60,31 @@ The admin page at `/admin/system-log` SHALL display log rows with controls to fi
 - **THEN** the page SHALL filter rows where the actor name, target name, action, or message contains the term
 
 ### Requirement: Log rows show expandable details
-Each log row on the admin system log page SHALL be expandable to reveal message, before_data, after_data, and metadata content.
+Each log row on the admin system log page SHALL be expandable to reveal message, before_data, after_data, and metadata content. The collapsed view SHALL display the result badge, area badge, timestamp, action name, and summary on a single responsive line without a separate target UUID column.
+
+#### Scenario: Admin views collapsed log row
+- **WHEN** the system log page renders a log row
+- **THEN** the collapsed row SHALL show result, area, timestamp, action, and summary inline
+- **AND** the row SHALL NOT display a raw target_type or UUID column
 
 #### Scenario: Admin expands a log row
 - **WHEN** an admin clicks or taps a log row
 - **THEN** the row SHALL expand to show detail fields including message and data values
+
+### Requirement: Log rows display a human-readable summary
+Each collapsed log row on the system log page SHALL display a human-readable summary sentence generated from the row's data fields instead of requiring expansion to understand what happened.
+
+#### Scenario: Status change shows direction
+- **WHEN** a log row has `action = unit.status_changed` with before/after status data
+- **THEN** the summary SHALL show the direction of change, e.g., "changed status from in_service to out_of_service"
+
+#### Scenario: Creation shows what was created
+- **WHEN** a log row has `action = unit.created`
+- **THEN** the summary SHALL indicate a unit was created with the target name
+
+#### Scenario: Generic fallback for unrecognized actions
+- **WHEN** a log row has an action without a specific summary handler
+- **THEN** the summary SHALL display the actor, action, and target in a readable format
 
 ### Requirement: Crew and public users cannot access the system log
 The system log page SHALL be accessible only to authenticated admin users.
