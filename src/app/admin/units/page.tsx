@@ -49,7 +49,7 @@ export default async function AdminUnitsPage() {
                   <input name="status" type="hidden" value={unit.status === "in_service" ? "out_of_service" : "in_service"} />
                   <button className={`rounded-2xl px-5 py-3 font-bold ${isOos ? "border border-slate-300" : "bg-red-700 text-white"}`} type="submit">{unit.status === "in_service" ? "Set OOS" : "Set In-Service"}</button>
                 </form>
-                <Link aria-label={`QR Codes for ${unit.name}`} className={`rounded-2xl p-3 ${isOos ? "border border-slate-300 text-slate-600 hover:text-slate-900" : "bg-red-700 text-white hover:text-white"}`} href={`/admin/units/${unit.id}/qr`} title={`QR Codes for ${unit.name}`}>
+                <Link aria-label={`QR Codes for ${unit.name}`} className="rounded-2xl border border-slate-300 p-3 text-slate-600 hover:text-slate-900" href={`/admin/units/${unit.id}/qr`} title={`QR Codes for ${unit.name}`}>
                   <IconQr />
                 </Link>
                 <Link aria-label={`Edit ${unit.name}`} className="rounded-2xl border border-slate-300 p-3 text-slate-600 hover:text-slate-900" href={`/admin/units/${unit.id}`} title={`Edit ${unit.name}`}>
