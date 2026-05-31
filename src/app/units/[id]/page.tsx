@@ -23,7 +23,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
   const supabase = createAdminClient();
   const currentShift = getCurrentShift();
   const [{ data: unit }, { data: checks }, { data: crew }, { data: comment }, { data: sectionComments }, addressedRows, manualItemsData] = await Promise.all([
-    supabase.from("units").select("id, name, status, monthly_check_day, unit_compartments(id, name, sort_order, qr_location_note, unit_compartment_items(id, equipment_id, par_level, input_type)), unit_kits(id, sort_order, qr_location_note, kits(id, name, kit_items(id, equipment_id, par_level, input_type)))").eq("id", id).is("deleted_at", null).single(),
+    supabase.from("units").select("id, name, status, monthly_check_day, oos_at, oos_by_name, unit_compartments(id, name, sort_order, qr_location_note, unit_compartment_items(id, equipment_id, par_level, input_type)), unit_kits(id, sort_order, qr_location_note, kits(id, name, kit_items(id, equipment_id, par_level, input_type)))").eq("id", id).is("deleted_at", null).single(),
     supabase.from("compartment_checks").select("compartment_id, unit_kit_id, status, item_data").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod),
     supabase.from("daily_unit_crews").select("provider_names, locked").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
     supabase.from("daily_unit_comments").select("comment").eq("unit_id", id).eq("shift_date", currentShift.shiftDate).eq("shift_period", currentShift.shiftPeriod).maybeSingle(),
@@ -130,7 +130,15 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
         </div>
 
         {unit?.status !== "in_service" ? (
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 font-bold text-slate-700">Out of Service</div>
+          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+            <p className="font-black text-slate-700">Out of Service</p>
+            {unit?.oos_at || unit?.oos_by_name ? (
+              <p className="mt-1 text-sm font-semibold text-slate-500">
+                Marked {unit.oos_at ? new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", month: "numeric", day: "numeric", year: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(unit.oos_at)) : ""}
+                {unit.oos_by_name ? ` by ${unit.oos_by_name}` : ""}
+              </p>
+            ) : null}
+          </div>
         ) : null}
 
         {shouldShowMonthlyCheckReminder(unit?.monthly_check_day ?? null) ? <MonthlyCheckReminderBanner /> : null}
