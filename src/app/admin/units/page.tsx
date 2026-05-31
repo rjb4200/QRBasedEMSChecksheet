@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createUnit, deleteUnit, toggleUnitStatus } from "./actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { IconEdit, IconTrash } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
 
@@ -42,17 +43,21 @@ export default async function AdminUnitsPage() {
                   </p>
                 ) : null}
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Link className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" href={`/admin/units/${unit.id}`}>Edit</Link>
-                <Link className="rounded-2xl border border-slate-300 px-5 py-3 font-bold" href={`/admin/units/${unit.id}/qr`}>QR Codes</Link>
+              <div className="flex flex-wrap items-center gap-2">
                 <form action={toggleUnitStatus}>
                   <input name="id" type="hidden" value={unit.id} />
                   <input name="status" type="hidden" value={unit.status === "in_service" ? "out_of_service" : "in_service"} />
                   <button className="rounded-2xl border border-slate-300 px-5 py-3 font-bold" type="submit">{unit.status === "in_service" ? "Set OOS" : "Set In-Service"}</button>
                 </form>
+                <Link className="rounded-2xl border border-slate-300 px-5 py-3 font-bold" href={`/admin/units/${unit.id}/qr`}>QR Codes</Link>
+                <Link aria-label={`Edit ${unit.name}`} className="rounded-2xl border border-slate-300 p-3 text-slate-600 hover:text-slate-900" href={`/admin/units/${unit.id}`} title={`Edit ${unit.name}`}>
+                  <IconEdit />
+                </Link>
                 <form action={deleteUnit}>
                   <input name="id" type="hidden" value={unit.id} />
-                  <button className="rounded-2xl border border-red-200 px-5 py-3 font-bold text-red-700" type="submit">Delete</button>
+                  <button aria-label={`Delete ${unit.name}`} className="rounded-2xl border border-red-200 p-3 text-red-700 hover:text-red-900" title={`Delete ${unit.name}`} type="submit">
+                    <IconTrash />
+                  </button>
                 </form>
               </div>
             </div>

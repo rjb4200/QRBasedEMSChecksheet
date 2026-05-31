@@ -110,3 +110,20 @@ The Fleet Panel SHALL show a compact comment badge only for units with saved non
 #### Scenario: Current shift comment missing or blank
 - **WHEN** a unit has no saved Daily Unit Comment or the saved value is blank after trimming
 - **THEN** the Fleet Panel SHALL NOT show a comment badge for that unit
+
+### Requirement: Unit pages display OOS units with muted slate styling and details
+The unit dashboard page and admin units list page SHALL display out-of-service units with muted slate styling and OOS detail information consistent with the Fleet Panel treatment.
+
+#### Scenario: Unit dashboard page shows OOS banner
+- **WHEN** a unit has `status = out_of_service` on the unit dashboard page
+- **THEN** the page SHALL display an OOS banner using muted slate tones
+- **AND** the banner SHALL show OOS timestamp and by-name when available from `oos_at` and `oos_by_name`
+
+#### Scenario: Admin units page greys out OOS rows
+- **WHEN** a unit has `status = out_of_service` on the admin units list page
+- **THEN** the unit row SHALL use muted slate background and border styling
+- **AND** the row SHALL show OOS timestamp and by-name details when available
+
+#### Scenario: In-service units are unaffected
+- **WHEN** a unit has `status = in_service`
+- **THEN** no OOS banner or greyed styling SHALL be displayed on either page
