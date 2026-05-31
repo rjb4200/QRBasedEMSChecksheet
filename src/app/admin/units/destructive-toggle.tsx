@@ -29,7 +29,7 @@ export function DestructiveActionsToggle({ children }: { children: React.ReactNo
             {enabled ? "Destructive actions unlocked" : "Destructive actions locked"}
           </span>
           <span className="text-xs font-semibold text-red-700">
-            {enabled ? "Unit deletion is now available." : "Unit deletion is hidden until unlocked."}
+            {enabled ? "Unit deletion is now available." : "Unit deletion is disabled."}
           </span>
         </label>
       </div>
