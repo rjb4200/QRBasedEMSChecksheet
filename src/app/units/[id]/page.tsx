@@ -130,7 +130,7 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
         </div>
 
         {unit?.status !== "in_service" ? (
-          <div className="rounded-3xl border border-red-200 bg-red-50 p-5 font-bold text-red-800">This unit is out of service.</div>
+          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 font-bold text-slate-700">Out of Service</div>
         ) : null}
 
         {shouldShowMonthlyCheckReminder(unit?.monthly_check_day ?? null) ? <MonthlyCheckReminderBanner /> : null}
