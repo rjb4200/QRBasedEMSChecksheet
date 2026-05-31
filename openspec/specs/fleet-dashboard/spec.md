@@ -68,19 +68,20 @@ The admin Fleet page SHALL provide a print action for the current daily check sh
 - **THEN** those checkbox rows do not display a par value
 
 ### Requirement: Fleet page displays submitted item exceptions by date
-The admin Fleet page SHALL display submitted checkoff items that are missing or below their configured par count for the last 7 days by default, grouped by date.
+The admin Fleet page SHALL display submitted checkoff items that are missing or below their configured par count for the last 7 days by default, grouped by date and by unit within each date.
 
-#### Scenario: Exceptions grouped by date
+#### Scenario: Exceptions grouped by date and unit
 - **WHEN** admin opens the Fleet page
-- **THEN** the exceptions panel shows daily date sections for the last 7 days
-
-#### Scenario: Compact exceptions panel header
-- **WHEN** admin views the Fleet page
-- **THEN** the exceptions panel uses a compact "Exceptions" heading without additional explanatory header text
+- **THEN** the exceptions panel SHALL show daily date sections, each containing collapsible unit sections with exception counts
 
 #### Scenario: Last three days expanded
 - **WHEN** the exceptions panel renders
 - **THEN** the most recent three date sections are expanded by default and older date sections are closed
+
+#### Scenario: Exception rows are compact
+- **WHEN** exception items are displayed within a unit section
+- **THEN** each item SHALL render as a compact line showing item name, compartment name, and issue
+- **AND** the panel SHALL NOT use a wide horizontal table
 
 #### Scenario: Exceptions filtered by date
 - **WHEN** admin selects a from/to date range
@@ -125,3 +126,12 @@ The admin Fleet Panel SHALL display a storage capacity warning banner below the 
 #### Scenario: Fleet Panel normal operation
 - **WHEN** database usage is below 90%
 - **THEN** no storage banner SHALL be displayed on the Fleet Panel
+
+### Requirement: Fleet operations share a visual panel
+The Fleet Panel SHALL display the unit card grid and daily checksheet print bar within a shared white rounded panel with a red "Fleet Matrix" label at the top.
+
+#### Scenario: Fleet operations panel renders
+- **WHEN** the Fleet Panel loads
+- **THEN** the unit cards and print bar SHALL appear inside a single shared container with white background
+- **AND** the panel SHALL show "Fleet Matrix" as a compact red label
+- **AND** unit cards SHALL have visible borders for contrast against the white panel
