@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { formatLogSummary } from "@/lib/log-summary";
 
 export const dynamic = "force-dynamic";
 
@@ -134,7 +135,7 @@ export default async function SystemLogPage({ searchParams }: { searchParams: Pr
                       <span className="text-sm font-semibold text-slate-500">{formatTimestamp(row.created_at)}</span>
                     </div>
                     <h2 className="mt-2 text-xl font-black">{row.action}</h2>
-                    <p className="mt-1 text-sm text-slate-600">{row.actor_name ?? row.actor_type} {row.target_name ? `on ${row.target_name}` : row.target_type ? `on ${row.target_type}` : ""}</p>
+                    <p className="mt-1 text-sm text-slate-600">{formatLogSummary(row)}</p>
                   </div>
                   <div className="text-sm font-semibold text-slate-500 lg:text-right">
                     <p>{row.target_type ?? "No target"}</p>
