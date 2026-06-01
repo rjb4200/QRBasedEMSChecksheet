@@ -247,30 +247,8 @@ Complete the monthly check according to department policy. Add a comment or noti
 
 Use the comment field or tell a supervisor/admin. The configuration can be updated from the admin side.
 
-### Can I check multiple units at once?
-
-No. Each unit should be checked separately so the record is accurate.
-
-## Quick Reference
-
-- Scan a QR code on the unit.
-- Confirm the correct unit/section opened.
-- Check the scanned compartment or assigned kit.
-- Submit or save the section.
-- Review the restock list when items are below par or missing.
-- Use synced restock checkboxes to show addressed items.
-- Enter crew names/signatures before the unit is finished.
-- Use the expand icon for QR location reminders when available.
-- Check every compartment and assigned kit.
-- Check monthly reminders when they appear.
-- Verify carried-forward values.
-- Record actual counts.
-- Leave true exceptions visible.
-- Add useful comments.
-- Finish when the unit reaches 100%.
-
 ---
 
-**Document Version:** 1.6  
+**Document Version:** 1.7  
 **Last Updated:** June 2026  
 **For Support:** Contact your supervisor or system administrator.
