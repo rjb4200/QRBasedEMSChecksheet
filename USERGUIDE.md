@@ -8,12 +8,13 @@ The system is meant to be simple: scan a QR code on the unit, confirm you are on
 
 1. Start by scanning any QR code on the unit. Use your phone camera, a QR scanner app, or the scanner built into the checkoff software.
 2. Confirm the QR code opened the correct unit, compartment, or assigned kit.
-3. Enter the crew names for the shift.
-4. Work through each compartment and assigned kit.
-5. Count what is actually present. Do not assume yesterday's count is still correct.
-6. Leave any below-par or missing counts as they are so the system can flag the exception.
-7. Add a unit comment if there is something a supervisor needs to know.
-8. The unit is complete when the checkoff reaches 100%.
+3. Work through the scanned compartment or assigned kit.
+4. Count what is actually present. Do not assume yesterday's count is still correct.
+5. Leave any below-par or missing counts as they are so the system can flag the exception.
+6. Submit or save the section before moving on.
+7. Enter crew names/signatures when prompted or any time before the unit check is finished. Crew names do not have to be entered before the first scanned kit or compartment is submitted.
+8. Add a unit comment if there is something a supervisor needs to know.
+9. The unit is complete when the checkoff reaches 100%.
 
 ## Accessing a Unit
 
@@ -46,8 +47,36 @@ Each unit page may include:
 - exception summary
 - previous-shift values
 - comments
+- QR location reminders
 
 Compartments are unit-specific areas. Kits are shared layouts assigned to units. A kit may appear on more than one unit, but the checkoff record is still saved for the unit you are checking.
+
+## Main Unit Page Colors
+
+The main unit page uses colors to help show check progress quickly.
+
+Common meanings:
+
+- Green usually means a section has been submitted or completed.
+- Yellow usually means a section is in progress or needs attention.
+- Red usually means a section is incomplete, below par, missing, or has an exception that needs attention.
+- Gray usually means a section has not been started or is not required, depending on the label shown.
+
+Always read the text label with the color. The label is the final status.
+
+## QR Location Reminders
+
+Some unit pages include a small expand icon for compartments or assigned kits.
+
+When available, use the expand icon to show the QR location reminder. This text tells you where the physical QR code or NFC tag is located on the unit.
+
+Example:
+
+```text
+QR Location: Inside rear passenger cabinet door
+```
+
+This is only a location reminder. It does not change the checkoff status.
 
 ## Daily Checkoff Workflow
 
@@ -59,15 +88,9 @@ The code may take you to the unit page, a compartment, or a kit. Before entering
 
 This matters most when moving between several trucks.
 
-### 2. Enter Crew Names / Signatures
+### 2. Check the Scanned Compartment or Kit
 
-Enter the crew members assigned to the unit for the shift.
-
-The lock control is for the crew names/signature area. Use it to save or lock the crew information when it is correct.
-
-The unit itself is complete based on the checkoff reaching 100%. No extra lock action is needed to complete the unit once everything is checked.
-
-### 3. Check Compartments and Kits
+You can begin by checking the compartment or kit that opened from the QR code.
 
 For each compartment or assigned kit:
 
@@ -78,6 +101,16 @@ For each compartment or assigned kit:
 - submit or save the section before moving on
 
 Some fields may already be filled in from a recent previous check. Treat those as a starting point, not proof that the item is still there.
+
+### 3. Enter Crew Names / Signatures
+
+Enter the crew members assigned to the unit for the shift.
+
+Crew names/signatures can be entered after the first scanned compartment or kit is submitted. They can also be entered at any time before the unit check is finished.
+
+The lock control is for the crew names/signature area. Use it to save or lock the crew information when it is correct.
+
+The unit itself is complete based on the checkoff reaching 100%. No extra lock action is needed to complete the unit once everything is checked.
 
 ### 4. Handle Exceptions
 
@@ -115,39 +148,6 @@ This saves time, but it does not replace the actual check. If a value is carried
 
 If a carried-forward value is below par or missing, the system may highlight it so it is not overlooked.
 
-## Exceptions
-
-Exceptions are not a punishment. They are how the system shows that something needs attention.
-
-Common examples:
-
-| Exception | What it means |
-| --- | --- |
-| Below par | The count is less than the required par level. |
-| Missing | The item count is zero or the required item is not present. |
-| New exception | The issue was not present on the previous check. |
-
-When you find an exception:
-
-- enter the actual count
-- add a comment if it helps explain the problem
-- continue the checkoff
-
-Supervisors can review submitted exceptions from the admin side and daily reports.
-
-## Assigned Kits
-
-Some equipment groups are managed as shared kits.
-
-Examples may include bags, monitor checks, cabinet layouts, or other repeated equipment groups.
-
-Important points:
-
-- Check assigned kits the same way you check compartments.
-- A kit can be assigned to multiple units.
-- Your checkoff is saved for the unit you are checking.
-- Do not skip a kit just because it looks the same as another unit's kit.
-
 ## QR Codes
 
 QR codes are the primary way to start and move through the check.
@@ -156,7 +156,7 @@ Use your phone camera, a QR scanner app, or the scanner built into the checkoff 
 
 Use QR codes to jump directly to the unit, compartment, or kit you are checking.
 
-If a QR code is missing, damaged, or points to the wrong place, report it to a supervisor or admin.
+If a QR code is missing, damaged, hard to find, or points to the wrong place, report it to a supervisor or admin.
 
 ## Do's and Don'ts
 
@@ -166,7 +166,7 @@ If a QR code is missing, damaged, or points to the wrong place, report it to a s
 - Complete the check early in the shift when possible.
 - Count what is actually on the unit.
 - Check every required compartment and assigned kit.
-- Enter crew names accurately.
+- Enter crew names accurately before the unit is finished.
 - Add comments for issues that need follow-up.
 - Continue until the unit reaches 100%.
 
@@ -188,6 +188,10 @@ No. Standard crew checkoffs are public so they can be completed quickly from QR 
 ### What scanner should I use?
 
 Use any QR scanner that works for you. Your phone camera, a QR scanner app, or the scanner built into the checkoff software are all acceptable.
+
+### Do I have to enter crew names before checking the first kit or compartment?
+
+No. You can submit the first scanned kit or compartment first. Enter crew names/signatures when prompted or any time before the unit check is finished.
 
 ### What if I start a check and cannot finish it right away?
 
@@ -221,7 +225,10 @@ No. Each unit should be checked separately so the record is accurate.
 
 - Scan a QR code on the unit.
 - Confirm the correct unit/section opened.
-- Enter crew names/signatures.
+- Check the scanned compartment or assigned kit.
+- Submit or save the section.
+- Enter crew names/signatures before the unit is finished.
+- Use the expand icon for QR location reminders when available.
 - Check every compartment and assigned kit.
 - Verify carried-forward values.
 - Record actual counts.
@@ -231,6 +238,6 @@ No. Each unit should be checked separately so the record is accurate.
 
 ---
 
-**Document Version:** 1.2  
-**Last Updated:** May 2026  
+**Document Version:** 1.3  
+**Last Updated:** June 2026  
 **For Support:** Contact your supervisor or system administrator.
