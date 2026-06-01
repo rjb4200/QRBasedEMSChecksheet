@@ -27,13 +27,12 @@ The normal way to start a check is by scanning a QR code on the unit. You can us
 - a QR scanner app
 - the scanner built into the checkoff software
 
-QR codes may open:
+QR codes open:
 
-- the unit check sheet
 - a specific compartment
 - an assigned kit
 
-Scanning a QR code starts or resumes the check for that unit or section. Use the QR code closest to the area you are checking when possible. It is faster and helps make sure the check is tied to the right physical location.
+Scanning a QR code starts or resumes the check for that unit and section. Use the QR code closest to the area you are checking when possible. It is faster and helps make sure the check is tied to the right physical location.
 
 If needed, you can still open the units page and choose the unit manually.
 
@@ -62,7 +61,7 @@ Common meanings:
 
 - Green usually means a section has been submitted or completed.
 - Yellow usually means a section is in progress or needs attention.
-- Red usually means a section is incomplete, below par, missing, or has an exception that needs attention.
+- Red usually means a section needs attention.
 - Gray usually means a section has not been started or is not required, depending on the label shown.
 
 Always read the text label with the color. The label is the final status.
@@ -87,7 +86,7 @@ This is only a location reminder. It does not change the checkoff status.
 
 Start the check by scanning a QR code on the unit.
 
-The code may take you to the unit page, a compartment, or a kit. Before entering anything, make sure the page is for the correct unit and section.
+The code opens a compartment or assigned kit. Before entering anything, make sure the page is for the correct unit and section.
 
 This matters most when moving between several trucks.
 
@@ -123,17 +122,7 @@ Crew names/signatures can be entered after the first scanned compartment or kit 
 
 The lock control is for the crew names/signature area. Use it to save or lock the crew information when it is correct.
 
-The unit itself is complete based on the checkoff reaching 100%. No extra lock action is needed to complete the unit once everything is checked.
-
-### 5. Handle Exceptions
-
-An exception is usually created when an item is below par or missing.
-
-If the par for an item is 4 and you only find 2, enter 2. Do not change the count to 4 just to clear the exception.
-
-The exception tells supervisors what needs attention.
-
-### 6. Add Comments When Needed
+### 5. Add Comments When Needed
 
 Use the comment area for information that is not obvious from the item counts.
 
@@ -147,13 +136,13 @@ Good comments include:
 
 Keep comments factual and short.
 
-### 7. Check Monthly Reminders
+### 6. Check Monthly Reminders
 
 Some units may show monthly check reminders.
 
 Monthly reminders are used for checks that are not part of the normal daily compartment or kit workflow. If a reminder is due, complete the check according to department policy and document any issue that needs follow-up.
 
-### 8. Finish at 100%
+### 7. Finish at 100%
 
 The unit is complete when the checkoff reaches 100%.
 
@@ -198,7 +187,7 @@ QR codes are the primary way to start and move through the check.
 
 Use your phone camera, a QR scanner app, or the scanner built into the checkoff software.
 
-Use QR codes to jump directly to the unit, compartment, or kit you are checking.
+Use QR codes to jump directly to the compartment or kit you are checking.
 
 If a QR code is missing, damaged, hard to find, or points to the wrong place, report it to a supervisor or admin.
 
@@ -245,7 +234,7 @@ Your progress may be saved. Come back and continue until the unit reaches 100%.
 
 ### What does the lock do?
 
-The lock is for the crew names/signature area. It saves or locks the crew information. The unit itself is complete when the checkoff reaches 100%.
+The lock is for the crew names/signature area. It saves or locks the crew information.
 
 ### What if yesterday's count is already filled in?
 
@@ -295,6 +284,6 @@ No. Each unit should be checked separately so the record is accurate.
 
 ---
 
-**Document Version:** 1.4  
+**Document Version:** 1.5  
 **Last Updated:** June 2026  
 **For Support:** Contact your supervisor or system administrator.
