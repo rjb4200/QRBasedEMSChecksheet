@@ -260,9 +260,7 @@ export default function AdminUsersPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-bold text-slate-950">Existing Users</h2>
             <div className="flex items-center gap-3">
-              <span className="text-sm font-black text-red-800">
-                {destroyEnabled ? "Destructive actions unlocked" : "Destructive actions locked"}
-              </span>
+              <span className="text-xs font-semibold text-red-700">Destructive mode</span>
               <button
                 aria-checked={destroyEnabled}
                 className={`relative inline-flex h-8 w-14 shrink-0 items-center rounded-full p-1 transition ${destroyEnabled ? "bg-red-700" : "bg-slate-300"}`}
