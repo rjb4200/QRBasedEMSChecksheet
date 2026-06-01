@@ -4,82 +4,6 @@ This guide is for crews using the QR-based EMS Checksheet system to complete dai
 
 The system is meant to be simple: scan a QR code on the unit, confirm you are on the correct unit or section, check the compartments and assigned kits, and document what is actually on the truck.
 
-## Quick Start
-
-1. Start by scanning any QR code on the unit. Use your phone camera, a QR scanner app, or the scanner built into the checkoff software.
-2. Confirm the QR code opened the correct unit, compartment, or assigned kit.
-3. Work through the scanned compartment or assigned kit.
-4. Count what is actually present. Do not assume yesterday's count is still correct.
-5. Leave any below-par or missing counts as they are so the system can flag the exception and add the item to the restock list when appropriate.
-6. Submit or save the section before moving on.
-7. Review the restock list if items are below par or missing. Restock checkboxes sync between users, so when one person marks an item addressed, that addressed state is shared.
-8. Enter crew names/signatures when prompted or any time before the unit check is finished. Crew names do not have to be entered before the first scanned kit or compartment is submitted.
-9. Add a unit comment if there is something a supervisor needs to know.
-10. The unit is complete when the checkoff reaches 100%.
-
-## Accessing a Unit
-
-Standard crew checkoffs do not require an admin login.
-
-The normal way to start a check is by scanning a QR code on the unit. You can use:
-
-- your phone camera
-- a QR scanner app
-- the scanner built into the checkoff software
-
-QR codes open:
-
-- a specific compartment
-- an assigned kit
-
-Scanning a QR code starts or resumes the check for that unit and section. Use the QR code closest to the area you are checking when possible. It is faster and helps make sure the check is tied to the right physical location.
-
-If needed, you can still open the units page and choose the unit manually.
-
-## What You Will See
-
-Each unit page may include:
-
-- crew name/signature area
-- compartments
-- assigned kits
-- completion status
-- exception summary
-- restock list
-- monthly check reminders
-- previous-shift values
-- comments
-- QR location reminders
-
-Compartments are unit-specific areas. Kits are shared layouts assigned to units. A kit may appear on more than one unit, but the checkoff record is still saved for the unit you are checking.
-
-## Main Unit Page Colors
-
-The main unit page uses colors to help show check progress quickly.
-
-Common meanings:
-
-- Green usually means a section has been submitted or completed.
-- Yellow usually means a section is in progress or needs attention.
-- Red usually means a section needs attention.
-- Gray usually means a section has not been started or is not required, depending on the label shown.
-
-Always read the text label with the color. The label is the final status.
-
-## QR Location Reminders
-
-Some unit pages include a small expand icon for compartments or assigned kits.
-
-When available, use the expand icon to show the QR location reminder. This text tells you where the physical QR code or NFC tag is located on the unit.
-
-Example:
-
-```text
-QR Location: Inside rear passenger cabinet door
-```
-
-This is only a location reminder. It does not change the checkoff status.
-
 ## Daily Checkoff Workflow
 
 ### 1. Scan a QR Code
@@ -147,6 +71,69 @@ Monthly reminders are used for checks that are not part of the normal daily comp
 The unit is complete when the checkoff reaches 100%.
 
 There is no separate final lock action required for the unit after it reaches 100%. The lock is for the crew names/signature area, not the final unit completion status.
+
+## Accessing a Unit
+
+Standard crew checkoffs do not require an admin login.
+
+The normal way to start a check is by scanning a QR code on the unit. You can use:
+
+- your phone camera
+- a QR scanner app
+- the scanner built into the checkoff software
+
+QR codes open:
+
+- a specific compartment
+- an assigned kit
+
+Scanning a QR code starts or resumes the check for that unit and section. Use the QR code closest to the area you are checking when possible. It is faster and helps make sure the check is tied to the right physical location.
+
+If needed, you can still open the units page and choose the unit manually.
+
+## What You Will See
+
+Each unit page may include:
+
+- crew name/signature area
+- compartments
+- assigned kits
+- completion status
+- exception summary
+- restock list
+- monthly check reminders
+- previous-shift values
+- comments
+- QR location reminders
+
+Compartments are unit-specific areas. Kits are shared layouts assigned to units. A kit may appear on more than one unit, but the checkoff record is still saved for the unit you are checking.
+
+## Main Unit Page Colors
+
+The main unit page uses colors to help show check progress quickly.
+
+Common meanings:
+
+- Green usually means a section has been submitted or completed.
+- Yellow usually means a section is in progress or needs attention.
+- Red usually means a section needs attention.
+- Gray usually means a section has not been started or is not required, depending on the label shown.
+
+Always read the text label with the color. The label is the final status.
+
+## QR Location Reminders
+
+Some unit pages include a small expand icon for compartments or assigned kits.
+
+When available, use the expand icon to show the QR location reminder. This text tells you where the physical QR code or NFC tag is located on the unit.
+
+Example:
+
+```text
+QR Location: Inside rear passenger cabinet door
+```
+
+This is only a location reminder. It does not change the checkoff status.
 
 ## Restock List
 
@@ -284,6 +271,6 @@ No. Each unit should be checked separately so the record is accurate.
 
 ---
 
-**Document Version:** 1.5  
+**Document Version:** 1.6  
 **Last Updated:** June 2026  
 **For Support:** Contact your supervisor or system administrator.
