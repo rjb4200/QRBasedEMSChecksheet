@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { IconEdit, IconTrash } from "@/components/icons";
 
 interface AdminUser {
   id: string;
@@ -46,6 +47,8 @@ export default function AdminUsersPage() {
 
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [destroyEnabled, setDestroyEnabled] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState<string | null>(null);
 
   const passwordStrength = getPasswordStrength(newPassword);
 
@@ -254,7 +257,23 @@ export default function AdminUsersPage() {
         </div>
 
         <div>
-          <h2 className="text-lg font-bold text-slate-950">Existing Users</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-bold text-slate-950">Existing Users</h2>
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-black text-red-800">
+                {destroyEnabled ? "Destructive actions unlocked" : "Destructive actions locked"}
+              </span>
+              <button
+                aria-checked={destroyEnabled}
+                className={`relative inline-flex h-8 w-14 shrink-0 items-center rounded-full p-1 transition ${destroyEnabled ? "bg-red-700" : "bg-slate-300"}`}
+                onClick={() => setDestroyEnabled((v) => !v)}
+                role="switch"
+                type="button"
+              >
+                <span className={`h-6 w-6 rounded-full bg-white shadow transition ${destroyEnabled ? "translate-x-6" : "translate-x-0"}`} />
+              </button>
+            </div>
+          </div>
           <div className="mt-4 space-y-3">
             {users.length === 0 ? (
               <p className="text-slate-500">No admin users found</p>
@@ -320,25 +339,54 @@ export default function AdminUsersPage() {
                         </div>
                       </form>
                     ) : (
-                      <>
+                      <div className="flex gap-2">
                         <button
-                          className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
+                          className="rounded-2xl border border-slate-300 p-3 text-slate-600"
                           onClick={() => {
                             setEditingUserId(user.id);
                             setNewPasswordForEdit("");
                             setEmailForEdit(user.email ?? "");
                             setReceivesDailyReportForEdit(user.receives_daily_report);
                           }}
+                          title="Edit user"
+                          type="button"
                         >
-                          Edit
+                          <IconEdit />
                         </button>
-                        <button
-                          className="rounded-xl border border-red-300 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50"
-                          onClick={() => setDeleteUserId(user.id)}
-                        >
-                          Delete
-                        </button>
-                      </>
+                        {destroyEnabled ? (
+                          confirmingDelete === user.id ? (
+                            <div className="flex gap-1">
+                              <button
+                                aria-label="Cancel delete"
+                                className="rounded-2xl border border-slate-300 p-3 text-slate-600"
+                                onClick={() => setConfirmingDelete(null)}
+                                title="Cancel"
+                                type="button"
+                              >
+                                <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                  <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
+                                </svg>
+                              </button>
+                              <button
+                                className="rounded-xl border border-red-200 px-3 py-1 text-xs font-bold text-red-700"
+                                onClick={() => { setDeleteUserId(user.id); setConfirmingDelete(null); }}
+                                type="button"
+                              >
+                                Delete?
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              className="rounded-2xl border border-red-200 p-3 text-red-700"
+                              onClick={() => setConfirmingDelete(user.id)}
+                              title="Delete user"
+                              type="button"
+                            >
+                              <IconTrash />
+                            </button>
+                          )
+                        ) : null}
+                      </div>
                     )}
                   </div>
                 </div>

@@ -48,4 +48,21 @@ Existing admin login, Admin Users page, and daily report recipient behavior SHAL
 
 #### Scenario: Admin workflows preserved
 - **WHEN** an admin with a valid session uses the Admin Users page or daily report settings
+
+### Requirement: Admin users page uses icon actions with destructive toggle
+The admin users page SHALL use pencil and trash icons for Edit and Delete actions, with a destructive actions toggle that hides delete icons until enabled. Clicking the delete icon SHALL require a two-step inline confirmation before opening the delete modal.
+
+#### Scenario: Edit and Delete use icons
+- **WHEN** the admin users page renders a user row
+- **THEN** the Edit action SHALL be a pencil icon button
+- **AND** the Delete action SHALL be a trash icon button when the destructive toggle is enabled
+
+#### Scenario: Delete icons are hidden until toggle enabled
+- **WHEN** the destructive actions toggle is off
+- **THEN** trash icons SHALL be hidden on all user rows
+
+#### Scenario: Two-step delete confirmation before modal
+- **WHEN** an admin clicks the trash icon
+- **THEN** a cancel button and "Delete?" confirmation button SHALL appear inline
+- **AND** clicking "Delete?" SHALL open the existing delete confirmation modal
 - **THEN** all existing functionality SHALL continue to work
