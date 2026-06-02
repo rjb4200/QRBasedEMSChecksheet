@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { IconEdit, IconTrash } from "@/components/icons";
+import { IconCancel, IconEdit, IconSave, IconTrash } from "@/components/icons";
 
 interface AdminUser {
   id: string;
@@ -294,8 +294,8 @@ export default function AdminUsersPage() {
                             <input className="h-4 w-4 accent-red-700" type="checkbox" checked={receivesDailyReportForEdit} onChange={(e) => setReceivesDailyReportForEdit(e.target.checked)} />
                             Daily report
                           </label>
-                          <button className="rounded-xl bg-red-700 px-3 py-2 text-sm font-bold text-white" type="submit" disabled={isChangingPassword}>Save</button>
-                          <button type="button" className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700" onClick={() => { setEditingUserId(null); setNewPasswordForEdit(""); setEmailForEdit(""); }}>Cancel</button>
+                          <button className="rounded-2xl border border-slate-300 p-3 text-slate-600" type="submit" disabled={isChangingPassword} title="Save"><IconSave /></button>
+                          <button type="button" className="rounded-2xl border border-slate-300 p-3 text-slate-600" onClick={() => { setEditingUserId(null); setNewPasswordForEdit(""); setEmailForEdit(""); }} title="Cancel"><IconCancel /></button>
                         </form>
                       ) : (
                         <>
