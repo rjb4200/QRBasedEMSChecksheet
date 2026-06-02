@@ -114,7 +114,7 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
-      <section id="equipment-catalog-top" className="mx-auto max-w-6xl space-y-6">
+      <section id="equipment-catalog-top" className="mx-auto max-w-7xl space-y-6">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Admin</p>
           <h1 className="mt-2 text-4xl font-black">Equipment Catalog</h1>
