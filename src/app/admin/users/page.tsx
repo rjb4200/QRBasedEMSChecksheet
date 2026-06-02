@@ -294,7 +294,7 @@ export default function AdminUsersPage() {
                             <input className="h-4 w-4 accent-red-700" type="checkbox" checked={receivesDailyReportForEdit} onChange={(e) => setReceivesDailyReportForEdit(e.target.checked)} />
                             Daily report
                           </label>
-                          <button className="rounded-2xl border border-slate-300 p-3 text-slate-600" type="submit" disabled={isChangingPassword} title="Save"><IconSave /></button>
+                          <button className="rounded-2xl bg-red-700 p-3 text-white" type="submit" disabled={isChangingPassword} title="Save"><IconSave /></button>
                           <button type="button" className="rounded-2xl border border-slate-300 p-3 text-slate-600" onClick={() => { setEditingUserId(null); setNewPasswordForEdit(""); setEmailForEdit(""); }} title="Cancel"><IconCancel /></button>
                         </form>
                       ) : (
