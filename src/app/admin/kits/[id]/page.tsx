@@ -45,7 +45,7 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
                 <label className="grid gap-1 font-bold">Name<input className="rounded-2xl border border-slate-300 px-4 py-3 font-normal" defaultValue={kit.name} name="name" required /></label>
                 <label className="grid gap-1 font-bold">Description<textarea className="rounded-2xl border border-slate-300 px-4 py-3 font-normal" defaultValue={kit.description ?? ""} name="description" rows={3} /></label>
                 <label className="grid gap-1 font-bold">Sort order<input className="rounded-2xl border border-slate-300 px-4 py-3 font-normal" defaultValue={kit.sort_order ?? 0} name="sortOrder" type="number" /></label>
-                <label className="flex items-center gap-2 font-bold"><input defaultChecked={kit.active} name="active" type="checkbox" /> Active</label>
+                <label className="flex items-center gap-2 font-bold"><input defaultChecked={kit.active} name="active" type="checkbox" /> Available for unit assignment</label>
                 <SaveButton className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white">Save Kit</SaveButton>
               </form>
 
