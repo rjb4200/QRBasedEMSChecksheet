@@ -164,7 +164,7 @@ export default function AdminUsersPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-7xl">
           <p className="text-slate-600">Loading...</p>
         </div>
       </main>
@@ -173,7 +173,7 @@ export default function AdminUsersPage() {
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
-      <section className="mx-auto max-w-6xl space-y-6">
+      <section className="mx-auto max-w-7xl space-y-6">
         <div>
           <h1 className="text-4xl font-black">Admin Dashboard</h1>
         </div>
