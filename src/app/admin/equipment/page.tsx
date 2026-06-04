@@ -120,7 +120,8 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
           <p className="mt-2 text-slate-600">Reusable equipment definitions for unit compartments.</p>
         </div>
 
-        <form className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm sm:grid-cols-[1fr_220px_auto]">
+        <form className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm sm:grid-cols-[1fr_220px_auto_auto]">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-700 sm:col-span-4">Filter</p>
           <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={params.q} name="q" placeholder="Search equipment" />
           <select className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={params.category} name="category">
             <option value="">All categories</option>
@@ -133,10 +134,11 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
             </svg>
             Filter
           </button>
-          <Link className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-950 sm:col-span-3" href={`/admin/equipment?pageSize=${currentPageSizeParam}`}>Clear filters</Link>
+          <Link className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-950" href={`/admin/equipment?pageSize=${currentPageSizeParam}`}>Reset</Link>
         </form>
 
         <form action={saveEquipment} className="grid gap-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[1fr_180px_160px_140px_auto]">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-700 md:col-span-5">Add</p>
           <input className="rounded-2xl border border-slate-300 px-4 py-3" name="name" placeholder="Item name" required />
           <input className="rounded-2xl border border-slate-300 px-4 py-3" name="category" placeholder="Category" required />
           <select className="rounded-2xl border border-slate-300 px-4 py-3" name="inputType">

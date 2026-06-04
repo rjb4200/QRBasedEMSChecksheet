@@ -66,7 +66,7 @@ export default async function ArchiveDetailPage({ params }: { params: Promise<{ 
         ) : null}
         {restockingList.length > 0 ? (
           <section className="rounded-3xl border border-red-200 bg-white p-5 shadow-sm">
-            <p className="text-xs font-black uppercase text-red-700">Restocking List</p>
+            <p className="text-xs font-bold uppercase text-red-700">Restocking List</p>
             <div className="mt-3 space-y-3">
               {restockingList.map((group) => (
                 <div key={group.sourceId} className="rounded-2xl bg-red-50 px-4 py-3 text-red-950">

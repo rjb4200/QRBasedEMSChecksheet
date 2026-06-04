@@ -81,10 +81,12 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
             <p className="mt-2 text-3xl font-black text-slate-950">{totalExceptions}</p>
           </div>
         </section>
-        <div className="grid gap-4 lg:grid-cols-2">
-          {records.length === 0 ? <div className="rounded-3xl bg-white p-6 text-slate-600 shadow-sm">No daily ledger records were found for this date.</div> : null}
+        <div className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
+          <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-red-700">{selectedDate}</p>
+          <div className="grid gap-4 lg:grid-cols-2">
+          {records.length === 0 ? <div className="rounded-3xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm">No daily ledger records were found for this date.</div> : null}
           {records.map((record) => (
-            <article key={`${record.date}-${record.unitId}`} className="rounded-3xl bg-white p-5 shadow-sm">
+            <article key={`${record.date}-${record.unitId}`} className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700">{record.shiftName}</p>
@@ -106,7 +108,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                 {formatDuration(record.timeToCompleteSeconds) ? <MetadataField label="Duration" value={formatDuration(record.timeToCompleteSeconds)} /> : null}
                 {record.statusNote.trim() ? <MetadataField label="Snapshot" value={record.statusNote.trim()} /> : null}
               </div>
-              {record.restockingList.length > 0 ? <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-950"><p className="font-black">Restocking List</p>{record.restockingList.map((group) => <div key={group.sourceId} className="mt-2"><p className="font-bold">{group.sourceName}</p>{group.entries.map((entry) => <p key={`${group.sourceId}-${entry.itemId}`} className="ml-3">{entry.itemName} - {entry.detail}</p>)}</div>)}</div> : null}
+              {record.restockingList.length > 0 ? <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-950"><p className="text-xs font-bold uppercase tracking-[0.2em] text-red-700">Restocking List</p>{record.restockingList.map((group) => <div key={group.sourceId} className="mt-2"><p className="font-bold">{group.sourceName}</p>{group.entries.map((entry) => <p key={`${group.sourceId}-${entry.itemId}`} className="ml-3">{entry.itemName} - {entry.detail}</p>)}</div>)}</div> : null}
               {record.comments ? <div className="mt-4 whitespace-pre-wrap rounded-2xl bg-slate-100 p-3 text-sm text-slate-700"><p className="mb-1 font-black text-slate-950">Comments</p>{record.comments}</div> : null}
               {record.sectionComments.length > 0 ? (
                 <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
@@ -118,6 +120,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
               ) : null}
             </article>
           ))}
+        </div>
         </div>
         <form action="/admin/archives/export-package" className="flex flex-wrap items-center gap-3 rounded-3xl bg-white p-4 shadow-sm" method="get">
           <input type="hidden" name="unitId" value={params.unitId ?? ""} />

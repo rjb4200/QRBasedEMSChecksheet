@@ -97,6 +97,7 @@ export default async function SystemLogPage({ searchParams }: { searchParams: Pr
         </div>
 
         <form className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-6">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-700 md:col-span-6">Filter</p>
           <input className="rounded-2xl border border-slate-300 px-4 py-3 md:col-span-2" defaultValue={params.q ?? ""} name="q" placeholder="Search actor, target, action, message" />
           <select className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={params.area ?? ""} name="area">
             <option value="">All areas</option>

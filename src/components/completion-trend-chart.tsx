@@ -18,7 +18,7 @@ export default function CompletionTrendChart({ groups }: { groups: DailyRecordGr
 
   return (
     <div className="rounded-3xl bg-white p-4 shadow-sm">
-      <p className="text-sm font-black uppercase tracking-[0.1em] text-slate-600">Last 14 Days Check Completion</p>
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-700">Last 14 Days Check Completion</p>
       <div className="mt-3 flex items-end gap-1" style={{ height: maxHeight }}>
         {ordered.map((group) => {
           const pct = group.totalInServiceUnits > 0
