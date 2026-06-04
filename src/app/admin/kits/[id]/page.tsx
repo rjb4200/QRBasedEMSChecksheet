@@ -90,7 +90,7 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
                     <input name="groupId" type="hidden" value={group.id} />
                     <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.name} name="name" />
                     <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.sort_order ?? 0} name="sortOrder" type="number" />
-                    <button className="rounded-xl border border-slate-300 p-2" title="Save group" type="submit"><IconSave /></button>
+                    <button className="rounded-xl bg-red-700 p-2 text-white" title="Save group" type="submit"><IconSave /></button>
                   </form>
                   <form action={deleteKitGroup}>
                     <input name="kitId" type="hidden" value={id} />
@@ -140,7 +140,7 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
                     <option value="">Ungrouped</option>
                     {groups.map((group: any) => <option key={group.id} value={group.id}>{group.name}</option>)}
                   </select>
-                  <button className="rounded-xl border border-slate-300 p-2" title="Save item" type="submit"><IconSave /></button>
+                  <button className="rounded-xl bg-red-700 p-2 text-white" title="Save item" type="submit"><IconSave /></button>
                 </form>
                 <form action={deleteKitItem}>
                   <input name="kitId" type="hidden" value={id} />
