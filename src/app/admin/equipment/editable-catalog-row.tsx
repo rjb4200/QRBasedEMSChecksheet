@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { deleteEquipment, saveEquipment } from "./actions";
 import { IconEdit, IconTrash } from "@/components/icons";
+import { useDestroyEnabled } from "./destructive-toggle";
 
 function IconSave() {
   return (
@@ -55,6 +56,7 @@ export function EditableCatalogRow({ item }: { item: CatalogItem }) {
   const [editInputType, setEditInputType] = useState(item.input_type);
   const [editParLevel, setEditParLevel] = useState(item.default_par_level ?? "");
   const [showDelete, setShowDelete] = useState(false);
+  const destroyEnabled = useDestroyEnabled();
 
   const isQuantityType = editInputType === "quantity";
   const badges = item.usageBadges ?? [];
@@ -104,6 +106,8 @@ export function EditableCatalogRow({ item }: { item: CatalogItem }) {
           >
             <IconEdit />
           </button>
+          {destroyEnabled ? (
+            <>
           {showDelete ? (
             <form action={deleteEquipment} className="flex items-center gap-1">
               <input name="id" type="hidden" value={item.id} />
@@ -121,6 +125,8 @@ export function EditableCatalogRow({ item }: { item: CatalogItem }) {
               <IconTrash />
             </button>
           )}
+            </>
+          ) : null}
         </div>
       </div>
     );
@@ -179,6 +185,7 @@ export function EditableCatalogRow({ item }: { item: CatalogItem }) {
         >
           <IconCancel />
         </button>
+        {destroyEnabled ? (
         <button
           className="rounded-xl border border-red-200 bg-white px-3 py-2 text-red-700 hover:bg-red-50"
           title="Delete"
@@ -188,6 +195,7 @@ export function EditableCatalogRow({ item }: { item: CatalogItem }) {
         >
           <IconTrash />
         </button>
+        ) : null}
       </div>
     </form>
   );

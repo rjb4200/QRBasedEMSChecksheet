@@ -2,6 +2,7 @@ import Link from "next/link";
 import { saveEquipment } from "./actions";
 import { EquipmentBackToTop, EquipmentPageSizeSelector } from "./equipment-catalog-controls";
 import { EditableCatalogRow } from "./editable-catalog-row";
+import { DestructiveActionsToggle } from "./destructive-toggle";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { SaveButton } from "@/components/save-feedback";
 
@@ -160,12 +161,14 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
           </div>
         </div>
 
+        <DestructiveActionsToggle>
         <div className="grid gap-3">
           {visibleCount === 0 ? <div className="rounded-3xl bg-white p-6 text-slate-600 shadow-sm">No results match these filters.</div> : null}
           {catalogItems.map((item) => (
             <EditableCatalogRow key={item.id} item={item} />
           ))}
         </div>
+        </DestructiveActionsToggle>
         <EquipmentBackToTop />
       </section>
     </main>
