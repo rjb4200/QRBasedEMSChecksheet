@@ -64,11 +64,24 @@ function unitCard(unit: DailyEmailReport["allUnits"][number], exceptionCount: nu
 </div>`;
 }
 
-function completeCard(unitName: string) {
+function completeCard(unitName: string, generalComment: string | null, sectionComments: string[]) {
+  let commentsHtml = "";
+  const hasComments = generalComment || sectionComments.length > 0;
+  if (hasComments) {
+    commentsHtml = '<div style="border-top:1px solid #bbf7d0;padding-top:8px;margin-top:8px">';
+    if (generalComment) {
+      commentsHtml += `<p style="margin:2px 0;font-size:14px"><strong>General:</strong> ${generalComment}</p>`;
+    }
+    for (const sc of sectionComments) {
+      commentsHtml += `<p style="margin:2px 0;font-size:14px">${sc}</p>`;
+    }
+    commentsHtml += "</div>";
+  }
   return `
 <div style="border:1px solid #bbf7d0;border-radius:12px;padding:12px 16px;margin-bottom:16px;background:#f0fdf4">
   <span style="font-size:16px;font-weight:bold;color:#166534">${unitName} ✓</span>
-  <span style="font-size:13px;color:#475569;margin-left:8px">Complete — no exceptions</span>
+  <span style="font-size:13px;color:#475569;margin-left:8px">Complete</span>
+  ${commentsHtml}
 </div>`;
 }
 
@@ -80,14 +93,14 @@ export function buildDailyReportEmail(report: DailyEmailReport) {
 
   for (const unit of report.allUnits) {
     const excCount = report.exceptionCounts[unit.unitName] ?? 0;
-    if (unit.completionPercentage >= 100) {
-      completeCards.push(completeCard(unit.unitName));
-      continue;
-    }
     const general = report.generalComments.find((c) => c.unitName === unit.unitName);
     const sections = report.sectionComments
       .filter((sc) => sc.unitName === unit.unitName)
       .map((sc) => `<strong>${sc.sourceName}:</strong> ${sc.comment}`);
+    if (unit.completionPercentage >= 100) {
+      completeCards.push(completeCard(unit.unitName, general?.comment ?? null, sections));
+      continue;
+    }
     incompleteCards.push(unitCard(unit, excCount, general?.comment ?? null, sections));
   }
 
