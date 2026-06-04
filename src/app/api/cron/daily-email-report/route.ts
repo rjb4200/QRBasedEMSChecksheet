@@ -88,7 +88,12 @@ export async function POST(request: NextRequest) {
     }
 
     const force = request.nextUrl.searchParams.get("force") === "true";
+    const testEmail = request.nextUrl.searchParams.get("test");
     const report = await getDailyEmailReport(requestedReportDate);
+
+    if (testEmail) {
+      report.recipients = [{ id: "test", username: "Test", email: testEmail }];
+    }
 
     if (force) {
       await logSystemEvent({

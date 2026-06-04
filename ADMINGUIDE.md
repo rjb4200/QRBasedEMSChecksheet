@@ -272,24 +272,38 @@ The admin side exists so supervisors can quickly identify:
 
 ## Daily Email Reports
 
-The system can send automatic daily reports through Resend.
+The system sends automatic daily reports through Resend to admin users with report delivery enabled.
 
-Reports can include:
+Each email includes:
 
-- unchecked units
-- submitted exceptions
-- PDF fleet packet attachments
-
-Reports are sent to admin users with:
-
-- a valid email address
-- daily report delivery enabled
+- a summary line with the date, unit count, and total exceptions
+- per-unit cards showing completion percentage, progress bar, exception count, and comments
+- general unit comments alongside section comments
+- compact green cards for fully complete units with no exceptions
+- a PDF fleet packet attachment
 
 The cron endpoint is:
 
 ```text
 /api/cron/daily-email-report
 ```
+
+### Testing the Daily Report
+
+You can send a test email to a single address without triggering the full recipient list:
+
+```bash
+curl -X POST "https://your-app.vercel.app/api/cron/daily-email-report?test=you@example.com&force=true" \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+```
+
+| Parameter | Purpose |
+|---|---|
+| `?test=email` | Override recipients — sends to only this address |
+| `?force=true` | Skip the send-hour check and already-sent gate |
+| `?date=YYYY-MM-DD` | Generate report for a specific date instead of today |
+
+Without `?test=`, the report sends to all admin users who have daily report delivery enabled. The `?force=true` parameter bypasses the configured send hour and idempotency check so you can test repeatedly.
 
 ## Printing
 
