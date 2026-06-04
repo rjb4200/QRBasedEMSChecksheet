@@ -3,6 +3,7 @@ import { addKitItem, createKitGroup, deleteKit, deleteKitGroup, deleteKitItem, u
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { IconEdit, IconSave, IconTrash } from "@/components/icons";
 import { DeleteConfirmButton } from "@/components/delete-confirm-button";
+import { SubmitButton } from "@/components/submit-button";
 import { groupItems } from "@/lib/item-groups";
 
 function equipmentName(item: any) {
@@ -47,7 +48,7 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
                 <label className="grid gap-1 font-bold">Description<textarea className="rounded-2xl border border-slate-300 px-4 py-3 font-normal" defaultValue={kit.description ?? ""} name="description" rows={3} /></label>
                 <label className="grid gap-1 font-bold">Sort order<input className="rounded-2xl border border-slate-300 px-4 py-3 font-normal" defaultValue={kit.sort_order ?? 0} name="sortOrder" type="number" /></label>
                 <label className="flex items-center gap-2 font-bold"><input defaultChecked={kit.active} name="active" type="checkbox" /> Available for unit assignment</label>
-                <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white inline-flex items-center gap-2" type="submit"><IconSave /> Save Kit</button>
+                <SubmitButton className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white inline-flex items-center gap-2" title="Save kit"><IconSave /> Save Kit</SubmitButton>
               </form>
 
               <form action={uploadKitPhoto} className="grid gap-3 rounded-3xl bg-white p-5 shadow-sm">
@@ -91,7 +92,7 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
                     <input name="groupId" type="hidden" value={group.id} />
                     <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.name} name="name" />
                     <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.sort_order ?? 0} name="sortOrder" type="number" />
-                    <button className="rounded-xl bg-red-700 p-2 text-white" title="Save group" type="submit"><IconSave /></button>
+                    <SubmitButton className="rounded-xl bg-red-700 p-2 text-white" title="Save group"><IconSave /></SubmitButton>
                   </form>
                   <DeleteConfirmButton
                     formAction={deleteKitGroup}
@@ -140,7 +141,7 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
                     <option value="">Ungrouped</option>
                     {groups.map((group: any) => <option key={group.id} value={group.id}>{group.name}</option>)}
                   </select>
-                  <button className="rounded-xl bg-red-700 p-2 text-white" title="Save item" type="submit"><IconSave /></button>
+                  <SubmitButton className="rounded-xl bg-red-700 p-2 text-white" title="Save item"><IconSave /></SubmitButton>
                 </form>
                 <DeleteConfirmButton
                   formAction={deleteKitItem}

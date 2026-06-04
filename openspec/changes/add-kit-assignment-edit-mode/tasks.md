@@ -15,7 +15,7 @@
 - [x] 3.2 Prevent duplicate assignments during apply
 - [x] 4.1 Run `npm run typecheck`
 - [x] 4.2 Run `npm run build`
-- [ ] 4.3 Manual test: edit mode toggle, checkbox staging, pending summary
-- [ ] 4.4 Manual test: apply with confirmation saves changes
-- [ ] 4.5 Manual test: cancel discards changes
-- [ ] 4.6 Manual test: error handling keeps edit mode open
+- [x] 4.3 Manual test: edit mode toggle, checkbox staging, pending summary
+- [x] 4.4 Manual test: apply with confirmation saves changes
+- [x] 4.5 Manual test: cancel discards changes
+- [x] 4.6 Manual test: error handling keeps edit mode open
