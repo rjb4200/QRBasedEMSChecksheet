@@ -44,7 +44,7 @@ export default async function ArchiveDetailPage({ params }: { params: Promise<{ 
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
-      <section className="mx-auto max-w-5xl space-y-6">
+      <section className="mx-auto max-w-7xl space-y-6">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Archive</p>
           <h1 className="mt-2 text-4xl font-black">{unit?.name} | {archive?.shift_date} {archive?.shift_period}</h1>

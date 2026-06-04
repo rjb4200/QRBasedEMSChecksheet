@@ -46,7 +46,6 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
       <section className="mx-auto max-w-7xl space-y-6">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Admin</p>
           <h1 className="mt-2 text-4xl font-black">Daily Readiness Records</h1>
           <p className="mt-2 max-w-3xl text-slate-600">Review the selected operational date as the historical ledger for unit readiness.</p>
         </div>

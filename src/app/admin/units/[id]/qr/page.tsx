@@ -151,7 +151,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
           }
         `}</style>
       )}
-      <section className="mx-auto max-w-6xl space-y-6 print:max-w-none print:space-y-0">
+      <section className="mx-auto max-w-7xl space-y-6 print:max-w-none print:space-y-0">
         <div className="flex items-end justify-between gap-4 print:hidden">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">QR Codes</p>

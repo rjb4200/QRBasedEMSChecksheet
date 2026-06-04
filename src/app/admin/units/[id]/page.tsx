@@ -21,7 +21,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
-      <section className="mx-auto max-w-6xl space-y-6">
+      <section className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Unit Builder</p>

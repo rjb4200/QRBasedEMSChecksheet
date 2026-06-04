@@ -14,7 +14,7 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
 
   return (
     <main className="min-h-screen bg-slate-200 p-4 text-slate-950 print:bg-white print:p-0">
-      <div className="mx-auto mb-4 flex max-w-5xl flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm print:hidden">
+      <div className="mx-auto mb-4 flex max-w-7xl flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm print:hidden">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Daily Check Sheets</p>
           <h1 className="text-2xl font-black">{document.date}</h1>
@@ -25,7 +25,7 @@ export default async function PrintChecksheetsPage({ searchParams }: { searchPar
         </div>
       </div>
 
-      <div className="mx-auto max-w-5xl space-y-4 print:max-w-none print:space-y-0">
+      <div className="mx-auto max-w-7xl space-y-4 print:max-w-none print:space-y-0">
         {document.units.map((unit) => (
           <table key={unit.id} className="unit-print-page block w-full border-collapse bg-white p-6 shadow-sm print:table print:p-0 print:shadow-none">
             <thead className="block print:table-header-group">

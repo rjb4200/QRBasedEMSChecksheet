@@ -30,7 +30,7 @@ export default async function PrintDailyRecordPage({ searchParams }: { searchPar
 
   return (
     <main className="min-h-screen bg-slate-200 p-4 text-slate-950 print:bg-white print:p-0">
-      <div className="mx-auto mb-4 flex max-w-6xl flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm print:hidden">
+      <div className="mx-auto mb-4 flex max-w-7xl flex-wrap items-center justify-between gap-3 rounded-3xl bg-white p-4 shadow-sm print:hidden">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Daily Readiness Record</p>
           <h1 className="text-2xl font-black">{date}</h1>
@@ -41,7 +41,7 @@ export default async function PrintDailyRecordPage({ searchParams }: { searchPar
         </div>
       </div>
 
-      <section className="mx-auto max-w-6xl bg-white p-6 shadow-sm print:max-w-none print:p-0 print:shadow-none">
+      <section className="mx-auto max-w-7xl bg-white p-6 shadow-sm print:max-w-none print:p-0 print:shadow-none">
         <header className="border-b-2 border-slate-950 pb-3 print:pb-2">
           <div className="flex items-end justify-between gap-4">
             <div className="flex min-w-0 items-start gap-3">
