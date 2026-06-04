@@ -138,3 +138,11 @@ Admin interface action buttons for edit, delete, save, cancel, QR codes, and fil
 #### Scenario: Row-level actions use icons
 - **WHEN** an admin page renders repeated row-level action buttons
 - **THEN** edit buttons SHALL use `IconEdit`, delete buttons SHALL use `IconTrash`, and save buttons SHALL use `IconSave` with red background styling
+
+### Requirement: Fleet Panel uses reorganized admin navigation
+The admin navigation SHALL prioritize operational pages at the top level and move setup pages into a hamburger menu, without changing the Fleet Panel page behavior.
+
+#### Scenario: Fleet Panel navigation structure
+- **WHEN** an admin views the Fleet Panel
+- **THEN** the Fleet, Records, and System Log links SHALL be visible at the top level
+- **AND** the Units, Kits, Equipment, and Users links SHALL be accessible from a hamburger menu
