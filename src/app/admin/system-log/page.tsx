@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { IconCancel, IconFilter, IconReset } from "@/components/icons";
 import { formatLogSummary } from "@/lib/log-summary";
+import { getDatabaseUsage } from "@/lib/database-usage";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +70,8 @@ export default async function SystemLogPage({ searchParams }: { searchParams: Pr
   const q = sanitizedSearch(params.q);
   const supabase = createAdminClient();
 
+  const dbUsage = await getDatabaseUsage();
+
   let query = supabase
     .from("system_logs")
     .select("id, created_at, actor_type, actor_name, action, area, target_type, target_id, target_name, result, message, before_data, after_data, metadata", { count: "exact" })
@@ -94,6 +97,19 @@ export default async function SystemLogPage({ searchParams }: { searchParams: Pr
         <div>
           <h1 className="text-4xl font-black">System Log</h1>
           <p className="mt-2 max-w-3xl text-slate-600">Review administrative, crew, and scheduled system activity from the last 3 months.</p>
+        </div>
+
+        <div className="rounded-3xl bg-white p-4 shadow-sm">
+          <p className="font-semibold text-slate-700">
+            Database usage:{' '}
+            <span className={dbUsage.percentage >= 95 ? "text-red-700 font-black" : dbUsage.percentage >= 90 ? "text-orange-600 font-black" : dbUsage.percentage >= 80 ? "text-amber-600 font-black" : ""}>
+              {dbUsage.percentage}% used
+            </span>
+            {' — '}{dbUsage.sizeMB} MB of {dbUsage.limitMB} MB
+          </p>
+          <p className="mt-1 text-sm text-slate-500">
+            Last checked: {new Date().toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+          </p>
         </div>
 
         <form className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-6">
