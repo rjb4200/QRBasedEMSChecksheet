@@ -75,7 +75,7 @@ export function AdminNav() {
               ☰ Admin
             </button>
             {menuOpen && (
-              <div ref={menuRef} className="absolute right-0 top-full mt-1 flex w-40 flex-col gap-1 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg z-10">
+              <div ref={menuRef} className="absolute left-0 top-full mt-1 flex w-40 flex-col gap-1 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg z-10 sm:left-auto sm:right-0">
                 {ADMIN_LINKS.map(({ href, label }) => (
                   <Link
                     key={href}
