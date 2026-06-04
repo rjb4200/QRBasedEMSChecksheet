@@ -113,3 +113,11 @@ The daily email report SHALL format unit status information as per-unit HTML car
 - **WHEN** the daily email is generated
 - **THEN** the email SHALL include a summary line with the date, unit count, and exception totals
 - **AND** the app SHALL NOT require `N8N_BASE_URL`
+
+### Requirement: Admin users page includes a test email button
+The admin users page SHALL include a "Send Test Email" button and a dropdown to select a recipient admin user for testing the daily email report.
+
+#### Scenario: Admin selects a user and sends test email
+- **WHEN** an admin selects a user from the dropdown and clicks "Send Test Email"
+- **THEN** the daily email report SHALL be generated and sent to the selected user's email
+- **AND** a success or error message SHALL be displayed
