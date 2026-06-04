@@ -72,7 +72,7 @@ export function AdminNav() {
               onClick={() => setMenuOpen((v) => !v)}
               type="button"
             >
-              ☰ Admin
+              ☰
             </button>
             {menuOpen && (
               <div ref={menuRef} className="absolute left-0 top-full mt-1 flex w-40 flex-col gap-1 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg z-10 sm:left-auto sm:right-0">
