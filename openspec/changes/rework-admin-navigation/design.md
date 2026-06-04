@@ -5,7 +5,7 @@ The admin layout currently renders a flat list of nav links inline. This was rew
 ## Goals / Non-Goals
 
 **Goals:**
-- Show Fleet, Records, Needs Follow-up, System Log as top-level links.
+- Show Fleet, Records, System Log as top-level links.
 - Move Units, Kits, Equipment, Users into a hamburger/Admin dropdown.
 - Remove the QR Codes top-level link.
 - Active-page styling for both top-level and dropdown links.

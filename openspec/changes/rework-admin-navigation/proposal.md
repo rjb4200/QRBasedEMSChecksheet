@@ -4,7 +4,7 @@ The admin navigation bar is becoming crowded with equally-weighted links. The up
 
 ## What Changes
 
-- Keep Fleet, Records, Needs Follow-up, and System Log as top-level navigation items.
+- Keep Fleet, Records, and System Log as top-level navigation items.
 - Move Units, Kits, Equipment, and Users into a hamburger/Admin dropdown menu.
 - Remove the top-level QR Codes navigation link.
 - Preserve existing routes, page behavior, and active/current-page styling.

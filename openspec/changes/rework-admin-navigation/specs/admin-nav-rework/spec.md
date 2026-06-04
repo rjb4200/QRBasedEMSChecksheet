@@ -1,11 +1,11 @@
 ## ADDED Requirements
 
 ### Requirement: Top-level navigation shows operational pages
-The admin navigation SHALL show Fleet, Records, Needs Follow-up, and System Log as top-level links.
+The admin navigation SHALL show Fleet, Records, and System Log as top-level links.
 
 #### Scenario: Top-level nav visible
 - **WHEN** an admin opens any admin page
-- **THEN** Fleet, Records, Needs Follow-up, and System Log SHALL be visible as top-level navigation links
+- **THEN** Fleet, Records, and System Log SHALL be visible as top-level navigation links
 
 ### Requirement: Setup pages are in a hamburger menu
 The admin navigation SHALL place Units, Kits, Equipment, and Users inside a hamburger/Admin dropdown menu.
