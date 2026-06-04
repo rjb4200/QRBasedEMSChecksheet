@@ -11,7 +11,10 @@ function progressColor(percentage: number) {
   return "#b91c1c";
 }
 
-function statusBadge(unit: DailyEmailReport["uncheckedUnits"][number]) {
+function statusBadge(unit: DailyEmailReport["allUnits"][number]) {
+  if (unit.completionPercentage >= 100) {
+    return `<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:bold">Complete</span>`;
+  }
   if (unit.completionPercentage >= 85) {
     return `<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:bold">Near Complete</span>`;
   }
@@ -21,7 +24,7 @@ function statusBadge(unit: DailyEmailReport["uncheckedUnits"][number]) {
   return `<span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:bold">Not Started</span>`;
 }
 
-function unitCard(unit: DailyEmailReport["uncheckedUnits"][number], exceptionCount: number, generalComment: string | null, sectionComments: string[]) {
+function unitCard(unit: DailyEmailReport["allUnits"][number], exceptionCount: number, generalComment: string | null, sectionComments: string[]) {
   const color = progressColor(unit.completionPercentage);
   let commentsHtml = "";
   const hasComments = generalComment || sectionComments.length > 0;
@@ -71,16 +74,16 @@ function completeCard(unitName: string) {
 
 export function buildDailyReportEmail(report: DailyEmailReport) {
   const generated = new Date(report.generatedAt).toLocaleString("en-US", { timeZone: process.env.DAILY_REPORT_TIMEZONE || "America/New_York" });
-  const totalUnits = report.uncheckedUnits.length + report.recipients.length; // estimate from report scope
 
-  // Separate complete vs incomplete from uncheckedUnits — actually uncheckedUnits only has <100% units
-  // Need all units for complete card — but we don't track all units in the report data
-  // Use uncheckedUnits for incomplete cards, exception counts for units with exceptions
+  const completeCards: string[] = [];
   const incompleteCards: string[] = [];
-  const completeUnitNames = new Set<string>();
 
-  for (const unit of report.uncheckedUnits) {
+  for (const unit of report.allUnits) {
     const excCount = report.exceptionCounts[unit.unitName] ?? 0;
+    if (unit.completionPercentage >= 100) {
+      completeCards.push(completeCard(unit.unitName));
+      continue;
+    }
     const general = report.generalComments.find((c) => c.unitName === unit.unitName);
     const sections = report.sectionComments
       .filter((sc) => sc.unitName === unit.unitName)
@@ -88,20 +91,14 @@ export function buildDailyReportEmail(report: DailyEmailReport) {
     incompleteCards.push(unitCard(unit, excCount, general?.comment ?? null, sections));
   }
 
-  // Exception-only units (units with exceptions but complete checkoff)
-  const exceptionOnlyUnits = new Set(Object.keys(report.exceptionCounts));
-  for (const unit of report.uncheckedUnits) {
-    exceptionOnlyUnits.delete(unit.unitName);
-  }
-
-  // Build summary
   const exceptionTotal = Object.values(report.exceptionCounts).reduce((sum, c) => sum + c, 0);
-  const summaryLine = `${report.reportDate} — ${report.uncheckedUnits.length} units with open checks, ${exceptionTotal} total exceptions`;
+  const openCount = report.allUnits.filter((u) => u.completionPercentage < 100).length;
 
   const html = [
     `<h1>Daily EMS Checksheet Report</h1>`,
-    `<p style="color:#475569;font-size:14px"><strong>${report.reportDate}</strong> — ${report.uncheckedUnits.length} units with open checks, ${exceptionTotal} total exceptions<br/>Generated: ${generated}</p>`,
+    `<p style="color:#475569;font-size:14px"><strong>${report.reportDate}</strong> — ${report.allUnits.length} units, ${openCount} open, ${exceptionTotal} exceptions<br/>Generated: ${generated}</p>`,
     ...incompleteCards,
+    ...completeCards,
     `<p style="margin-top:24px"><strong>Attached:</strong> daily-checksheets-${report.reportDate}.pdf</p>`,
   ].join("\n");
 
@@ -110,15 +107,15 @@ export function buildDailyReportEmail(report: DailyEmailReport) {
     `Date: ${report.reportDate}`,
     `Generated: ${generated}`,
     "",
-    summaryLine,
-    ...(incompleteCards.length > 0
-      ? ["", "Units:"]
-      : []),
-    ...report.uncheckedUnits.flatMap((unit) => {
+    `${report.allUnits.length} units, ${openCount} open, ${exceptionTotal} exceptions`,
+    "",
+    "Units:",
+    ...report.allUnits.flatMap((unit) => {
       const excCount = report.exceptionCounts[unit.unitName] ?? 0;
       const general = report.generalComments.find((c) => c.unitName === unit.unitName);
+      const prefix = unit.completionPercentage >= 100 ? "✓" : " ";
       const lines = [
-        `  ${unit.unitName}: ${unit.completedCompartments}/${unit.totalCompartments} (${unit.completionPercentage}%) - ${excCount} exceptions`,
+        `${prefix} ${unit.unitName}: ${unit.completedCompartments}/${unit.totalCompartments} (${unit.completionPercentage}%) - ${excCount} exceptions`,
       ];
       if (general) lines.push(`    General: ${general.comment}`);
       for (const sc of report.sectionComments.filter((c) => c.unitName === unit.unitName)) {

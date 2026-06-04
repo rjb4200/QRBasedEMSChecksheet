@@ -8,17 +8,11 @@ export type DailyReportRecipient = {
   email: string;
 };
 
-export type DailyReportUncheckedUnit = {
+export type DailyReportUnit = {
   unitName: string;
   completedCompartments: number;
   totalCompartments: number;
   completionPercentage: number;
-};
-
-export type DailyReportSectionComment = {
-  unitName: string;
-  sourceName: string;
-  comment: string;
 };
 
 export type DailyReportGeneralComment = {
@@ -29,11 +23,17 @@ export type DailyReportGeneralComment = {
 export type DailyEmailReport = {
   reportDate: string;
   generatedAt: string;
-  uncheckedUnits: DailyReportUncheckedUnit[];
+  allUnits: DailyReportUnit[];
   exceptionCounts: Record<string, number>;
   generalComments: DailyReportGeneralComment[];
   sectionComments: DailyReportSectionComment[];
   recipients: DailyReportRecipient[];
+};
+
+export type DailyReportSectionComment = {
+  unitName: string;
+  sourceName: string;
+  comment: string;
 };
 
 type UnitRow = {
@@ -77,7 +77,7 @@ export async function getDailyReportRecipients(): Promise<DailyReportRecipient[]
   }));
 }
 
-export async function getUncheckedUnits(reportDate: string): Promise<DailyReportUncheckedUnit[]> {
+export async function getAllUnits(reportDate: string): Promise<DailyReportUnit[]> {
   const supabase = createAdminClient();
   const [{ data: units, error: unitsError }, { data: checks, error: checksError }, { data: crews, error: crewsError }] = await Promise.all([
     supabase
@@ -110,12 +110,12 @@ export async function getUncheckedUnits(reportDate: string): Promise<DailyReport
     const completedCompartments = checkRows.filter((check) => check.unit_id === unit.id && check.status === "completed").length + (crewMap.get(unit.id) ? 1 : 0);
     const completionPercentage = totalCompartments === 0 ? 0 : Math.round((completedCompartments / totalCompartments) * 10000) / 100;
     return { unitName: unit.name, completedCompartments, totalCompartments, completionPercentage };
-  }).filter((unit) => unit.totalCompartments > 0 && unit.completionPercentage < 100);
+  }).filter((unit) => unit.totalCompartments > 0);
 }
 
 export async function getDailyEmailReport(reportDate = getDailyReportDate()): Promise<DailyEmailReport> {
-  const [uncheckedUnits, exceptions, recipients, sectionCommentsRaw, generalCommentsRaw] = await Promise.all([
-    getUncheckedUnits(reportDate),
+  const [allUnits, exceptions, recipients, sectionCommentsRaw, generalCommentsRaw] = await Promise.all([
+    getAllUnits(reportDate),
     getCheckoffDiscrepanciesForRange(reportDate, reportDate),
     getDailyReportRecipients(),
     getSectionCommentsForDate(reportDate),
@@ -130,7 +130,7 @@ export async function getDailyEmailReport(reportDate = getDailyReportDate()): Pr
   return {
     reportDate,
     generatedAt: new Date().toISOString(),
-    uncheckedUnits,
+    allUnits,
     exceptionCounts,
     generalComments: generalCommentsRaw,
     sectionComments: sectionCommentsRaw,

@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
       result: "success",
       afterData: {
         recipient_count: report.recipients.length,
-        unchecked_unit_count: report.uncheckedUnits.length,
+        unchecked_unit_count: report.allUnits.length,
         exception_count: Object.values(report.exceptionCounts).reduce((sum, c) => sum + c, 0),
         resend_message_id: sendResult.data?.id ?? null,
       },
@@ -180,7 +180,7 @@ export async function POST(request: NextRequest) {
       status: "sent",
       reportDate: report.reportDate,
       recipientCount: report.recipients.length,
-      uncheckedUnitCount: report.uncheckedUnits.length,
+      uncheckedUnitCount: report.allUnits.length,
       exceptionCount: Object.values(report.exceptionCounts).reduce((sum, c) => sum + c, 0),
       resendMessageId: sendResult.data?.id,
     });
