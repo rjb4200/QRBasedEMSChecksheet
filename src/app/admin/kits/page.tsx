@@ -3,14 +3,7 @@ import { copyKit, createKit, createKitFromCompartment, deleteKit } from "./actio
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { IconEdit, IconTrash } from "@/components/icons";
 import { DeleteConfirmButton } from "@/components/delete-confirm-button";
-
-function unitNames(assignments: any[] | null | undefined) {
-  const names = (assignments ?? []).map((assignment) => {
-    const unit = Array.isArray(assignment.units) ? assignment.units[0] : assignment.units;
-    return unit;
-  }).filter((unit) => unit?.deleted_at == null).map((unit) => unit.name).filter(Boolean);
-  return names.length === 0 ? "Not assigned" : names.join(", ");
-}
+import { KitAssignmentEditor } from "./kit-assignment-editor";
 
 function activeAssignmentCount(assignments: any[] | null | undefined) {
   return (assignments ?? []).filter((assignment) => {
@@ -21,13 +14,14 @@ function activeAssignmentCount(assignments: any[] | null | undefined) {
 
 export default async function AdminKitsPage() {
   const supabase = createAdminClient();
-  const [{ data: kits }, { data: sourceCompartments }] = await Promise.all([
+  const [{ data: kits }, { data: sourceCompartments }, { data: allUnits }] = await Promise.all([
     supabase
       .from("kits")
       .select("id, name, description, sort_order, active, unit_kits(id, units(name, deleted_at)), kit_items(id)")
       .order("sort_order")
       .order("name"),
     supabase.from("unit_compartments").select("id, name, units(name)").order("name"),
+    supabase.from("units").select("id, name").is("deleted_at", null).order("name"),
   ]);
 
   return (
@@ -77,7 +71,11 @@ export default async function AdminKitsPage() {
                   <span className={`rounded-full px-3 py-1 text-xs font-black ${kit.active ? "bg-green-100 text-green-800" : "bg-slate-200 text-slate-700"}`}>{kit.active ? "Active" : "Inactive"}</span>
                 </div>
                 <p className="mt-3 text-sm font-bold">{kit.kit_items?.length ?? 0} items</p>
-                <p className="mt-1 text-sm text-slate-600">Attached to {activeAssignmentCount(assignments)} unit{activeAssignmentCount(assignments) !== 1 ? "s" : ""}: {unitNames(assignments)}</p>
+                <KitAssignmentEditor
+                  kitId={kit.id}
+                  assignments={(assignments ?? []).map((a: any) => ({ unitKitId: a.id, unitId: Array.isArray(a.units) ? a.units[0]?.id : a.units?.id, unitName: Array.isArray(a.units) ? a.units[0]?.name : a.units?.name })).filter((a: any) => a.unitId)}
+                  allUnits={(allUnits ?? []).map((u: any) => ({ id: u.id, name: u.name }))}
+                />
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link className="rounded-2xl border border-slate-300 p-3 text-slate-600" href={`/admin/kits/${kit.id}`} title={`Edit ${kit.name}`}>
                     <IconEdit />
