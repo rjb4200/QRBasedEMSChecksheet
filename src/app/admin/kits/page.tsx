@@ -2,6 +2,7 @@ import Link from "next/link";
 import { copyKit, createKit, createKitFromCompartment, deleteKit } from "./actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { IconEdit, IconTrash } from "@/components/icons";
+import { DeleteConfirmButton } from "@/components/delete-confirm-button";
 
 function unitNames(assignments: any[] | null | undefined) {
   const names = (assignments ?? []).map((assignment) => {
@@ -80,12 +81,11 @@ export default async function AdminKitsPage() {
                   <Link className="rounded-2xl border border-slate-300 p-3 text-slate-600" href={`/admin/kits/${kit.id}`} title={`Edit ${kit.name}`}>
                     <IconEdit />
                   </Link>
-                  <form action={deleteKit}>
-                    <input name="id" type="hidden" value={kit.id} />
-                    <button className="rounded-2xl border border-red-200 p-3 text-red-700 disabled:opacity-50" disabled={activeAssignmentCount(assignments) > 0} title={`Delete ${kit.name}`} type="submit">
-                      <IconTrash />
-                    </button>
-                  </form>
+                  <DeleteConfirmButton
+                    disabled={activeAssignmentCount(assignments) > 0}
+                    formAction={deleteKit}
+                    hiddenInputs={[{ name: "id", value: kit.id }]}
+                  />
                 </div>
                 <form action={copyKit} className="mt-4 grid gap-2 rounded-2xl bg-slate-100 p-3">
                   <input name="kitId" type="hidden" value={kit.id} />

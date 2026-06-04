@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server-admin";
-import { IconCancel, IconFilter } from "@/components/icons";
+import { IconCancel, IconFilter, IconReset } from "@/components/icons";
 import { formatLogSummary } from "@/lib/log-summary";
 
 export const dynamic = "force-dynamic";
@@ -111,7 +111,7 @@ export default async function SystemLogPage({ searchParams }: { searchParams: Pr
           <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={params.to ?? ""} name="to" type="date" />
           <div className="flex gap-2 md:col-span-6">
             <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white inline-flex items-center gap-2" type="submit"><IconFilter /> Filter</button>
-            <Link className="rounded-2xl border border-slate-300 px-5 py-3 font-bold text-slate-950 inline-flex items-center gap-2" href="/admin/system-log"><IconCancel /> Reset</Link>
+            <Link className="rounded-2xl border border-slate-300 px-5 py-3 font-bold text-slate-950 inline-flex items-center gap-2" href="/admin/system-log"><IconReset /> Reset</Link>
           </div>
         </form>
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { addKitItem, createKitGroup, deleteKit, deleteKitGroup, deleteKitItem, updateKit, updateKitGroup, updateKitItem, uploadKitPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { IconEdit, IconSave, IconTrash } from "@/components/icons";
+import { DeleteConfirmButton } from "@/components/delete-confirm-button";
 import { groupItems } from "@/lib/item-groups";
 
 function equipmentName(item: any) {
@@ -92,11 +93,10 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
                     <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.sort_order ?? 0} name="sortOrder" type="number" />
                     <button className="rounded-xl bg-red-700 p-2 text-white" title="Save group" type="submit"><IconSave /></button>
                   </form>
-                  <form action={deleteKitGroup}>
-                    <input name="kitId" type="hidden" value={id} />
-                    <input name="groupId" type="hidden" value={group.id} />
-                    <button className="rounded-xl border border-red-200 p-2 text-red-700" title="Delete group" type="submit"><IconTrash /></button>
-                  </form>
+                  <DeleteConfirmButton
+                    formAction={deleteKitGroup}
+                    hiddenInputs={[{ name: "kitId", value: id }, { name: "groupId", value: group.id }]}
+                  />
                 </div>
               ))}
             </div>
@@ -142,11 +142,10 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
                   </select>
                   <button className="rounded-xl bg-red-700 p-2 text-white" title="Save item" type="submit"><IconSave /></button>
                 </form>
-                <form action={deleteKitItem}>
-                  <input name="kitId" type="hidden" value={id} />
-                  <input name="itemId" type="hidden" value={item.id} />
-                  <button className="rounded-xl border border-red-200 p-2 text-red-700" title="Delete item" type="submit"><IconTrash /></button>
-                </form>
+                <DeleteConfirmButton
+                  formAction={deleteKitItem}
+                  hiddenInputs={[{ name: "kitId", value: id }, { name: "itemId", value: item.id }]}
+                />
               </li>
             ))}
                 </ul>

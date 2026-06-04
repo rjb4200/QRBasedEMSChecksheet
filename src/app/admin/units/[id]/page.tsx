@@ -2,6 +2,7 @@ import Link from "next/link";
 import { addUnitCompartment, addUnitItem, assignKitToUnit, cloneKitToUnitCompartment, createCompartmentGroup, deleteCompartmentGroup, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, removeKitFromUnit, toggleUnitStatus, updateCompartmentGroup, updateCompartmentQrLocationNote, updateUnitItemGroup, updateUnitKitQrLocationNote, updateUnitMonthlyCheckDay, uploadCompartmentPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { IconEdit, IconSave, IconTrash } from "@/components/icons";
+import { DeleteConfirmButton } from "@/components/delete-confirm-button";
 import { groupItems } from "@/lib/item-groups";
 import { QrSaveButton } from "./qr-save-button";
 
@@ -108,11 +109,10 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                       </div>
                       <div className="flex flex-wrap gap-2">
                         <Link className="rounded-2xl border border-slate-300 p-3 text-slate-600" href={`/admin/kits/${kit?.id}`} title="Edit kit"><IconEdit /></Link>
-                        <form action={removeKitFromUnit}>
-                          <input name="unitId" type="hidden" value={id} />
-                          <input name="unitKitId" type="hidden" value={assignment.id} />
-                          <button className="rounded-2xl border border-red-200 p-3 text-red-700" title="Remove from unit" type="submit"><IconTrash /></button>
-                        </form>
+                        <DeleteConfirmButton
+                          formAction={removeKitFromUnit}
+                          hiddenInputs={[{ name: "unitId", value: id }, { name: "unitKitId", value: assignment.id }]}
+                        />
                       </div>
                     </div>
                   </summary>
@@ -160,11 +160,10 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                   <h2 className="text-2xl font-black">{compartment.name}</h2>
                   {compartment.photo_url ? <img alt={compartment.name} className="mt-3 max-h-52 rounded-2xl object-cover" src={compartment.photo_url} /> : null}
                 </div>
-                <form action={deleteUnitCompartment}>
-                  <input name="unitId" type="hidden" value={id} />
-                  <input name="id" type="hidden" value={compartment.id} />
-                  <button className="rounded-2xl border border-red-200 p-3 text-red-700" title="Remove compartment" type="submit"><IconTrash /></button>
-                </form>
+                <DeleteConfirmButton
+                  formAction={deleteUnitCompartment}
+                  hiddenInputs={[{ name: "unitId", value: id }, { name: "id", value: compartment.id }]}
+                />
               </div>
 
               <form action={uploadCompartmentPhoto} className="mt-4 flex flex-col gap-3 rounded-2xl bg-slate-100 p-3 sm:flex-row">
@@ -196,11 +195,10 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                         <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.sort_order ?? 0} name="sortOrder" type="number" />
                         <button className="rounded-xl border border-slate-300 p-2" title="Save group" type="submit"><IconSave /></button>
                       </form>
-                      <form action={deleteCompartmentGroup}>
-                        <input name="unitId" type="hidden" value={id} />
-                        <input name="groupId" type="hidden" value={group.id} />
-                        <button className="rounded-xl border border-red-200 p-2 text-red-700" title="Delete group" type="submit"><IconTrash /></button>
-                      </form>
+                      <DeleteConfirmButton
+                        formAction={deleteCompartmentGroup}
+                        hiddenInputs={[{ name: "unitId", value: id }, { name: "groupId", value: group.id }]}
+                      />
                     </div>
                   ))}
                 </div>
@@ -233,11 +231,10 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                       </select>
                       <button className="rounded-xl border border-slate-300 bg-white px-3 py-2 font-bold" type="submit">Move</button>
                     </form>
-                    <form action={deleteUnitItem}>
-                      <input name="unitId" type="hidden" value={id} />
-                      <input name="id" type="hidden" value={item.id} />
-                      <button className="rounded-xl border border-red-200 p-2 text-red-700" title="Delete item" type="submit"><IconTrash /></button>
-                    </form>
+                    <DeleteConfirmButton
+                      formAction={deleteUnitItem}
+                      hiddenInputs={[{ name: "unitId", value: id }, { name: "id", value: item.id }]}
+                    />
                   </li>
                 ))}
                     </ul>
