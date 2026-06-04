@@ -89,7 +89,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
             <article key={`${record.date}-${record.unitId}`} className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700">{record.shiftName}</p>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-700">{record.shiftName}</p>
                   <h2 className="mt-1 text-2xl font-black">{record.unitName}</h2>
                   <p className="mt-1 text-sm font-semibold capitalize text-slate-600">{record.unitStatus.replaceAll("_", " ")}{record.archived ? " | Archived" : ""}</p>
                 </div>
