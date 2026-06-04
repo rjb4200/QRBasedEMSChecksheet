@@ -73,7 +73,10 @@ export default async function AdminKitsPage() {
                 <p className="mt-3 text-sm font-bold">{kit.kit_items?.length ?? 0} items</p>
                 <KitAssignmentEditor
                   kitId={kit.id}
-                  assignments={(assignments ?? []).map((a: any) => ({ unitKitId: a.id, unitId: Array.isArray(a.units) ? a.units[0]?.id : a.units?.id, unitName: Array.isArray(a.units) ? a.units[0]?.name : a.units?.name })).filter((a: any) => a.unitId)}
+                  assignments={(assignments ?? []).map((a: any) => {
+                    const unit = Array.isArray(a.units) ? a.units[0] : a.units;
+                    return { unitKitId: a.id, unitId: unit?.id ?? "", unitName: unit?.name ?? "Unknown" };
+                  }).filter((a: any) => a.unitId)}
                   allUnits={(allUnits ?? []).map((u: any) => ({ id: u.id, name: u.name }))}
                 />
                 <div className="mt-4 flex flex-wrap gap-2">
