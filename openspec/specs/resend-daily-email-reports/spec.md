@@ -90,4 +90,26 @@ The system SHALL NOT depend on n8n for daily email report scheduling or delivery
 #### Scenario: Daily report delivery path
 - **WHEN** the daily email report is configured
 - **THEN** delivery SHALL use the app cron endpoint and Resend
+
+### Requirement: Daily email report includes general unit comments
+The daily email report SHALL include general unit comments from `daily_unit_comments` alongside section comments, grouped by unit.
+
+#### Scenario: General comments appear in email
+- **WHEN** a unit has a saved general comment for the report date
+- **THEN** the email SHALL display that comment under the unit card labeled as "General"
+
+### Requirement: Daily email report shows exception counts per unit
+The daily email report SHALL display per-unit exception counts instead of listing every individual exception item.
+
+#### Scenario: Exception counts replace item lists
+- **WHEN** the daily email is generated
+- **THEN** each unit card SHALL show the count of exceptions for that unit
+- **AND** individual exception item details SHALL NOT appear in the email
+
+### Requirement: Daily email report uses per-unit card layout with summary stats
+The daily email report SHALL format unit status information as per-unit HTML cards with status badges, completion stats, progress bars, grouped comments, and a summary stats line at the top.
+
+#### Scenario: Summary stats appear at top
+- **WHEN** the daily email is generated
+- **THEN** the email SHALL include a summary line with the date, unit count, and exception totals
 - **AND** the app SHALL NOT require `N8N_BASE_URL`

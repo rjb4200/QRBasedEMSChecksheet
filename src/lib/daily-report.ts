@@ -21,11 +21,17 @@ export type DailyReportSectionComment = {
   comment: string;
 };
 
+export type DailyReportGeneralComment = {
+  unitName: string;
+  comment: string;
+};
+
 export type DailyEmailReport = {
   reportDate: string;
   generatedAt: string;
   uncheckedUnits: DailyReportUncheckedUnit[];
-  exceptions: CheckoffDiscrepancy[];
+  exceptionCounts: Record<string, number>;
+  generalComments: DailyReportGeneralComment[];
   sectionComments: DailyReportSectionComment[];
   recipients: DailyReportRecipient[];
 };
@@ -108,18 +114,25 @@ export async function getUncheckedUnits(reportDate: string): Promise<DailyReport
 }
 
 export async function getDailyEmailReport(reportDate = getDailyReportDate()): Promise<DailyEmailReport> {
-  const [uncheckedUnits, exceptions, recipients, sectionCommentsRaw] = await Promise.all([
+  const [uncheckedUnits, exceptions, recipients, sectionCommentsRaw, generalCommentsRaw] = await Promise.all([
     getUncheckedUnits(reportDate),
     getCheckoffDiscrepanciesForRange(reportDate, reportDate),
     getDailyReportRecipients(),
     getSectionCommentsForDate(reportDate),
+    getGeneralCommentsForDate(reportDate),
   ]);
+
+  const exceptionCounts: Record<string, number> = {};
+  for (const exc of exceptions) {
+    exceptionCounts[exc.unitName] = (exceptionCounts[exc.unitName] ?? 0) + 1;
+  }
 
   return {
     reportDate,
     generatedAt: new Date().toISOString(),
     uncheckedUnits,
-    exceptions,
+    exceptionCounts,
+    generalComments: generalCommentsRaw,
     sectionComments: sectionCommentsRaw,
     recipients,
   };
@@ -138,6 +151,22 @@ async function getSectionCommentsForDate(reportDate: string): Promise<DailyRepor
   return ((data ?? []) as any[]).map((row) => ({
     unitName: Array.isArray(row.units) ? row.units[0]?.name ?? "Unknown unit" : row.units?.name ?? "Unknown unit",
     sourceName: row.source_name,
+    comment: row.comment,
+  }));
+}
+
+async function getGeneralCommentsForDate(reportDate: string): Promise<DailyReportGeneralComment[]> {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("daily_unit_comments")
+    .select("unit_id, comment, units(name)")
+    .eq("shift_date", reportDate)
+    .eq("shift_period", "daily")
+    .neq("comment", "")
+    .order("unit_id");
+
+  return ((data ?? []) as any[]).map((row) => ({
+    unitName: Array.isArray(row.units) ? row.units[0]?.name ?? "Unknown unit" : row.units?.name ?? "Unknown unit",
     comment: row.comment,
   }));
 }
