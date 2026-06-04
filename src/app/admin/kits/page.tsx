@@ -32,14 +32,13 @@ export default async function AdminKitsPage() {
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
       <section className="mx-auto max-w-7xl space-y-6">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Shared Layouts</p>
-          <h1 className="mt-2 text-4xl font-black">Kits</h1>
+          <h1 className="text-4xl font-black">Shared Layouts</h1>
           <p className="mt-2 max-w-3xl text-slate-600">Kits are shared equipment layouts assigned to units by reference. Edit kit contents here; unit pages show assigned kits read-only.</p>
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
           <form action={createKit} className="grid gap-3 rounded-3xl bg-white p-5 shadow-sm">
-            <h2 className="text-2xl font-black">Create Kit</h2>
+            <h2 className="text-lg font-black text-red-700">Create Kit</h2>
             <input className="rounded-2xl border border-slate-300 px-4 py-3" name="name" placeholder="Kit name" required />
             <textarea className="rounded-2xl border border-slate-300 px-4 py-3" name="description" placeholder="Description" rows={3} />
             <input className="rounded-2xl border border-slate-300 px-4 py-3" name="sortOrder" placeholder="Sort order" type="number" />
@@ -47,7 +46,7 @@ export default async function AdminKitsPage() {
           </form>
 
           <form action={createKitFromCompartment} className="grid gap-3 rounded-3xl bg-white p-5 shadow-sm">
-            <h2 className="text-2xl font-black">Create Kit From Compartment</h2>
+            <h2 className="text-lg font-black text-red-700">Create Kit From Compartment</h2>
             <select className="rounded-2xl border border-slate-300 px-4 py-3" name="sourceCompartmentId" required>
               <option value="">Select source compartment</option>
               {(sourceCompartments ?? []).map((compartment: any) => {
