@@ -5,24 +5,28 @@ import { IconEdit, IconTrash } from "@/components/icons";
 import { DeleteConfirmButton } from "@/components/delete-confirm-button";
 import { KitAssignmentEditor } from "./kit-assignment-editor";
 
-function activeAssignmentCount(assignments: any[] | null | undefined) {
-  return (assignments ?? []).filter((assignment) => {
-    const unit = Array.isArray(assignment.units) ? assignment.units[0] : assignment.units;
-    return unit?.deleted_at == null;
-  }).length;
-}
-
 export default async function AdminKitsPage() {
   const supabase = createAdminClient();
-  const [{ data: kits }, { data: sourceCompartments }, { data: allUnits }] = await Promise.all([
+  const [{ data: kits }, { data: sourceCompartments }, { data: allUnits }, { data: allUnitKits }] = await Promise.all([
     supabase
       .from("kits")
-      .select("id, name, description, sort_order, active, unit_kits(id, units(name, deleted_at)), kit_items(id)")
+      .select("id, name, description, sort_order, active, kit_items(id)")
       .order("sort_order")
       .order("name"),
     supabase.from("unit_compartments").select("id, name, units(name)").order("name"),
     supabase.from("units").select("id, name").is("deleted_at", null).order("name"),
+    supabase.from("unit_kits").select("id, kit_id, unit_id"),
   ]);
+
+  const unitNameMap = new Map((allUnits ?? []).map((u: any) => [u.id, u.name]));
+  const assignmentsByKit = new Map<string, { unitKitId: string; unitId: string; unitName: string }[]>();
+  for (const uk of (allUnitKits ?? []) as any[]) {
+    const list = assignmentsByKit.get(uk.kit_id) ?? [];
+    list.push({ unitKitId: uk.id, unitId: uk.unit_id, unitName: unitNameMap.get(uk.unit_id) ?? uk.unit_id });
+    assignmentsByKit.set(uk.kit_id, list);
+  }
+
+  const allUnitInfos = (allUnits ?? []).map((u: any) => ({ id: u.id, name: u.name }));
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
@@ -60,7 +64,7 @@ export default async function AdminKitsPage() {
           <p className="mb-4 text-xs font-black uppercase tracking-[0.2em] text-red-700">Kit</p>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {(kits ?? []).map((kit: any) => {
-            const assignments = kit.unit_kits ?? [];
+            const assignments = assignmentsByKit.get(kit.id) ?? [];
             return (
               <article key={kit.id} className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
@@ -73,18 +77,15 @@ export default async function AdminKitsPage() {
                 <p className="mt-3 text-sm font-bold">{kit.kit_items?.length ?? 0} items</p>
                 <KitAssignmentEditor
                   kitId={kit.id}
-                  assignments={(assignments ?? []).map((a: any) => {
-                    const unit = Array.isArray(a.units) ? a.units[0] : a.units;
-                    return { unitKitId: a.id, unitId: unit?.id ?? "", unitName: unit?.name ?? "Unknown" };
-                  }).filter((a: any) => a.unitId)}
-                  allUnits={(allUnits ?? []).map((u: any) => ({ id: u.id, name: u.name }))}
+                  assignments={assignments}
+                  allUnits={allUnitInfos}
                 />
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link className="rounded-2xl border border-slate-300 p-3 text-slate-600" href={`/admin/kits/${kit.id}`} title={`Edit ${kit.name}`}>
                     <IconEdit />
                   </Link>
                   <DeleteConfirmButton
-                    disabled={activeAssignmentCount(assignments) > 0}
+                    disabled={assignments.length > 0}
                     formAction={deleteKit}
                     hiddenInputs={[{ name: "id", value: kit.id }]}
                   />
