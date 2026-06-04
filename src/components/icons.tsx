@@ -42,3 +42,11 @@ export function IconCancel() {
     </svg>
   );
 }
+
+export function IconFilter() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" strokeLinecap="round" />
+    </svg>
+  );
+}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { addUnitCompartment, addUnitItem, assignKitToUnit, cloneKitToUnitCompartment, createCompartmentGroup, deleteCompartmentGroup, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, removeKitFromUnit, toggleUnitStatus, updateCompartmentGroup, updateCompartmentQrLocationNote, updateUnitItemGroup, updateUnitKitQrLocationNote, updateUnitMonthlyCheckDay, uploadCompartmentPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { IconEdit, IconSave, IconTrash } from "@/components/icons";
 import { groupItems } from "@/lib/item-groups";
 import { QrSaveButton } from "./qr-save-button";
 
@@ -106,11 +107,11 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                         <p className="mt-1 text-sm text-slate-600">Read-only on unit page. Edit this shared kit from the Kits page.</p>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <Link className="rounded-2xl bg-red-700 px-4 py-2 font-bold text-white" href={`/admin/kits/${kit?.id}`}>Edit Kit</Link>
+                        <Link className="rounded-2xl border border-slate-300 p-3 text-slate-600" href={`/admin/kits/${kit?.id}`} title="Edit kit"><IconEdit /></Link>
                         <form action={removeKitFromUnit}>
                           <input name="unitId" type="hidden" value={id} />
                           <input name="unitKitId" type="hidden" value={assignment.id} />
-                          <button className="rounded-2xl border border-red-200 px-4 py-2 font-bold text-red-700" type="submit">Remove From Unit</button>
+                          <button className="rounded-2xl border border-red-200 p-3 text-red-700" title="Remove from unit" type="submit"><IconTrash /></button>
                         </form>
                       </div>
                     </div>
@@ -162,7 +163,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                 <form action={deleteUnitCompartment}>
                   <input name="unitId" type="hidden" value={id} />
                   <input name="id" type="hidden" value={compartment.id} />
-                  <button className="rounded-2xl border border-red-200 px-4 py-2 font-bold text-red-700" type="submit">Remove</button>
+                  <button className="rounded-2xl border border-red-200 p-3 text-red-700" title="Remove compartment" type="submit"><IconTrash /></button>
                 </form>
               </div>
 
@@ -193,12 +194,12 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                         <input name="groupId" type="hidden" value={group.id} />
                         <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.name} name="name" />
                         <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.sort_order ?? 0} name="sortOrder" type="number" />
-                        <button className="rounded-xl border border-slate-300 px-3 py-2 font-bold" type="submit">Save</button>
+                        <button className="rounded-xl border border-slate-300 p-2" title="Save group" type="submit"><IconSave /></button>
                       </form>
                       <form action={deleteCompartmentGroup}>
                         <input name="unitId" type="hidden" value={id} />
                         <input name="groupId" type="hidden" value={group.id} />
-                        <button className="rounded-xl border border-red-200 px-3 py-2 font-bold text-red-700" type="submit">Delete</button>
+                        <button className="rounded-xl border border-red-200 p-2 text-red-700" title="Delete group" type="submit"><IconTrash /></button>
                       </form>
                     </div>
                   ))}
@@ -235,7 +236,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                     <form action={deleteUnitItem}>
                       <input name="unitId" type="hidden" value={id} />
                       <input name="id" type="hidden" value={item.id} />
-                      <button className="rounded-xl border border-red-200 bg-white px-3 py-2 font-bold text-red-700" type="submit">Delete Item</button>
+                      <button className="rounded-xl border border-red-200 p-2 text-red-700" title="Delete item" type="submit"><IconTrash /></button>
                     </form>
                   </li>
                 ))}

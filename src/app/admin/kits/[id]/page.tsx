@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { addKitItem, createKitGroup, deleteKit, deleteKitGroup, deleteKitItem, updateKit, updateKitGroup, updateKitItem, uploadKitPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
+import { IconEdit, IconTrash } from "@/components/icons";
 import { groupItems } from "@/lib/item-groups";
 import { SaveButton } from "@/components/save-feedback";
 
@@ -95,7 +96,7 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
                   <form action={deleteKitGroup}>
                     <input name="kitId" type="hidden" value={id} />
                     <input name="groupId" type="hidden" value={group.id} />
-                    <button className="rounded-xl border border-red-200 px-3 py-2 font-bold text-red-700" type="submit">Delete</button>
+                    <button className="rounded-xl border border-red-200 p-2 text-red-700" title="Delete group" type="submit"><IconTrash /></button>
                   </form>
                 </div>
               ))}
@@ -145,7 +146,7 @@ export default async function AdminKitDetailPage({ params }: { params: Promise<{
                 <form action={deleteKitItem}>
                   <input name="kitId" type="hidden" value={id} />
                   <input name="itemId" type="hidden" value={item.id} />
-                  <button className="rounded-xl border border-red-200 bg-white px-3 py-2 font-bold text-red-700" type="submit">Delete</button>
+                  <button className="rounded-xl border border-red-200 p-2 text-red-700" title="Delete item" type="submit"><IconTrash /></button>
                 </form>
               </li>
             ))}
