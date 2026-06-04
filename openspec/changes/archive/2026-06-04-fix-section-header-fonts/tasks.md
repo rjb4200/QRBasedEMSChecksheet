@@ -14,6 +14,6 @@
 - [x] 4.2 Kits page: remove "Kit" from individual cards, add container background, add Kit label, thicker borders
 - [x] 5.1 Run `npm run typecheck`
 - [x] 5.2 Run `npm run build`
-- [ ] 5.3 Manual test: all section headers use compact red labels
-- [ ] 5.4 Manual test: filter labels present on System Log and Equipment
-- [ ] 5.5 Manual test: Records and Kits card styling updated
+- [x] 5.3 Manual test: all section headers use compact red labels
+- [x] 5.4 Manual test: filter labels present on System Log and Equipment
+- [x] 5.5 Manual test: Records and Kits card styling updated
