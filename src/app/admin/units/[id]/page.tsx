@@ -2,6 +2,7 @@ import Link from "next/link";
 import { addUnitCompartment, addUnitItem, assignKitToUnit, cloneKitToUnitCompartment, createCompartmentGroup, deleteCompartmentGroup, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, removeKitFromUnit, toggleUnitStatus, updateCompartmentGroup, updateCompartmentQrLocationNote, updateUnitItemGroup, updateUnitKitQrLocationNote, updateUnitMonthlyCheckDay, uploadCompartmentPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { IconEdit, IconSave, IconTrash } from "@/components/icons";
+import { SubmitButton } from "@/components/submit-button";
 import { DeleteConfirmButton } from "@/components/delete-confirm-button";
 import { groupItems } from "@/lib/item-groups";
 import { QrSaveButton } from "./qr-save-button";
@@ -193,7 +194,7 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                         <input name="groupId" type="hidden" value={group.id} />
                         <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.name} name="name" />
                         <input className="rounded-xl border border-slate-300 px-3 py-2" defaultValue={group.sort_order ?? 0} name="sortOrder" type="number" />
-                        <button className="rounded-xl border border-slate-300 p-2" title="Save group" type="submit"><IconSave /></button>
+                        <SubmitButton className="rounded-xl border border-slate-300 p-2" title="Save group"><IconSave /></SubmitButton>
                       </form>
                       <DeleteConfirmButton
                         formAction={deleteCompartmentGroup}
