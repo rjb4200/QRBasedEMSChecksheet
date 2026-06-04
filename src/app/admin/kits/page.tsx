@@ -40,7 +40,7 @@ export default async function AdminKitsPage() {
 
         <div className="grid gap-4 lg:grid-cols-2">
           <form action={createKit} className="grid gap-3 rounded-3xl bg-white p-5 shadow-sm">
-            <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-red-700">Create Kit</h2>
+            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-red-700">Create Kit</h2>
             <input className="rounded-2xl border border-slate-300 px-4 py-3" name="name" placeholder="Kit name" required />
             <textarea className="rounded-2xl border border-slate-300 px-4 py-3" name="description" placeholder="Description" rows={3} />
             <input className="rounded-2xl border border-slate-300 px-4 py-3" name="sortOrder" placeholder="Sort order" type="number" />
@@ -48,7 +48,7 @@ export default async function AdminKitsPage() {
           </form>
 
           <form action={createKitFromCompartment} className="grid gap-3 rounded-3xl bg-white p-5 shadow-sm">
-            <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-red-700">Create Kit From Compartment</h2>
+            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-red-700">Create Kit From Compartment</h2>
             <select className="rounded-2xl border border-slate-300 px-4 py-3" name="sourceCompartmentId" required>
               <option value="">Select source compartment</option>
               {(sourceCompartments ?? []).map((compartment: any) => {
@@ -63,7 +63,7 @@ export default async function AdminKitsPage() {
         </div>
 
         <div className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
-          <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-red-700">Kit</p>
+          <p className="mb-4 text-xs font-black uppercase tracking-[0.2em] text-red-700">Kit</p>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {(kits ?? []).map((kit: any) => {
             const assignments = kit.unit_kits ?? [];

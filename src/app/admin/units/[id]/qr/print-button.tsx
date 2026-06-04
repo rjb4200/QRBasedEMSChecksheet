@@ -259,7 +259,7 @@ export function QrCodeGrid({ codes, unitName }: { codes: QrCode[]; unitName: str
                 className="h-28 w-28 shrink-0 rounded-xl border border-slate-200 bg-white p-1"
               />
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-700">{unitName}</p>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700">{unitName}</p>
                 <h2 className="mt-1 text-xl font-black text-slate-950">{code.name}</h2>
                 <p className="mt-1 font-mono text-sm font-black text-red-700">Code: {code.code}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -340,7 +340,7 @@ export function RotatedLabelGrid({
                 className="h-28 w-28 shrink-0 rounded-xl border border-slate-200 bg-white p-1"
               />
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-700">{unitName}</p>
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700">{unitName}</p>
                 <h2 className="mt-1 text-xl font-black text-slate-950">{code.name}</h2>
                 <p className="mt-1 font-mono text-sm font-black text-red-700">Code: {code.code}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
