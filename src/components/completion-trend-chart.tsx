@@ -13,7 +13,7 @@ function formatDate(dateStr: string) {
 }
 
 export default function CompletionTrendChart({ groups }: { groups: DailyRecordGroup[] }) {
-  const maxHeight = 128;
+  const maxHeight = 150;
   const ordered = [...groups].reverse();
 
   return (
