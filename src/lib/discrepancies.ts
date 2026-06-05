@@ -79,10 +79,6 @@ function eachDate(from: string, to: string) {
   return dates.reverse();
 }
 
-export async function getCheckoffDiscrepancies(shift = getCurrentShift()) {
-  return getCheckoffDiscrepanciesForRange(shift.shiftDate, shift.shiftDate, shift.shiftPeriod);
-}
-
 export async function getCheckoffDiscrepanciesForRange(from: string, to: string, shiftPeriod = "daily" as const) {
   const supabase = createAdminClient();
   const [{ data: checks, error: checksError }, { data: items, error: itemsError }, { data: kitItems, error: kitItemsError }] = await Promise.all([

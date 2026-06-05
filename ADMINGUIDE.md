@@ -163,6 +163,41 @@ Admins can:
 
 Only authorized personnel should have admin access.
 
+#### Pushover Notifications
+
+Pushover sends push notifications to your phone, tablet, or desktop when important events occur. Each admin can opt into the alert types they want.
+
+**Setup:**
+
+1. Create a free Pushover account at [pushover.net](https://pushover.net)
+2. From your Pushover dashboard, copy your 30-character **User Key**
+3. Install the Pushover app on your phone, tablet, or desktop
+4. In the Admin Users page, edit your user and:
+   - Paste your User Key
+   - Toggle "On" to enable Pushover alerts
+   - Check the alert types you want to receive
+5. Click outside the edit form (the save button saves all changes at once)
+
+**Alert types:**
+
+| Alert | Time | Description |
+|---|---|---|
+| Daily report summary | 1000 ET | Brief summary after the daily report email is sent |
+| Missed checkoff | 0930 ET | Initial alert for incomplete units |
+| Missed checkoff follow-up | 1300 ET | Follow-up if units are still incomplete |
+
+**Quiet hours:** Automated Pushover alerts are not sent outside 0800-2200 ET. Manual test sends from the Admin Users page always work regardless of time.
+
+**Testing:** Use the "Test Pushover" dropdown on the Admin Users page to send a test notification. This confirms your User Key is correct.
+
+**Device management:** Pushover handles device selection, quiet hours, and notification sounds on your device. Configure these in the Pushover app — not in this admin panel.
+
+**Troubleshooting:** If you stop receiving alerts, check that:
+- Your User Key is still valid (not regenerated)
+- The Pushover app is installed and logged in on your device
+- The alert type you expect is checked in your preferences
+- It is between 0800-2200 ET (manual test sends bypass this)
+
 ## Daily Workflow
 
 A normal admin/supervisor workflow usually looks like:

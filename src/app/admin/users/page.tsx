@@ -8,6 +8,11 @@ interface AdminUser {
   username: string;
   email: string | null;
   receives_daily_report: boolean;
+  pushover_user_key: string | null;
+  pushover_alert_enabled: boolean;
+  pushover_daily_report: boolean;
+  pushover_missed_checkoff: boolean;
+  pushover_missed_checkoff_fup: boolean;
   created_at: string;
   updated_at?: string;
 }
@@ -43,6 +48,11 @@ export default function AdminUsersPage() {
   const [newPasswordForEdit, setNewPasswordForEdit] = useState("");
   const [emailForEdit, setEmailForEdit] = useState("");
   const [receivesDailyReportForEdit, setReceivesDailyReportForEdit] = useState(true);
+  const [pushoverUserKeyForEdit, setPushoverUserKeyForEdit] = useState("");
+  const [pushoverAlertEnabledForEdit, setPushoverAlertEnabledForEdit] = useState(false);
+  const [pushoverDailyReportForEdit, setPushoverDailyReportForEdit] = useState(false);
+  const [pushoverMissedCheckoffForEdit, setPushoverMissedCheckoffForEdit] = useState(false);
+  const [pushoverMissedCheckoffFupForEdit, setPushoverMissedCheckoffFupForEdit] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
@@ -52,6 +62,14 @@ export default function AdminUsersPage() {
   const [testEmailRecipient, setTestEmailRecipient] = useState("");
   const [sendingTestEmail, setSendingTestEmail] = useState(false);
   const [testEmailFeedback, setTestEmailFeedback] = useState("");
+  const [newPushoverUserKey, setNewPushoverUserKey] = useState("");
+  const [newPushoverAlertEnabled, setNewPushoverAlertEnabled] = useState(false);
+  const [newPushoverDailyReport, setNewPushoverDailyReport] = useState(false);
+  const [newPushoverMissedCheckoff, setNewPushoverMissedCheckoff] = useState(false);
+  const [newPushoverMissedCheckoffFup, setNewPushoverMissedCheckoffFup] = useState(false);
+  const [testPushoverUserId, setTestPushoverUserId] = useState("");
+  const [sendingTestPushover, setSendingTestPushover] = useState(false);
+  const [testPushoverFeedback, setTestPushoverFeedback] = useState("");
 
   const passwordStrength = getPasswordStrength(newPassword);
 
@@ -73,12 +91,13 @@ export default function AdminUsersPage() {
     try {
       const res = await fetch("/api/admin-users", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: newUsername, password: newPassword, email: newEmail, receivesDailyReport: newReceivesDailyReport }),
+        body: JSON.stringify({ username: newUsername, password: newPassword, email: newEmail, receivesDailyReport: newReceivesDailyReport, pushoverUserKey: newPushoverUserKey, pushoverAlertEnabled: newPushoverAlertEnabled, pushoverDailyReport: newPushoverDailyReport, pushoverMissedCheckoff: newPushoverMissedCheckoff, pushoverMissedCheckoffFup: newPushoverMissedCheckoffFup }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setSuccess("User created successfully");
       setNewUsername(""); setNewPassword(""); setNewEmail(""); setNewReceivesDailyReport(true);
+      setNewPushoverUserKey(""); setNewPushoverAlertEnabled(false); setNewPushoverDailyReport(false); setNewPushoverMissedCheckoff(false); setNewPushoverMissedCheckoffFup(false);
       fetchUsers();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create user");
@@ -90,7 +109,7 @@ export default function AdminUsersPage() {
     try {
       const res = await fetch(`/api/admin-users/${editingUserId}`, {
         method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: newPasswordForEdit || undefined, email: emailForEdit, receivesDailyReport: receivesDailyReportForEdit }),
+        body: JSON.stringify({ password: newPasswordForEdit || undefined, email: emailForEdit, receivesDailyReport: receivesDailyReportForEdit, pushoverUserKey: pushoverUserKeyForEdit, pushoverAlertEnabled: pushoverAlertEnabledForEdit, pushoverDailyReport: pushoverDailyReportForEdit, pushoverMissedCheckoff: pushoverMissedCheckoffForEdit, pushoverMissedCheckoffFup: pushoverMissedCheckoffFupForEdit }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -119,6 +138,21 @@ export default function AdminUsersPage() {
 
   function formatDate(dateStr: string) {
     return new Date(dateStr).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+  }
+
+  async function handleTestPushover() {
+    if (!testPushoverUserId) return;
+    setSendingTestPushover(true); setTestPushoverFeedback("");
+    try {
+      const res = await fetch("/api/admin/test-pushover", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: testPushoverUserId }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setTestPushoverFeedback("Pushover test sent");
+    } catch (err) {
+      setTestPushoverFeedback(err instanceof Error ? err.message : "Failed");
+    } finally { setSendingTestPushover(false); }
   }
 
   async function handleSendTestEmail() {
@@ -167,6 +201,20 @@ export default function AdminUsersPage() {
             <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700">
               <input className="h-4 w-4 accent-red-700" type="checkbox" checked={newReceivesDailyReport} onChange={(e) => setNewReceivesDailyReport(e.target.checked)} /> Receives daily report
             </label>
+            <div className="md:col-span-2 rounded-xl border border-slate-200 bg-white p-4">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 mb-3">Pushover</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="grid gap-1 text-sm font-bold text-slate-700">User Key
+                  <input className="rounded-xl border border-slate-300 px-3 py-2 text-sm" placeholder="30-char Pushover user key" value={newPushoverUserKey} onChange={(e) => setNewPushoverUserKey(e.target.value)} minLength={0} maxLength={40} />
+                </label>
+                <div className="flex flex-col justify-end gap-2">
+                  <label className="flex items-center gap-2 text-sm font-bold text-slate-700"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverAlertEnabled} onChange={(e) => setNewPushoverAlertEnabled(e.target.checked)} />Enable Pushover alerts</label>
+                  <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverDailyReport} onChange={(e) => setNewPushoverDailyReport(e.target.checked)} />Daily report summary</label>
+                  <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverMissedCheckoff} onChange={(e) => setNewPushoverMissedCheckoff(e.target.checked)} />Missed checkoff (0930)</label>
+                  <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverMissedCheckoffFup} onChange={(e) => setNewPushoverMissedCheckoffFup(e.target.checked)} />Missed checkoff follow-up (1300)</label>
+                </div>
+              </div>
+            </div>
             <div className="flex items-end md:col-span-2"><button className="rounded-xl bg-red-700 px-5 py-3 font-bold text-white disabled:opacity-50" type="submit" disabled={isAddingUser || !newUsername || !newPassword}>{isAddingUser ? "Adding..." : "Add User"}</button></div>
           </form>
 
@@ -188,20 +236,31 @@ export default function AdminUsersPage() {
                       <p className="font-bold text-slate-950">{user.username}</p>
                       <p className="text-sm text-slate-600">{user.email || "No report email"}</p>
                       <p className="text-xs font-bold uppercase tracking-[0.15em] text-slate-500">{user.receives_daily_report ? "Daily report enabled" : "Daily report disabled"}</p>
+                      {user.pushover_alert_enabled && user.pushover_user_key ? (
+                        <p className="text-xs font-bold uppercase tracking-[0.15em] text-orange-600">Pushover: {(user.pushover_daily_report ? "D" : "")}{(user.pushover_missed_checkoff ? "/M" : "")}{(user.pushover_missed_checkoff_fup ? "/F" : "") || "Enabled"}</p>
+                      ) : null}
                       <p className="text-sm text-slate-500">Created {formatDate(user.created_at)}</p>
                     </div>
-                    <div className="flex shrink-0 gap-2">
+                      <div className="flex shrink-0 gap-2">
                       {editingUserId === user.id ? (
                         <form onSubmit={handleChangePassword} className="flex flex-wrap items-end gap-2">
                           <input className="rounded-xl border border-slate-300 px-3 py-2 text-sm" type="password" placeholder="New password" value={newPasswordForEdit} onChange={(e) => setNewPasswordForEdit(e.target.value)} />
                           <input className="rounded-xl border border-slate-300 px-3 py-2 text-sm" type="email" placeholder="Report email" value={emailForEdit} onChange={(e) => setEmailForEdit(e.target.value)} />
                           <label className="flex items-center gap-2 text-xs font-bold text-slate-700"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={receivesDailyReportForEdit} onChange={(e) => setReceivesDailyReportForEdit(e.target.checked)} />Daily report</label>
+                          <div className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2">
+                            <span className="text-xs font-bold text-slate-600">Pushover:</span>
+                            <input className="rounded-lg border border-slate-300 px-2 py-1 text-xs w-32" type="text" placeholder="User Key" value={pushoverUserKeyForEdit} onChange={(e) => setPushoverUserKeyForEdit(e.target.value)} maxLength={40} />
+                            <label className="flex items-center gap-1 text-xs text-slate-600"><input className="h-3 w-3 accent-red-700" type="checkbox" checked={pushoverAlertEnabledForEdit} onChange={(e) => setPushoverAlertEnabledForEdit(e.target.checked)} />On</label>
+                            <label className="flex items-center gap-1 text-xs text-slate-600"><input className="h-3 w-3 accent-red-700" type="checkbox" checked={pushoverDailyReportForEdit} onChange={(e) => setPushoverDailyReportForEdit(e.target.checked)} />Daily</label>
+                            <label className="flex items-center gap-1 text-xs text-slate-600"><input className="h-3 w-3 accent-red-700" type="checkbox" checked={pushoverMissedCheckoffForEdit} onChange={(e) => setPushoverMissedCheckoffForEdit(e.target.checked)} />0930</label>
+                            <label className="flex items-center gap-1 text-xs text-slate-600"><input className="h-3 w-3 accent-red-700" type="checkbox" checked={pushoverMissedCheckoffFupForEdit} onChange={(e) => setPushoverMissedCheckoffFupForEdit(e.target.checked)} />1300</label>
+                          </div>
                           <button className="rounded-2xl bg-red-700 p-3 text-white" type="submit" disabled={isChangingPassword} title="Save"><IconSave /></button>
                           <button type="button" className="rounded-2xl border border-slate-300 p-3 text-slate-600" onClick={() => { setEditingUserId(null); setNewPasswordForEdit(""); setEmailForEdit(""); }} title="Cancel"><IconCancel /></button>
                         </form>
                       ) : (
                         <>
-                          <button className="rounded-2xl border border-slate-300 p-3 text-slate-600" onClick={() => { setEditingUserId(user.id); setNewPasswordForEdit(""); setEmailForEdit(user.email ?? ""); setReceivesDailyReportForEdit(user.receives_daily_report); }} title="Edit user" type="button"><IconEdit /></button>
+                          <button className="rounded-2xl border border-slate-300 p-3 text-slate-600" onClick={() => { setEditingUserId(user.id); setNewPasswordForEdit(""); setEmailForEdit(user.email ?? ""); setReceivesDailyReportForEdit(user.receives_daily_report); setPushoverUserKeyForEdit(user.pushover_user_key ?? ""); setPushoverAlertEnabledForEdit(user.pushover_alert_enabled); setPushoverDailyReportForEdit(user.pushover_daily_report); setPushoverMissedCheckoffForEdit(user.pushover_missed_checkoff); setPushoverMissedCheckoffFupForEdit(user.pushover_missed_checkoff_fup); }} title="Edit user" type="button"><IconEdit /></button>
                           {destroyEnabled ? (
                             confirmingDelete === user.id ? (
                               <>
@@ -233,6 +292,19 @@ export default function AdminUsersPage() {
             </div>
             <button className="rounded-xl bg-red-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" disabled={!testEmailRecipient || sendingTestEmail} onClick={handleSendTestEmail} type="button">{sendingTestEmail ? "Sending..." : "Send"}</button>
             {testEmailFeedback && <span className={`text-sm font-semibold ${testEmailFeedback.startsWith("Sent") ? "text-green-700" : "text-red-700"}`}>{testEmailFeedback}</span>}
+          </div>
+          <div className="mt-4 flex items-end gap-3 border-t border-slate-200 pt-4">
+            <div className="grid gap-1">
+              <label className="text-xs font-bold text-slate-700">Test Pushover</label>
+              <select className="rounded-xl border border-slate-300 px-3 py-2 text-sm" value={testPushoverUserId} onChange={(e) => setTestPushoverUserId(e.target.value)}>
+                <option value="">Select user...</option>
+                {users.filter((u) => u.pushover_alert_enabled && u.pushover_user_key).map((u) => (
+                  <option key={u.id} value={u.id}>{u.username}</option>
+                ))}
+              </select>
+            </div>
+            <button className="rounded-xl bg-orange-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" disabled={!testPushoverUserId || sendingTestPushover} onClick={handleTestPushover} type="button">{sendingTestPushover ? "Sending..." : "Send"}</button>
+            {testPushoverFeedback && <span className={`text-sm font-semibold ${testPushoverFeedback === "Pushover test sent" ? "text-green-700" : "text-red-700"}`}>{testPushoverFeedback}</span>}
           </div>
         </div>
       </section>
