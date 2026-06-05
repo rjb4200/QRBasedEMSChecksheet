@@ -5,8 +5,7 @@ import { sendEmailWithAttachment } from "@/lib/email/resend";
 import { generateDailyChecksheetsPdf } from "@/lib/pdf/daily-checksheets";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { logSystemEvent } from "@/lib/system-log";
-import { sendPushoverNotification } from "@/lib/pushover";
-import { getShiftNameForDate } from "@/lib/shifts";
+
 
 export const runtime = "nodejs";
 
@@ -39,85 +38,6 @@ function isScheduledGetOutsideSendHour(request: NextRequest) {
   if (request.method !== "GET") return false;
   if (request.nextUrl.searchParams.has("date") || request.nextUrl.searchParams.get("force") === "true") return false;
   return currentLocalHour() !== dailyReportSendHour();
-}
-
-async function sendPushoverDailySummary(report: { reportDate: string; allUnits: unknown[]; recipients: { id: string; username: string; email: string }[]; exceptionCounts: Record<string, number> }) {
-  try {
-    const supabase = createAdminClient();
-    const shiftName = getShiftNameForDate(report.reportDate);
-    const shiftColumn = shiftName === "1st Shift" ? "pushover_shift_1" : shiftName === "2nd Shift" ? "pushover_shift_2" : "pushover_shift_3";
-    const { data: pushoverRecipients, error } = await supabase
-      .from("admin_users")
-      .select("username, pushover_user_key")
-      .eq("pushover_alert_enabled", true)
-      .eq("pushover_daily_report", true)
-      .eq(shiftColumn, true)
-      .not("pushover_user_key", "is", null)
-      .neq("pushover_user_key", "");
-
-    if (error || !pushoverRecipients || pushoverRecipients.length === 0) {
-      await logSystemEvent({
-        actorType: "system",
-        actorName: "Daily report cron",
-        area: "pushover",
-        action: "daily_report.skipped",
-        targetType: "pushover_alert",
-        result: "warning",
-        message: pushoverRecipients?.length === 0 ? "No Pushover daily report recipients" : undefined,
-      }).catch(() => {});
-      return;
-    }
-
-    const completeCount = report.allUnits.length;
-    const exceptionTotal = Object.values(report.exceptionCounts).reduce((sum, c) => sum + c, 0);
-    const message = `EMS Daily Report — ${report.reportDate}\n${completeCount} units reported\n${exceptionTotal} exceptions submitted`;
-
-    const recipientUsernames: string[] = [];
-    let successCount = 0;
-
-    for (const recipient of pushoverRecipients) {
-      if (!recipient.pushover_user_key) continue;
-
-      const result = await sendPushoverNotification({
-        userKey: recipient.pushover_user_key,
-        title: "EMS Daily Report",
-        message,
-      });
-
-      recipientUsernames.push(recipient.username);
-      if (result.success) {
-        successCount++;
-      } else {
-        console.error(`Pushover daily report failed for ${recipient.username}:`, result.error);
-      }
-    }
-
-    await logSystemEvent({
-      actorType: "system",
-      actorName: "Daily report cron",
-      area: "pushover",
-      action: "daily_report.sent",
-      targetType: "pushover_alert",
-      result: successCount > 0 ? "success" : "failure",
-      afterData: {
-        reportDate: report.reportDate,
-        recipientCount: recipientUsernames.length,
-        successCount,
-        recipients: recipientUsernames,
-      },
-    });
-  } catch (error) {
-    console.error("Pushover daily report summary failed:", error);
-    await logSystemEvent({
-      actorType: "system",
-      actorName: "Daily report cron",
-      area: "pushover",
-      action: "daily_report.failed",
-      targetType: "pushover_alert",
-      result: "failure",
-      message: error instanceof Error ? error.message : "Unknown error",
-    }).catch(() => {});
-  }
 }
 
 async function recordRun({
@@ -257,7 +177,6 @@ export async function POST(request: NextRequest) {
       metadata: { forced: force },
     });
 
-    await sendPushoverDailySummary(report);
 
     return NextResponse.json({
       status: "sent",
