@@ -197,9 +197,10 @@ export default function AdminUsersPage() {
 
         <div className="rounded-3xl bg-white p-5 shadow-sm">
           <button className="flex w-full items-center justify-between text-left" onClick={() => setUserManagementExpanded((v) => !v)} type="button">
-            <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">User Management</p>
-            <span className={`text-red-700 transition ${userManagementExpanded ? "rotate-180" : ""}`}>
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <p className="text-sm font-black uppercase tracking-[0.25em] text-red-700">User Management</p>
+            <span className={`inline-flex items-center gap-1 rounded-xl px-3 py-1 text-xs font-bold transition ${userManagementExpanded ? "bg-red-100 text-red-700" : "bg-red-700 text-white hover:bg-red-800"}`}>
+              {userManagementExpanded ? "Collapse" : "Add User"}
+              <svg className={`h-3 w-3 transition ${userManagementExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </span>
           </button>
           {userManagementExpanded && (
