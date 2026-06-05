@@ -57,8 +57,7 @@ export default function AdminUsersPage() {
   const [pushoverShift1ForEdit, setPushoverShift1ForEdit] = useState(false);
   const [pushoverShift2ForEdit, setPushoverShift2ForEdit] = useState(false);
   const [pushoverShift3ForEdit, setPushoverShift3ForEdit] = useState(false);
-  const [isSavingEmail, setIsSavingEmail] = useState(false);
-  const [isSavingPushover, setIsSavingPushover] = useState(false);
+  const [isSavingAll, setIsSavingAll] = useState(false);
 
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -112,36 +111,21 @@ export default function AdminUsersPage() {
     } finally { setIsAddingUser(false); }
   }
 
-  async function handleSaveEmail() {
-    setError(""); setSuccess(""); setIsSavingEmail(true);
+  async function handleSaveAll() {
+    setError(""); setSuccess(""); setIsSavingAll(true);
     try {
       const res = await fetch(`/api/admin-users/${editingUserId}`, {
         method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password: newPasswordForEdit || undefined, email: emailForEdit, receivesDailyReport: receivesDailyReportForEdit }),
+        body: JSON.stringify({ password: newPasswordForEdit || undefined, email: emailForEdit, receivesDailyReport: receivesDailyReportForEdit, pushoverUserKey: pushoverUserKeyForEdit, pushoverAlertEnabled: pushoverAlertEnabledForEdit, pushoverMissedCheckoff: pushoverMissedCheckoffForEdit, pushoverMissedCheckoffFup: pushoverMissedCheckoffFupForEdit, pushoverShift1: pushoverShift1ForEdit, pushoverShift2: pushoverShift2ForEdit, pushoverShift3: pushoverShift3ForEdit }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      setSuccess("Email settings saved");
+      setSuccess("Settings saved");
       fetchUsers();
+      handleCloseEdit();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save email settings");
-    } finally { setIsSavingEmail(false); }
-  }
-
-  async function handleSavePushover() {
-    setError(""); setSuccess(""); setIsSavingPushover(true);
-    try {
-      const res = await fetch(`/api/admin-users/${editingUserId}`, {
-        method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pushoverUserKey: pushoverUserKeyForEdit, pushoverAlertEnabled: pushoverAlertEnabledForEdit, pushoverMissedCheckoff: pushoverMissedCheckoffForEdit, pushoverMissedCheckoffFup: pushoverMissedCheckoffFupForEdit, pushoverShift1: pushoverShift1ForEdit, pushoverShift2: pushoverShift2ForEdit, pushoverShift3: pushoverShift3ForEdit }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setSuccess("Pushover settings saved");
-      fetchUsers();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save Pushover settings");
-    } finally { setIsSavingPushover(false); }
+      setError(err instanceof Error ? err.message : "Failed to save");
+    } finally { setIsSavingAll(false); }
   }
 
   function handleCloseEdit() {
@@ -283,7 +267,10 @@ export default function AdminUsersPage() {
                         <div className="w-full space-y-4">
                           <div className="flex items-center justify-between">
                             <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700">Editing {user.username}</p>
-                            <button type="button" className="rounded-2xl border border-slate-300 p-3 text-slate-600" onClick={handleCloseEdit} title="Close"><IconCancel /></button>
+                            <div className="flex items-center gap-2">
+                              <button className="rounded-2xl bg-red-700 p-3 text-white disabled:opacity-50" onClick={handleSaveAll} disabled={isSavingAll} title="Save" type="button"><IconSave /></button>
+                              <button type="button" className="rounded-2xl border border-slate-300 p-3 text-slate-600" onClick={handleCloseEdit} title="Cancel"><IconCancel /></button>
+                            </div>
                           </div>
                           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                             <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 mb-4">Email &amp; Password</p>
@@ -298,10 +285,6 @@ export default function AdminUsersPage() {
                             <label className="mt-4 flex items-center gap-3 text-sm font-bold text-slate-700">
                               <input className="h-4 w-4 accent-red-700" type="checkbox" checked={receivesDailyReportForEdit} onChange={(e) => setReceivesDailyReportForEdit(e.target.checked)} />Receives daily report email
                             </label>
-                            <div className="mt-4 flex items-center gap-2 justify-end">
-                              <button className="rounded-2xl bg-red-700 p-3 text-white disabled:opacity-50" onClick={handleSaveEmail} disabled={isSavingEmail} title="Save email settings" type="button"><IconSave /></button>
-                              <button type="button" className="rounded-2xl border border-slate-300 p-3 text-slate-600" onClick={handleCloseEdit} title="Cancel"><IconCancel /></button>
-                            </div>
                           </div>
                           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                             <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 mb-4">Pushover</p>
@@ -324,10 +307,6 @@ export default function AdminUsersPage() {
                                 <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={pushoverShift2ForEdit} onChange={(e) => setPushoverShift2ForEdit(e.target.checked)} />2nd Shift</label>
                                 <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={pushoverShift3ForEdit} onChange={(e) => setPushoverShift3ForEdit(e.target.checked)} />3rd Shift</label>
                               </div>
-                            </div>
-                            <div className="mt-4 flex items-center gap-2 justify-end">
-                              <button className="rounded-2xl bg-red-700 p-3 text-white disabled:opacity-50" onClick={handleSavePushover} disabled={isSavingPushover} title="Save Pushover settings" type="button"><IconSave /></button>
-                              <button type="button" className="rounded-2xl border border-slate-300 p-3 text-slate-600" onClick={handleCloseEdit} title="Cancel"><IconCancel /></button>
                             </div>
                           </div>
                         </div>
