@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getCurrentShift } from "@/lib/shifts";
+import { getCurrentShift, getShiftNameForDate } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { sendPushoverNotification } from "@/lib/pushover";
 import { logSystemEvent } from "@/lib/system-log";
@@ -95,11 +95,14 @@ export async function GET(request: NextRequest) {
     const pushoverToggle = alertInfo.type === "missed_checkoff" ? "pushover_missed_checkoff" : "pushover_missed_checkoff_fup";
 
     const supabase = createAdminClient();
+    const shiftName = getShiftNameForDate(shiftDate);
+    const shiftColumn = shiftName === "1st Shift" ? "pushover_shift_1" : shiftName === "2nd Shift" ? "pushover_shift_2" : "pushover_shift_3";
     const { data: recipients, error: recipientError } = await supabase
       .from("admin_users")
       .select("username, pushover_user_key")
       .eq("pushover_alert_enabled", true)
       .eq(pushoverToggle, true)
+      .eq(shiftColumn, true)
       .not("pushover_user_key", "is", null)
       .neq("pushover_user_key", "");
 

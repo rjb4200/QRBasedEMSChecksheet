@@ -6,6 +6,7 @@ import { generateDailyChecksheetsPdf } from "@/lib/pdf/daily-checksheets";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { logSystemEvent } from "@/lib/system-log";
 import { sendPushoverNotification } from "@/lib/pushover";
+import { getShiftNameForDate } from "@/lib/shifts";
 
 export const runtime = "nodejs";
 
@@ -43,11 +44,14 @@ function isScheduledGetOutsideSendHour(request: NextRequest) {
 async function sendPushoverDailySummary(report: { reportDate: string; allUnits: unknown[]; recipients: { id: string; username: string; email: string }[]; exceptionCounts: Record<string, number> }) {
   try {
     const supabase = createAdminClient();
+    const shiftName = getShiftNameForDate(report.reportDate);
+    const shiftColumn = shiftName === "1st Shift" ? "pushover_shift_1" : shiftName === "2nd Shift" ? "pushover_shift_2" : "pushover_shift_3";
     const { data: pushoverRecipients, error } = await supabase
       .from("admin_users")
       .select("username, pushover_user_key")
       .eq("pushover_alert_enabled", true)
       .eq("pushover_daily_report", true)
+      .eq(shiftColumn, true)
       .not("pushover_user_key", "is", null)
       .neq("pushover_user_key", "");
 

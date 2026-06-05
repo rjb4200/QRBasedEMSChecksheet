@@ -23,7 +23,7 @@ async function updateAdminUser(request: NextRequest, { params }: RouteParams) {
     if (unauthorized) return unauthorized;
 
     const { id } = await params;
-    const { password, email: rawEmail, receivesDailyReport, pushoverUserKey, pushoverAlertEnabled, pushoverDailyReport, pushoverMissedCheckoff, pushoverMissedCheckoffFup } = await request.json();
+    const { password, email: rawEmail, receivesDailyReport, pushoverUserKey, pushoverAlertEnabled, pushoverDailyReport, pushoverMissedCheckoff, pushoverMissedCheckoffFup, pushoverShift1, pushoverShift2, pushoverShift3 } = await request.json();
 
     if (password !== undefined && typeof password !== "string") {
       return NextResponse.json({ error: "Password must be a string" }, { status: 400 });
@@ -64,6 +64,9 @@ async function updateAdminUser(request: NextRequest, { params }: RouteParams) {
     if (pushoverDailyReport !== undefined) updates.pushover_daily_report = pushoverDailyReport === true;
     if (pushoverMissedCheckoff !== undefined) updates.pushover_missed_checkoff = pushoverMissedCheckoff === true;
     if (pushoverMissedCheckoffFup !== undefined) updates.pushover_missed_checkoff_fup = pushoverMissedCheckoffFup === true;
+    if (pushoverShift1 !== undefined) updates.pushover_shift_1 = pushoverShift1 === true;
+    if (pushoverShift2 !== undefined) updates.pushover_shift_2 = pushoverShift2 === true;
+    if (pushoverShift3 !== undefined) updates.pushover_shift_3 = pushoverShift3 === true;
 
     if (Object.keys(updates).length === 1) {
       return NextResponse.json({ error: "No updates provided" }, { status: 400 });
