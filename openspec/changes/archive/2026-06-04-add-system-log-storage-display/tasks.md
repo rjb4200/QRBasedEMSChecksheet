@@ -7,4 +7,4 @@
 - [x] 1.5 Show "Last checked" with date and time
 - [x] 2.1 Run `npm run typecheck`
 - [x] 2.2 Run `npm run build`
-- [ ] 2.3 Manual test: usage card visible at all threshold levels
+- [x] 2.3 Manual test: usage card visible at all threshold levels

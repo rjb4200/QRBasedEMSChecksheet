@@ -26,6 +26,13 @@ The system SHALL support a `DATABASE_STORAGE_LIMIT_MB` environment variable for 
 - **WHEN** `DATABASE_STORAGE_LIMIT_MB` is not set
 - **THEN** the system SHALL default to 500 MB as the storage limit
 
+### Requirement: Storage usage is visible on the System Log page
+In addition to the Fleet Panel warning banner, database storage usage SHALL be visible as a read-only display on the System Log page.
+
+#### Scenario: System Log shows storage details
+- **WHEN** an admin views the System Log page
+- **THEN** the current database storage percentage, MB used/limit, and last-checked time SHALL be displayed
+
 ### Requirement: Storage warning is admin-only
 The storage warning banner SHALL be visible only to authenticated admin users.
 
