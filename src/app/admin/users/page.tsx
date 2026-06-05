@@ -73,6 +73,7 @@ export default function AdminUsersPage() {
   const [testPushoverUserId, setTestPushoverUserId] = useState("");
   const [sendingTestPushover, setSendingTestPushover] = useState(false);
   const [testPushoverFeedback, setTestPushoverFeedback] = useState("");
+  const [userManagementExpanded, setUserManagementExpanded] = useState(false);
   const [newPushoverShift1, setNewPushoverShift1] = useState(false);
   const [newPushoverShift2, setNewPushoverShift2] = useState(false);
   const [newPushoverShift3, setNewPushoverShift3] = useState(false);
@@ -195,8 +196,15 @@ export default function AdminUsersPage() {
         {success && <div className="rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-bold text-green-800">{success}</div>}
 
         <div className="rounded-3xl bg-white p-5 shadow-sm">
-          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">User Management</p>
-          <form onSubmit={handleAddUser} className="mt-4 grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 md:grid-cols-2">
+          <button className="flex w-full items-center justify-between text-left" onClick={() => setUserManagementExpanded((v) => !v)} type="button">
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">User Management</p>
+            <span className={`text-red-700 transition ${userManagementExpanded ? "rotate-180" : ""}`}>
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </span>
+          </button>
+          {userManagementExpanded && (
+            <div className="mt-4">
+          <form onSubmit={handleAddUser} className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5 md:grid-cols-2">
             <label className="grid gap-2 text-sm font-bold text-slate-700">Username
               <input className="rounded-xl border border-slate-300 px-4 py-3" placeholder="Enter username" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} required minLength={3} maxLength={50} pattern="^[a-zA-Z0-9_]+$" />
             </label>
@@ -238,7 +246,8 @@ export default function AdminUsersPage() {
             </div>
             <div className="flex items-end md:col-span-2"><button className="rounded-xl bg-red-700 px-5 py-3 font-bold text-white disabled:opacity-50" type="submit" disabled={isAddingUser || !newUsername || !newPassword}>{isAddingUser ? "Adding..." : "Add User"}</button></div>
           </form>
-
+            </div>
+          )}
           <div className="mt-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Existing Users</p>
