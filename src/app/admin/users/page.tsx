@@ -216,15 +216,17 @@ export default function AdminUsersPage() {
             <div className="md:col-span-2 rounded-xl border border-slate-200 bg-white p-4">
               <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 mb-3">Pushover</p>
               <div className="grid gap-3">
-                <label className="grid gap-1 text-sm font-bold text-slate-700">User Key
-                  <input className="rounded-xl border border-slate-300 px-3 py-2 text-sm" type="password" placeholder="30-char Pushover user key" value={newPushoverUserKey} onChange={(e) => setNewPushoverUserKey(e.target.value)} minLength={0} maxLength={40} />
-                </label>
+                <div className={!newPushoverAlertEnabled ? "opacity-40 pointer-events-none" : ""}>
+                  <label className="grid gap-1 text-sm font-bold text-slate-700">User Key
+                    <input className="rounded-xl border border-slate-300 px-3 py-2 text-sm" type="password" placeholder="30-char Pushover user key" value={newPushoverUserKey} onChange={(e) => setNewPushoverUserKey(e.target.value)} minLength={0} maxLength={40} />
+                  </label>
+                </div>
                 <label className="flex items-center gap-2 text-sm font-bold text-slate-700"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverAlertEnabled} onChange={(e) => setNewPushoverAlertEnabled(e.target.checked)} />Enable Pushover alerts</label>
-                <div className="grid gap-2 sm:grid-cols-2">
+                <div className={!newPushoverAlertEnabled ? "grid gap-2 sm:grid-cols-2 opacity-40 pointer-events-none" : "grid gap-2 sm:grid-cols-2"}>
                   <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverMissedCheckoff} onChange={(e) => setNewPushoverMissedCheckoff(e.target.checked)} />Missed checkoff</label>
                   <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverMissedCheckoffFup} onChange={(e) => setNewPushoverMissedCheckoffFup(e.target.checked)} />Follow-up</label>
                 </div>
-                <div className="border-t border-slate-100 pt-2">
+                <div className={!newPushoverAlertEnabled ? "border-t border-slate-100 pt-2 opacity-40 pointer-events-none" : "border-t border-slate-100 pt-2"}>
                   <p className="text-xs font-bold text-slate-500 mb-2">Receive alerts during:</p>
                   <div className="flex gap-4">
                     <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverShift1} onChange={(e) => setNewPushoverShift1(e.target.checked)} />1st Shift</label>
@@ -289,18 +291,20 @@ export default function AdminUsersPage() {
                           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                             <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 mb-4">Pushover</p>
                             <div className="grid gap-4 sm:grid-cols-2">
-                              <label className="grid gap-1 text-sm font-bold text-slate-700">User Key
-                                <input className="rounded-xl border border-slate-300 px-3 py-2" type="password" placeholder="30-char Pushover user key" value={pushoverUserKeyForEdit} onChange={(e) => setPushoverUserKeyForEdit(e.target.value)} maxLength={40} />
-                              </label>
+                              <div className={!pushoverAlertEnabledForEdit ? "opacity-40 pointer-events-none" : ""}>
+                                <label className="grid gap-1 text-sm font-bold text-slate-700">User Key
+                                  <input className="rounded-xl border border-slate-300 px-3 py-2" type="password" placeholder="30-char Pushover user key" value={pushoverUserKeyForEdit} onChange={(e) => setPushoverUserKeyForEdit(e.target.value)} maxLength={40} />
+                                </label>
+                              </div>
                               <div className="flex flex-col gap-2 justify-end">
                                 <label className="flex items-center gap-2 text-sm font-bold text-slate-700"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={pushoverAlertEnabledForEdit} onChange={(e) => setPushoverAlertEnabledForEdit(e.target.checked)} />Enable Pushover</label>
-                                <div className="grid grid-cols-2 gap-1">
+                                <div className={!pushoverAlertEnabledForEdit ? "opacity-40 pointer-events-none grid grid-cols-2 gap-1" : "grid grid-cols-2 gap-1"}>
                                   <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={pushoverMissedCheckoffForEdit} onChange={(e) => setPushoverMissedCheckoffForEdit(e.target.checked)} />Missed (0930)</label>
                                   <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={pushoverMissedCheckoffFupForEdit} onChange={(e) => setPushoverMissedCheckoffFupForEdit(e.target.checked)} />Follow-up (1300)</label>
                                 </div>
                               </div>
                             </div>
-                            <div className="mt-3 border-t border-slate-200 pt-3">
+                            <div className={!pushoverAlertEnabledForEdit ? "mt-3 border-t border-slate-200 pt-3 opacity-40 pointer-events-none" : "mt-3 border-t border-slate-200 pt-3"}>
                               <p className="text-xs font-bold text-slate-500 mb-2">Receive alerts during:</p>
                               <div className="flex gap-4">
                                 <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={pushoverShift1ForEdit} onChange={(e) => setPushoverShift1ForEdit(e.target.checked)} />1st Shift</label>
