@@ -205,7 +205,7 @@ export default function AdminUsersPage() {
               <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 mb-3">Pushover</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="grid gap-1 text-sm font-bold text-slate-700">User Key
-                  <input className="rounded-xl border border-slate-300 px-3 py-2 text-sm" placeholder="30-char Pushover user key" value={newPushoverUserKey} onChange={(e) => setNewPushoverUserKey(e.target.value)} minLength={0} maxLength={40} />
+                  <input className="rounded-xl border border-slate-300 px-3 py-2 text-sm" type="password" placeholder="30-char Pushover user key" value={newPushoverUserKey} onChange={(e) => setNewPushoverUserKey(e.target.value)} minLength={0} maxLength={40} />
                 </label>
                 <div className="flex flex-col justify-end gap-2">
                   <label className="flex items-center gap-2 text-sm font-bold text-slate-700"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverAlertEnabled} onChange={(e) => setNewPushoverAlertEnabled(e.target.checked)} />Enable Pushover alerts</label>
@@ -249,7 +249,7 @@ export default function AdminUsersPage() {
                           <label className="flex items-center gap-2 text-xs font-bold text-slate-700"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={receivesDailyReportForEdit} onChange={(e) => setReceivesDailyReportForEdit(e.target.checked)} />Daily report</label>
                           <div className="flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2">
                             <span className="text-xs font-bold text-slate-600">Pushover:</span>
-                            <input className="rounded-lg border border-slate-300 px-2 py-1 text-xs w-32" type="text" placeholder="User Key" value={pushoverUserKeyForEdit} onChange={(e) => setPushoverUserKeyForEdit(e.target.value)} maxLength={40} />
+                            <input className="rounded-lg border border-slate-300 px-2 py-1 text-xs w-32" type="password" placeholder="User Key" value={pushoverUserKeyForEdit} onChange={(e) => setPushoverUserKeyForEdit(e.target.value)} maxLength={40} />
                             <label className="flex items-center gap-1 text-xs text-slate-600"><input className="h-3 w-3 accent-red-700" type="checkbox" checked={pushoverAlertEnabledForEdit} onChange={(e) => setPushoverAlertEnabledForEdit(e.target.checked)} />On</label>
                             <label className="flex items-center gap-1 text-xs text-slate-600"><input className="h-3 w-3 accent-red-700" type="checkbox" checked={pushoverDailyReportForEdit} onChange={(e) => setPushoverDailyReportForEdit(e.target.checked)} />Daily</label>
                             <label className="flex items-center gap-1 text-xs text-slate-600"><input className="h-3 w-3 accent-red-700" type="checkbox" checked={pushoverMissedCheckoffForEdit} onChange={(e) => setPushoverMissedCheckoffForEdit(e.target.checked)} />0930</label>
