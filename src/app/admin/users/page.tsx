@@ -230,7 +230,10 @@ export default function AdminUsersPage() {
               <input className="rounded-xl border border-slate-300 px-4 py-3" type="email" placeholder="name@example.com" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
             </label>
             <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700">
-              <input className="h-4 w-4 accent-red-700" type="checkbox" checked={newReceivesDailyReport} onChange={(e) => setNewReceivesDailyReport(e.target.checked)} /> Receives daily report
+              <input className="h-4 w-4 accent-red-700" type="checkbox" checked={newReceivesDailyReport} onChange={(e) => setNewReceivesDailyReport(e.target.checked)} /> Receives daily report email
+            </label>
+            <label className="flex items-center gap-3 text-sm text-slate-600">
+              <input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverDailyReport} onChange={(e) => setNewPushoverDailyReport(e.target.checked)} /> Pushover daily summary (1000)
             </label>
             <div className="md:col-span-2 rounded-xl border border-slate-200 bg-white p-4">
               <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 mb-3">Pushover</p>
@@ -239,8 +242,7 @@ export default function AdminUsersPage() {
                   <input className="rounded-xl border border-slate-300 px-3 py-2 text-sm" type="password" placeholder="30-char Pushover user key" value={newPushoverUserKey} onChange={(e) => setNewPushoverUserKey(e.target.value)} minLength={0} maxLength={40} />
                 </label>
                 <label className="flex items-center gap-2 text-sm font-bold text-slate-700"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverAlertEnabled} onChange={(e) => setNewPushoverAlertEnabled(e.target.checked)} />Enable Pushover alerts</label>
-                <div className="grid gap-2 sm:grid-cols-3">
-                  <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverDailyReport} onChange={(e) => setNewPushoverDailyReport(e.target.checked)} />Daily report</label>
+                <div className="grid gap-2 sm:grid-cols-2">
                   <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverMissedCheckoff} onChange={(e) => setNewPushoverMissedCheckoff(e.target.checked)} />Missed checkoff</label>
                   <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverMissedCheckoffFup} onChange={(e) => setNewPushoverMissedCheckoffFup(e.target.checked)} />Follow-up</label>
                 </div>
@@ -300,7 +302,10 @@ export default function AdminUsersPage() {
                               </label>
                             </div>
                             <label className="mt-4 flex items-center gap-3 text-sm font-bold text-slate-700">
-                              <input className="h-4 w-4 accent-red-700" type="checkbox" checked={receivesDailyReportForEdit} onChange={(e) => setReceivesDailyReportForEdit(e.target.checked)} />Receives daily report
+                              <input className="h-4 w-4 accent-red-700" type="checkbox" checked={receivesDailyReportForEdit} onChange={(e) => setReceivesDailyReportForEdit(e.target.checked)} />Receives daily report email
+                            </label>
+                            <label className="mt-2 flex items-center gap-3 text-sm text-slate-600">
+                              <input className="h-4 w-4 accent-red-700" type="checkbox" checked={pushoverDailyReportForEdit} onChange={(e) => setPushoverDailyReportForEdit(e.target.checked)} />Pushover daily summary (1000)
                             </label>
                             <div className="mt-4 flex items-center gap-2 justify-end">
                               <button className="rounded-2xl bg-red-700 p-3 text-white disabled:opacity-50" onClick={handleSaveEmail} disabled={isSavingEmail} title="Save email settings" type="button"><IconSave /></button>
@@ -316,7 +321,6 @@ export default function AdminUsersPage() {
                               <div className="flex flex-col gap-2 justify-end">
                                 <label className="flex items-center gap-2 text-sm font-bold text-slate-700"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={pushoverAlertEnabledForEdit} onChange={(e) => setPushoverAlertEnabledForEdit(e.target.checked)} />Enable Pushover</label>
                                 <div className="grid grid-cols-2 gap-1">
-                                  <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={pushoverDailyReportForEdit} onChange={(e) => setPushoverDailyReportForEdit(e.target.checked)} />Daily (1000)</label>
                                   <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={pushoverMissedCheckoffForEdit} onChange={(e) => setPushoverMissedCheckoffForEdit(e.target.checked)} />Missed (0930)</label>
                                   <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={pushoverMissedCheckoffFupForEdit} onChange={(e) => setPushoverMissedCheckoffFupForEdit(e.target.checked)} />Follow-up (1300)</label>
                                 </div>
