@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
 
     return {
       id: row._kind === "general" ? `general-${row.id}` : row.id,
+      unitId: row.unit_id,
       unitName,
       sourceName: row._kind === "general" ? "General" : row.source_name,
       comment: row.comment,
@@ -83,8 +84,9 @@ export async function GET(request: NextRequest) {
   commentRows.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   const limited = commentRows.slice(0, limit);
 
-  const comments = limited.map(({ id, unitName, sourceName, comment, createdAt, shiftDate, crewNames }) => ({
+  const comments = limited.map(({ id, unitName, sourceName, comment, createdAt, shiftDate, crewNames, unitId }) => ({
     id,
+    unitId,
     unitName,
     sourceName,
     comment,

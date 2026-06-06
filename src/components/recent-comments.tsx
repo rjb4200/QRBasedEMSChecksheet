@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 type RecentComment = {
   id: string;
+  unitId: string;
   unitName: string;
   sourceName: string;
   comment: string;
@@ -43,6 +44,13 @@ export function RecentComments() {
   const [expandedLoading, setExpandedLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
+  const [escalatingId, setEscalatingId] = useState<string | null>(null);
+  const [escTitle, setEscTitle] = useState("");
+  const [escDescription, setEscDescription] = useState("");
+  const [escUnitId, setEscUnitId] = useState("");
+  const [escError, setEscError] = useState("");
+  const [escSubmitting, setEscSubmitting] = useState(false);
+
   useEffect(() => {
     setCompactLoading(true);
     fetch("/api/admin/recent-comments?mode=compact")
@@ -67,6 +75,37 @@ export function RecentComments() {
   const loading = open ? expandedLoading : compactLoading;
   const emptyMessage = open ? "No comments in the last 10 days." : "No recent comments to preview.";
 
+  function startEscalate(comment: RecentComment) {
+    setEscalatingId(comment.id);
+    setEscTitle(`${comment.unitName} — ${comment.sourceName}`);
+    setEscDescription(comment.comment);
+    setEscUnitId(comment.unitId ?? "");
+    setEscError("");
+  }
+
+  function cancelEscalate() {
+    setEscalatingId(null);
+    setEscTitle("");
+    setEscDescription("");
+    setEscUnitId("");
+    setEscError("");
+  }
+
+  async function submitEscalate() {
+    setEscError(""); setEscSubmitting(true);
+    try {
+      const res = await fetch("/api/admin/issues", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: escTitle, description: escDescription, unitId: escUnitId || undefined }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      cancelEscalate();
+    } catch (err) {
+      setEscError(err instanceof Error ? err.message : "Failed to create issue");
+    } finally { setEscSubmitting(false); }
+  }
+
   return (
     <section className="rounded-3xl bg-white p-5 shadow-sm">
       <button className="flex w-full items-center justify-between gap-3 text-left" onClick={() => setOpen((value) => !value)} type="button">
@@ -82,13 +121,36 @@ export function RecentComments() {
           <div className="space-y-3">
             {visibleComments.map((comment) => (
               <div key={comment.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                <p className="text-xs font-bold text-slate-500">
-                  {formatRelativeDate(comment.createdAt)} | {comment.unitName} | {comment.sourceName}
-                </p>
-                {comment.crewNames ? (
-                  <p className="mt-2 inline-flex rounded-full bg-red-100 px-2 py-1 text-xs font-black text-red-800">Crew: {comment.crewNames}</p>
-                ) : null}
-                <p className="mt-1 whitespace-pre-wrap text-sm font-semibold text-slate-700">{comment.comment}</p>
+                {escalatingId === comment.id ? (
+                  <div className="grid gap-3">
+                    {escError && <p className="text-xs font-bold text-red-700">{escError}</p>}
+                    <label className="grid gap-1 text-xs font-bold text-slate-700">Title
+                      <input className="rounded-xl border border-slate-300 px-3 py-2 text-sm" value={escTitle} onChange={(e) => setEscTitle(e.target.value)} />
+                    </label>
+                    <label className="grid gap-1 text-xs font-bold text-slate-700">Description
+                      <textarea className="rounded-xl border border-slate-300 px-3 py-2 text-sm" rows={3} value={escDescription} onChange={(e) => setEscDescription(e.target.value)} />
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <button className="rounded-xl bg-red-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" onClick={submitEscalate} disabled={escSubmitting || !escTitle.trim()} type="button">{escSubmitting ? "Creating..." : "Create"}</button>
+                      <button className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-600" onClick={cancelEscalate} type="button">Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-slate-500">
+                          {formatRelativeDate(comment.createdAt)} | {comment.unitName} | {comment.sourceName}
+                        </p>
+                        {comment.crewNames ? (
+                          <p className="mt-2 inline-flex rounded-full bg-red-100 px-2 py-1 text-xs font-black text-red-800">Crew: {comment.crewNames}</p>
+                        ) : null}
+                        <p className="mt-1 whitespace-pre-wrap text-sm font-semibold text-slate-700">{comment.comment}</p>
+                      </div>
+                      <button className="shrink-0 rounded-lg border border-red-200 px-2 py-1 text-xs font-bold text-red-700 hover:bg-red-50" onClick={() => startEscalate(comment)} type="button">Create Issue</button>
+                    </div>
+                  </>
+                )}
               </div>
               ))}
             </div>
