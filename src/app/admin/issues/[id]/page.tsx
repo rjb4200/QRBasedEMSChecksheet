@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 interface IssueNote {
   id: string;
@@ -47,6 +47,7 @@ function tagColor(tag: string) {
 
 export default function IssueDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const issueId = params.id as string;
 
   const [issue, setIssue] = useState<Issue | null>(null);
@@ -65,6 +66,8 @@ export default function IssueDetailPage() {
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [savingDetails, setSavingDetails] = useState(false);
+
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => { fetchIssue(); fetchNotes(); }, [issueId]);
 
@@ -155,6 +158,19 @@ export default function IssueDetailPage() {
     } finally { setSavingDetails(false); }
   }
 
+  async function handleDelete() {
+    setError(""); setDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/issues/${issueId}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      router.push("/admin/issues");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete issue");
+      setDeleting(false);
+    }
+  }
+
   function formatDate(dateStr: string) {
     return new Date(dateStr).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
   }
@@ -194,7 +210,6 @@ export default function IssueDetailPage() {
                 <>
                   <div className="flex flex-wrap items-center gap-2">
                     <h1 className="text-2xl font-black text-slate-950">{issue.title}</h1>
-                    <button className="text-xs font-semibold text-slate-400 hover:text-red-700" onClick={() => { setEditingDetails(true); setEditTitle(issue.title); setEditDescription(issue.description ?? ""); }} type="button">Edit</button>
                     <span className={`rounded-lg border px-2 py-0.5 text-xs font-bold ${status.color}`}>{status.label}</span>
                   </div>
                   <p className="mt-2 text-sm text-slate-500">
@@ -204,16 +219,20 @@ export default function IssueDetailPage() {
                 </>
               )}
             </div>
-            <select
-              className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold"
-              value={issue.status}
-              disabled={updatingStatus}
-              onChange={(e) => handleStatusChange(e.target.value)}
-            >
-              <option value="open">Open</option>
-              <option value="in_progress">In Progress</option>
-              <option value="closed">Closed</option>
-            </select>
+            <div className="flex items-center gap-2">
+              {!editingDetails && (
+                <button className="text-xs font-semibold text-slate-400 hover:text-red-700" onClick={() => { setEditingDetails(true); setEditTitle(issue.title); setEditDescription(issue.description ?? ""); }} type="button">Edit</button>
+              )}
+              {deleting ? (
+                <>
+                  <span className="text-xs font-bold text-red-700">Delete?</span>
+                  <button className="rounded-lg bg-red-700 px-2 py-0.5 text-xs font-bold text-white" onClick={handleDelete} type="button">Confirm</button>
+                  <button className="text-xs text-slate-500" onClick={() => setDeleting(false)} type="button">Cancel</button>
+                </>
+              ) : (
+                !editingDetails && <button className="text-xs font-semibold text-red-400 hover:text-red-700" onClick={() => setDeleting(true)} type="button">Delete</button>
+              )}
+            </div>
           </div>
 
           <div className="mt-4 border-t border-slate-100 pt-4">
@@ -237,9 +256,26 @@ export default function IssueDetailPage() {
 
           {!editingDetails && issue.description && (
             <div className="mt-4 border-t border-slate-100 pt-4">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 mb-2">Description</p>
               <p className="whitespace-pre-wrap text-sm text-slate-700">{issue.description}</p>
             </div>
           )}
+        </div>
+
+        <div className="rounded-3xl bg-white p-6 shadow-sm">
+          <div className="flex items-center gap-3">
+            <p className="text-sm font-black uppercase tracking-[0.25em] text-red-700">Status</p>
+            <select
+              className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold"
+              value={issue.status}
+              disabled={updatingStatus}
+              onChange={(e) => handleStatusChange(e.target.value)}
+            >
+              <option value="open">Open</option>
+              <option value="in_progress">In Progress</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
         </div>
 
         <div className="rounded-3xl bg-white p-6 shadow-sm">
