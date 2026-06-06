@@ -91,12 +91,13 @@ export function RecentComments() {
     setEscError("");
   }
 
-  async function submitEscalate() {
+  async function submitEscalate(comment: RecentComment) {
     setEscError(""); setEscSubmitting(true);
     try {
+      const tags = comment.crewNames ? [comment.crewNames] : undefined;
       const res = await fetch("/api/admin/issues", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: escTitle, description: escDescription, unitId: escUnitId || undefined }),
+        body: JSON.stringify({ title: escTitle, description: escDescription, unitId: escUnitId || undefined, tags }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -131,7 +132,7 @@ export function RecentComments() {
                       <textarea className="rounded-xl border border-slate-300 px-3 py-2 text-sm" rows={3} value={escDescription} onChange={(e) => setEscDescription(e.target.value)} />
                     </label>
                     <div className="flex items-center gap-2">
-                      <button className="rounded-xl bg-red-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" onClick={submitEscalate} disabled={escSubmitting || !escTitle.trim()} type="button">{escSubmitting ? "Creating..." : "Create"}</button>
+                      <button className="rounded-xl bg-red-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" onClick={() => submitEscalate(comment)} disabled={escSubmitting || !escTitle.trim()} type="button">{escSubmitting ? "Creating..." : "Create"}</button>
                       <button className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-600" onClick={cancelEscalate} type="button">Cancel</button>
                     </div>
                   </div>
