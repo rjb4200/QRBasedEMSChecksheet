@@ -263,19 +263,7 @@ export default function AdminUsersPage() {
                     <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverShift2} onChange={(e) => setNewPushoverShift2(e.target.checked)} />2nd Shift</label>
                     <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverShift3} onChange={(e) => setNewPushoverShift3(e.target.checked)} />3rd Shift</label>
           </div>
-          <div className="mt-4 flex items-end gap-3 border-t border-slate-200 pt-4">
-            <div className="grid gap-1">
-              <label className="text-xs font-bold text-slate-700">Test Weekly Digest</label>
-              <select className="rounded-xl border border-slate-300 px-3 py-2 text-sm" value={testWeeklyRecipient} onChange={(e) => setTestWeeklyRecipient(e.target.value)}>
-                <option value="">Select user...</option>
-                {users.filter((u) => u.email && u.receives_weekly_issues_digest).map((u) => (
-                  <option key={u.id} value={u.email!}>{u.username} ({u.email})</option>
-                ))}
-              </select>
-            </div>
-            <button className="rounded-xl bg-red-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" disabled={!testWeeklyRecipient || sendingTestWeekly} onClick={handleTestWeekly} type="button">{sendingTestWeekly ? "Sending..." : "Send"}</button>
-            {testWeeklyFeedback && <span className={`text-sm font-semibold ${testWeeklyFeedback.startsWith("Sent") ? "text-green-700" : "text-red-700"}`}>{testWeeklyFeedback}</span>}
-          </div>
+
         </div>
               </div>
             </div>
@@ -404,6 +392,19 @@ export default function AdminUsersPage() {
             </div>
             <button className="rounded-xl bg-orange-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" disabled={!testPushoverUserId || sendingTestPushover} onClick={handleTestPushover} type="button">{sendingTestPushover ? "Sending..." : "Send"}</button>
             {testPushoverFeedback && <span className={`text-sm font-semibold ${testPushoverFeedback === "Pushover test sent" ? "text-green-700" : "text-red-700"}`}>{testPushoverFeedback}</span>}
+          </div>
+          <div className="mt-4 flex items-end gap-3 border-t border-slate-200 pt-4">
+            <div className="grid gap-1">
+              <label className="text-xs font-bold text-slate-700">Test Weekly Digest</label>
+              <select className="rounded-xl border border-slate-300 px-3 py-2 text-sm" value={testWeeklyRecipient} onChange={(e) => setTestWeeklyRecipient(e.target.value)}>
+                <option value="">Select user...</option>
+                {users.filter((u) => u.email && u.receives_weekly_issues_digest).map((u) => (
+                  <option key={u.id} value={u.email!}>{u.username} ({u.email})</option>
+                ))}
+              </select>
+            </div>
+            <button className="rounded-xl bg-red-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" disabled={!testWeeklyRecipient || sendingTestWeekly} onClick={handleTestWeekly} type="button">{sendingTestWeekly ? "Sending..." : "Send"}</button>
+            {testWeeklyFeedback && <span className={`text-sm font-semibold ${testWeeklyFeedback.startsWith("Sent") ? "text-green-700" : "text-red-700"}`}>{testWeeklyFeedback}</span>}
           </div>
         </div>
       </section>
