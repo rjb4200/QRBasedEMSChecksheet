@@ -291,13 +291,19 @@ export default function AdminUsersPage() {
                     <div>
                       <p className="font-bold text-slate-950">{user.username}</p>
                       <p className="text-sm text-slate-600">{user.email || "No report email"}</p>
-                      <p className={`text-xs font-bold uppercase tracking-[0.15em] ${user.receives_daily_report ? "text-green-700" : "text-slate-500"}`}>{user.receives_daily_report ? "Daily report enabled" : "Daily report disabled"}</p>
-                      {user.pushover_alert_enabled && user.pushover_user_key ? (
-                        <p className="text-xs font-bold uppercase tracking-[0.15em] text-amber-700">
-                          Pushover: {(user.pushover_missed_checkoff ? "M" : "")}{(user.pushover_missed_checkoff_fup ? "/F" : "") || "Enabled"}
-                          {(user.pushover_shift_1 || user.pushover_shift_2 || user.pushover_shift_3) ? ` (${[user.pushover_shift_1 && "1st", user.pushover_shift_2 && "2nd", user.pushover_shift_3 && "3rd"].filter(Boolean).join(", ")})` : ""}
-                        </p>
-                      ) : null}
+                      <div className="mt-1 flex flex-wrap gap-1.5">
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold border ${user.receives_daily_report ? "bg-green-100 text-green-800 border-green-200" : "bg-slate-100 text-slate-700 border-slate-300"}`}>Daily Report</span>
+                        {user.pushover_alert_enabled && user.pushover_user_key ? (
+                          <>
+                            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold border border-amber-200 text-amber-800">Pushover</span>
+                            {user.pushover_missed_checkoff && <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700">Missed</span>}
+                            {user.pushover_missed_checkoff_fup && <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700">Follow-up</span>}
+                            {user.pushover_shift_1 && <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700">1st Shift</span>}
+                            {user.pushover_shift_2 && <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700">2nd Shift</span>}
+                            {user.pushover_shift_3 && <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700">3rd Shift</span>}
+                          </>
+                        ) : null}
+                      </div>
                       <p className="text-sm text-slate-500">Created {formatDate(user.created_at)}</p>
                     </div>
                       {editingUserId === user.id ? (
