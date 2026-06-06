@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE_NAME, getAdminSessionPrincipal } from "@/lib/auth/admin-session";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
+function normalizeTags(tags: unknown): string[] | null {
+  if (!Array.isArray(tags)) return null;
+  const normalized = [...new Set(
+    tags.map((t) => typeof t === "string" ? t.trim().toLowerCase() : "").filter(Boolean)
+  )];
+  return normalized.length > 0 ? normalized : null;
+}
+
 async function requireAdminSession(request: NextRequest) {
   const session = await getAdminSessionPrincipal(request.cookies.get(ADMIN_COOKIE_NAME)?.value);
   if (!session) {
@@ -18,7 +26,7 @@ export async function GET(request: NextRequest) {
     const supabase = createAdminClient();
     const { data: issues, error } = await supabase
       .from("issues")
-      .select("id, title, description, unit_id, status, created_by, created_at, updated_at, units(name)")
+      .select("id, title, description, unit_id, tags, status, created_by, created_at, updated_at, units(name)")
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -38,7 +46,7 @@ export async function POST(request: NextRequest) {
     if (unauthorized) return unauthorized;
 
     const principal = await getAdminSessionPrincipal(request.cookies.get(ADMIN_COOKIE_NAME)?.value);
-    const { title, description, unitId } = await request.json();
+    const { title, description, unitId, tags } = await request.json();
 
     if (!title || typeof title !== "string" || !title.trim()) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 });
@@ -53,8 +61,9 @@ export async function POST(request: NextRequest) {
         unit_id: unitId || null,
         status: "open",
         created_by: principal ? principal.username : "Admin",
+        tags: normalizeTags(tags),
       })
-      .select("id, title, description, unit_id, status, created_by, created_at, updated_at, units(name)")
+      .select("id, title, description, unit_id, tags, status, created_by, created_at, updated_at, units(name)")
       .single();
 
     if (error) {

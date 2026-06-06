@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { ADMIN_COOKIE_NAME, getAdminSessionPrincipal } from "@/lib/auth/admin-session";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
+function normalizeTags(tags: unknown): string[] | null {
+  if (!Array.isArray(tags)) return null;
+  const normalized = [...new Set(
+    tags.map((t) => typeof t === "string" ? t.trim().toLowerCase() : "").filter(Boolean)
+  )];
+  return normalized.length > 0 ? normalized : null;
+}
+
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
@@ -20,7 +28,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (unauthorized) return unauthorized;
 
     const { id } = await params;
-    const { status, title, description, unitId } = await request.json();
+    const { status, title, description, unitId, tags } = await request.json();
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
@@ -42,13 +50,17 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (unitId !== undefined) {
       updates.unit_id = unitId || null;
     }
+    if (tags !== undefined) {
+      const normalized = normalizeTags(tags);
+      updates.tags = normalized;
+    }
 
     const supabase = createAdminClient();
     const { data: issue, error } = await supabase
       .from("issues")
       .update(updates)
       .eq("id", id)
-      .select("id, title, description, unit_id, status, created_by, created_at, updated_at, units(name)")
+      .select("id, title, description, unit_id, tags, status, created_by, created_at, updated_at, units(name)")
       .single();
 
     if (error) {

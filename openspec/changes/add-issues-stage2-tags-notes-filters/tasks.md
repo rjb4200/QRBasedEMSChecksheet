@@ -1,0 +1,25 @@
+## 1. Database Migrations
+
+- [x] 1.1 Create migration adding `tags text[] DEFAULT '{}'` column to `issues` table
+- [x] 1.2 Create migration for `issue_notes` table (id, issue_id FK cascade, text, created_by, created_at)
+- [x] 1.3 Apply both migrations
+- [x] 2.1 Update `POST /api/admin/issues` to accept and normalize `tags` (trim, lowercase, remove duplicates)
+- [x] 2.2 Update `PUT /api/admin/issues/[id]` to accept `tags` field
+- [x] 2.3 Create `GET /api/admin/issues/[id]/notes` to list notes for an issue
+- [x] 2.4 Create `POST /api/admin/issues/[id]/notes` to add a note (admin auth, rejects blank text)
+- [x] 3.1 Add tags input field to the create-issue form (comma-separated text input)
+- [x] 3.2 Display tag badges on issue cards with deterministic colors from a fixed palette
+- [x] 3.3 Add inline tag editing to issue cards (edit tags via a small input)
+- [x] 3.4 Normalize tags on save (trim, lowercase, deduplicate)
+- [x] 4.1 Add collapsible notes section to each issue card with note count
+- [x] 4.2 Fetch and display all notes when expanded (chronological, oldest first)
+- [x] 4.3 Add "Add Note" textarea with submit button to expanded notes section
+- [x] 5.1 Add filter bar below status tabs: unit dropdown, tag dropdown, text search input
+- [x] 5.2 Unit dropdown populated from `/api/admin/units-list`
+- [x] 5.3 Tag dropdown populated dynamically from all unique tags in loaded issues
+- [x] 5.4 Text search filters issues by title and description (case-insensitive)
+- [x] 5.5 Add sort dropdown (Newest first, Oldest first, Recently updated, Title A-Z)
+- [x] 5.6 Apply sorting and filtering client-side, respecting the active status tab
+- [x] 6.1 Run `npm run typecheck`
+- [x] 6.2 Run `npm run build`
+- [ ] 6.3 Manual test: create issue with tags, add notes, verify filters and sort work
