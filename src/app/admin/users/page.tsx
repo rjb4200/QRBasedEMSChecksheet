@@ -234,7 +234,7 @@ export default function AdminUsersPage() {
             <div className="mt-4 space-y-3">
               {users.length === 0 ? <p className="text-slate-500">No admin users found</p> : (
                 users.map((user) => (
-                  <div key={user.id} className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                  <div key={user.id} className="flex flex-col gap-4 rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <p className="font-bold text-slate-950">{user.username}</p>
                       <p className="text-sm text-slate-600">{user.email || "No report email"}</p>
@@ -264,7 +264,7 @@ export default function AdminUsersPage() {
                               <button type="button" className="rounded-2xl border border-slate-300 p-3 text-slate-600" onClick={handleCloseEdit} title="Cancel"><IconCancel /></button>
                             </div>
                           </div>
-                          <div className="rounded-2xl border border-slate-200 p-5">
+                          <div className="rounded-2xl border-2 border-slate-200 p-5">
                             <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700 mb-4">Email &amp; Password</p>
                             <div className="grid gap-4 sm:grid-cols-2">
                               <label className="grid gap-1 text-sm font-bold text-slate-700">New Password
@@ -278,7 +278,7 @@ export default function AdminUsersPage() {
                               <input className="h-4 w-4 accent-red-700" type="checkbox" checked={receivesDailyReportForEdit} onChange={(e) => setReceivesDailyReportForEdit(e.target.checked)} />Receives daily report email
                             </label><label className="mt-2 flex items-center gap-3 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={receivesWeeklyDigestForEdit} onChange={(e) => setReceivesWeeklyDigestForEdit(e.target.checked)} />Weekly issues digest</label>
                           </div>
-                          <div className="rounded-2xl border border-slate-200 p-5">
+                          <div className="rounded-2xl border-2 border-slate-200 p-5">
                             <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700 mb-4">Pushover</p>
                             <div className="grid gap-4 sm:grid-cols-2">
                               <div className={!pushoverAlertEnabledForEdit ? "opacity-40 pointer-events-none" : ""}>
@@ -336,7 +336,7 @@ export default function AdminUsersPage() {
           </button>
           {userManagementExpanded && (
             <div className="mt-4">
-          <form onSubmit={handleAddUser} className="grid gap-4 rounded-2xl border border-slate-200 p-5 md:grid-cols-2">
+          <form onSubmit={handleAddUser} className="grid gap-4 rounded-2xl border-2 border-slate-200 p-5 md:grid-cols-2">
             <label className="grid gap-2 text-sm font-bold text-slate-700">Username
               <input className="rounded-2xl border border-slate-300 px-4 py-3" placeholder="Enter username" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} required minLength={3} maxLength={50} pattern="^[a-zA-Z0-9_]+$" />
             </label>
@@ -350,10 +350,10 @@ export default function AdminUsersPage() {
             <label className="grid gap-2 text-sm font-bold text-slate-700">Email for Daily Reports
               <input className="rounded-2xl border border-slate-300 px-4 py-3" type="email" placeholder="name@example.com" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
             </label>
-                              <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700">
+                              <label className="flex items-center gap-3 rounded-2xl border-2 border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700">
               <input className="h-4 w-4 accent-red-700" type="checkbox" checked={newReceivesDailyReport} onChange={(e) => setNewReceivesDailyReport(e.target.checked)} /> Receives daily report email
             </label><label className="flex items-center gap-3 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newReceivesWeeklyDigest} onChange={(e) => setNewReceivesWeeklyDigest(e.target.checked)} /> Weekly issues digest</label>
-            <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="md:col-span-2 rounded-2xl border-2 border-slate-200 bg-white p-4">
               <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700 mb-3">Pushover</p>
               <div className="grid gap-3">
                 <div className={!newPushoverAlertEnabled ? "opacity-40 pointer-events-none" : ""}>
