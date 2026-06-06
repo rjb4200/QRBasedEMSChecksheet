@@ -23,7 +23,7 @@ async function updateAdminUser(request: NextRequest, { params }: RouteParams) {
     if (unauthorized) return unauthorized;
 
     const { id } = await params;
-    const { password, email: rawEmail, receivesDailyReport, pushoverUserKey, pushoverAlertEnabled, pushoverDailyReport, pushoverMissedCheckoff, pushoverMissedCheckoffFup, pushoverShift1, pushoverShift2, pushoverShift3 } = await request.json();
+    const { password, email: rawEmail, receivesDailyReport, receivesWeeklyIssuesDigest, pushoverUserKey, pushoverAlertEnabled, pushoverDailyReport, pushoverMissedCheckoff, pushoverMissedCheckoffFup, pushoverShift1, pushoverShift2, pushoverShift3 } = await request.json();
 
     if (password !== undefined && typeof password !== "string") {
       return NextResponse.json({ error: "Password must be a string" }, { status: 400 });
@@ -53,6 +53,7 @@ async function updateAdminUser(request: NextRequest, { params }: RouteParams) {
     if (receivesDailyReport !== undefined) {
       updates.receives_daily_report = receivesDailyReport === true;
     }
+    if (receivesWeeklyIssuesDigest !== undefined) updates.receives_weekly_issues_digest = receivesWeeklyIssuesDigest === true;
 
     if (pushoverUserKey !== undefined) {
       if (typeof pushoverUserKey !== "string" || (pushoverUserKey.length > 0 && (pushoverUserKey.length < 30 || pushoverUserKey.length > 40))) {

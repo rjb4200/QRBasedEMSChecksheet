@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     const { data: users, error } = await supabase
       .from("admin_users")
-      .select("id, username, email, receives_daily_report, pushover_user_key, pushover_alert_enabled, pushover_daily_report, pushover_missed_checkoff, pushover_missed_checkoff_fup, pushover_shift_1, pushover_shift_2, pushover_shift_3, created_at, updated_at")
+      .select("id, username, email, receives_daily_report, receives_weekly_issues_digest, pushover_user_key, pushover_alert_enabled, pushover_daily_report, pushover_missed_checkoff, pushover_missed_checkoff_fup, pushover_shift_1, pushover_shift_2, pushover_shift_3, created_at, updated_at")
       .order("created_at", { ascending: true });
 
     if (error) {
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const unauthorized = await requireAdminSession(request);
     if (unauthorized) return unauthorized;
 
-    const { username, password, email: rawEmail, receivesDailyReport, pushoverUserKey, pushoverAlertEnabled, pushoverDailyReport, pushoverMissedCheckoff, pushoverMissedCheckoffFup, pushoverShift1, pushoverShift2, pushoverShift3 } = await request.json();
+    const { username, password, email: rawEmail, receivesDailyReport, receivesWeeklyIssuesDigest, pushoverUserKey, pushoverAlertEnabled, pushoverDailyReport, pushoverMissedCheckoff, pushoverMissedCheckoffFup, pushoverShift1, pushoverShift2, pushoverShift3 } = await request.json();
 
     if (!username || !password) {
       return NextResponse.json({ error: "Username and password are required" }, { status: 400 });
@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
         password_hash: passwordHash,
         email,
         receives_daily_report: receivesDailyReport !== false,
+        receives_weekly_issues_digest: receivesWeeklyIssuesDigest !== false,
         pushover_user_key: pushoverUserKey || null,
         pushover_alert_enabled: pushoverAlertEnabled === true,
         pushover_daily_report: pushoverDailyReport === true,
