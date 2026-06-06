@@ -39,7 +39,7 @@ export default function IssuesPage() {
   const [newUnitId, setNewUnitId] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
-  const [filter, setFilter] = useState<"all" | "open" | "in_progress" | "closed">("open");
+  const [filter, setFilter] = useState<"all" | "active" | "closed">("active");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => { fetchIssues(); fetchUnits(); }, []);
@@ -100,8 +100,8 @@ export default function IssuesPage() {
     return new Date(dateStr).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   }
 
-  const filtered = filter === "all" ? issues : issues.filter((i) => i.status === filter);
-  const counts = { all: issues.length, open: issues.filter((i) => i.status === "open").length, in_progress: issues.filter((i) => i.status === "in_progress").length, closed: issues.filter((i) => i.status === "closed").length };
+  const filtered = filter === "all" ? issues : filter === "active" ? issues.filter((i) => i.status !== "closed") : issues.filter((i) => i.status === "closed");
+  const counts = { all: issues.length, active: issues.filter((i) => i.status !== "closed").length, closed: issues.filter((i) => i.status === "closed").length };
 
   if (loading) {
     return <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950"><div className="mx-auto max-w-7xl"><p className="text-slate-600">Loading...</p></div></main>;
@@ -143,14 +143,14 @@ export default function IssuesPage() {
         </div>
 
         <div className="flex gap-2">
-          {(["all", "open", "in_progress", "closed"] as const).map((f) => (
+          {(["all", "active", "closed"] as const).map((f) => (
             <button
               key={f}
               className={`rounded-xl px-4 py-2 text-sm font-bold transition ${filter === f ? "bg-slate-900 text-white" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}`}
               onClick={() => setFilter(f)}
               type="button"
             >
-              {f === "all" ? "All" : STATUS_CONFIG[f].label}
+              {f === "all" ? "All" : f === "active" ? "Active" : "Closed"}
               <span className="ml-1 text-xs opacity-60">({counts[f]})</span>
             </button>
           ))}
