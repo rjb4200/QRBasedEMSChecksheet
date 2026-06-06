@@ -16,20 +16,27 @@ async function upsertTargetCheck(input: z.infer<typeof targetSchema> & { status:
   const { data: { user } } = await authClient.auth.getUser();
   const shift = getCurrentShift();
   const targetColumn = input.targetType === "kit" ? "unit_kit_id" : "compartment_id";
-  const { data: existing, error: existingError } = await supabase
-    .from("compartment_checks")
-    .select("id, started_at")
-    .eq("unit_id", input.unitId)
-    .eq(targetColumn, input.targetId)
-    .eq("shift_date", shift.shiftDate)
-    .eq("shift_period", shift.shiftPeriod)
-    .maybeSingle();
-  if (existingError) throw new Error(existingError.message);
+  const conflictColumns = input.targetType === "kit"
+    ? "unit_id, unit_kit_id, shift_date, shift_period"
+    : "unit_id, compartment_id, shift_date, shift_period";
 
   const now = new Date().toISOString();
-  const startedAt = existing?.started_at ?? now;
   const submittedAt = input.status === "completed" ? now : null;
-  const timeToCompleteSeconds = submittedAt ? Math.max(0, Math.round((new Date(submittedAt).getTime() - new Date(startedAt).getTime()) / 1000)) : null;
+
+  let timeToCompleteSeconds: number | null = null;
+  if (input.status === "completed") {
+    const { data: existing } = await supabase
+      .from("compartment_checks")
+      .select("started_at")
+      .eq("unit_id", input.unitId)
+      .eq(targetColumn, input.targetId)
+      .eq("shift_date", shift.shiftDate)
+      .eq("shift_period", shift.shiftPeriod)
+      .maybeSingle();
+    const startedAt = existing?.started_at ?? now;
+    timeToCompleteSeconds = Math.max(0, Math.round((new Date(submittedAt!).getTime() - new Date(startedAt).getTime()) / 1000));
+  }
+
   const payload = {
     unit_id: input.unitId,
     compartment_id: input.targetType === "compartment" ? input.targetId : null,
@@ -44,10 +51,10 @@ async function upsertTargetCheck(input: z.infer<typeof targetSchema> & { status:
     last_activity_at: now,
   };
 
-  const result = existing
-    ? await supabase.from("compartment_checks").update(payload).eq("id", existing.id)
-    : await supabase.from("compartment_checks").insert({ ...payload, started_at: startedAt, ...(!user?.id ? { checked_by: null } : {}) });
-  if (result.error) throw new Error(result.error.message);
+  const { error: upsertError } = await supabase
+    .from("compartment_checks")
+    .upsert(payload, { onConflict: conflictColumns });
+  if (upsertError) throw new Error(upsertError.message);
 
   if (input.status === "completed" && input.sectionComment !== undefined && input.sourceName) {
     const comment = input.sectionComment.trim();
