@@ -238,6 +238,7 @@ export default function AdminUsersPage() {
                     <div>
                       <p className="font-bold text-slate-950">{user.username}</p>
                       <p className="text-sm text-slate-600">{user.email || "No report email"}</p>
+                      {editingUserId !== user.id && (
                       <div className="mt-1 flex flex-wrap gap-1.5">
                         {user.receives_daily_report && <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold border border-green-200 text-green-800">Daily Report</span>}
                         {user.pushover_alert_enabled && user.pushover_user_key ? (
@@ -251,6 +252,7 @@ export default function AdminUsersPage() {
                           </>
                         ) : null}
                       </div>
+                      )}
                       <p className="text-sm text-slate-500">Created {formatDate(user.created_at)}</p>
                     </div>
                       {editingUserId === user.id ? (
