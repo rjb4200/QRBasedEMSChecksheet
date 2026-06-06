@@ -292,12 +292,12 @@ export default function AdminUsersPage() {
                       <p className="font-bold text-slate-950">{user.username}</p>
                       <p className="text-sm text-slate-600">{user.email || "No report email"}</p>
                       <div className="mt-1 flex flex-wrap gap-1.5">
-                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold border ${user.receives_daily_report ? "bg-green-100 text-green-800 border-green-200" : "bg-slate-100 text-slate-700 border-slate-300"}`}>Daily Report</span>
+                        {user.receives_daily_report && <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold border border-green-200 text-green-800">Daily Report</span>}
                         {user.pushover_alert_enabled && user.pushover_user_key ? (
                           <>
-                            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold border border-amber-200 text-amber-800">Pushover</span>
-                            {user.pushover_missed_checkoff && <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700">Missed</span>}
-                            {user.pushover_missed_checkoff_fup && <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700">Follow-up</span>}
+                            <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-bold border border-blue-200 text-blue-800">Pushover</span>
+                            {user.pushover_missed_checkoff && <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold border border-amber-200 text-amber-800">Missed</span>}
+                            {user.pushover_missed_checkoff_fup && <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold border border-red-200 text-red-800">Follow-up</span>}
                             {user.pushover_shift_1 && <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700">1st Shift</span>}
                             {user.pushover_shift_2 && <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700">2nd Shift</span>}
                             {user.pushover_shift_3 && <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700">3rd Shift</span>}
