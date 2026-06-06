@@ -80,6 +80,7 @@ export default function AdminUsersPage() {
   const [sendingTestWeekly, setSendingTestWeekly] = useState(false);
   const [testWeeklyFeedback, setTestWeeklyFeedback] = useState("");
   const [userManagementExpanded, setUserManagementExpanded] = useState(false);
+  const [communicationExpanded, setCommunicationExpanded] = useState(false);
   const [newPushoverShift1, setNewPushoverShift1] = useState(false);
   const [newPushoverShift2, setNewPushoverShift2] = useState(false);
   const [newPushoverShift3, setNewPushoverShift3] = useState(false);
@@ -378,48 +379,58 @@ export default function AdminUsersPage() {
         </div>
 
         <div className="rounded-3xl bg-white p-4 shadow-sm">
-          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Communication Tests</p>
-          <div className="mt-4 space-y-3">
-            <div className="flex items-end gap-3 border-t border-slate-200 pt-3">
-              <div className="grid gap-1">
-                <label className="text-xs font-bold text-slate-700">Send Test Email</label>
-                <select className="rounded-2xl border border-slate-300 px-3 py-2 text-sm" value={testEmailRecipient} onChange={(e) => setTestEmailRecipient(e.target.value)}>
-                  <option value="">Select user...</option>
-                  {users.filter((u) => u.email && u.receives_daily_report).map((u) => (
-                    <option key={u.id} value={u.email!}>{u.username} ({u.email})</option>
-                  ))}
-                </select>
+          <button className="flex w-full items-center justify-between text-left" onClick={() => setCommunicationExpanded((v) => !v)} type="button">
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Communication Tests</p>
+            <span className={`inline-flex items-center gap-1 rounded-2xl px-3 py-1 text-xs font-bold transition ${communicationExpanded ? "bg-red-100 text-red-700" : "bg-red-700 text-white hover:bg-red-800"}`}>
+              {communicationExpanded ? "Collapse" : "Expand"}
+              <svg className={`h-3 w-3 transition ${communicationExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </span>
+          </button>
+          {communicationExpanded && (
+            <div className="mt-4 space-y-3">
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Email</p>
+              <div className="flex items-end gap-3">
+                <div className="grid gap-1">
+                  <label className="text-xs font-bold text-slate-700">Send Test Email</label>
+                  <select className="rounded-2xl border border-slate-300 px-3 py-2 text-sm" value={testEmailRecipient} onChange={(e) => setTestEmailRecipient(e.target.value)}>
+                    <option value="">Select user...</option>
+                    {users.filter((u) => u.email && u.receives_daily_report).map((u) => (
+                      <option key={u.id} value={u.email!}>{u.username} ({u.email})</option>
+                    ))}
+                  </select>
+                </div>
+                <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white disabled:opacity-50" disabled={!testEmailRecipient || sendingTestEmail} onClick={handleSendTestEmail} type="button">{sendingTestEmail ? "Sending..." : "Send"}</button>
+                {testEmailFeedback && <span className={`text-sm font-semibold ${testEmailFeedback.startsWith("Sent") ? "text-green-700" : "text-red-700"}`}>{testEmailFeedback}</span>}
               </div>
-              <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white disabled:opacity-50" disabled={!testEmailRecipient || sendingTestEmail} onClick={handleSendTestEmail} type="button">{sendingTestEmail ? "Sending..." : "Send"}</button>
-              {testEmailFeedback && <span className={`text-sm font-semibold ${testEmailFeedback.startsWith("Sent") ? "text-green-700" : "text-red-700"}`}>{testEmailFeedback}</span>}
-            </div>
-            <div className="flex items-end gap-3 border-t border-slate-200 pt-3">
-              <div className="grid gap-1">
-                <label className="text-xs font-bold text-slate-700">Test Pushover</label>
-                <select className="rounded-2xl border border-slate-300 px-3 py-2 text-sm" value={testPushoverUserId} onChange={(e) => setTestPushoverUserId(e.target.value)}>
-                  <option value="">Select user...</option>
-                  {users.filter((u) => u.pushover_alert_enabled && u.pushover_user_key).map((u) => (
-                    <option key={u.id} value={u.id}>{u.username}</option>
-                  ))}
-                </select>
+              <div className="flex items-end gap-3 border-t border-slate-200 pt-3">
+                <div className="grid gap-1">
+                  <label className="text-xs font-bold text-slate-700">Test Weekly Digest</label>
+                  <select className="rounded-2xl border border-slate-300 px-3 py-2 text-sm" value={testWeeklyRecipient} onChange={(e) => setTestWeeklyRecipient(e.target.value)}>
+                    <option value="">Select user...</option>
+                    {users.filter((u) => u.email && u.receives_weekly_issues_digest).map((u) => (
+                      <option key={u.id} value={u.email!}>{u.username} ({u.email})</option>
+                    ))}
+                  </select>
+                </div>
+                <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white disabled:opacity-50" disabled={!testWeeklyRecipient || sendingTestWeekly} onClick={handleTestWeekly} type="button">{sendingTestWeekly ? "Sending..." : "Send"}</button>
+                {testWeeklyFeedback && <span className={`text-sm font-semibold ${testWeeklyFeedback.startsWith("Sent") ? "text-green-700" : "text-red-700"}`}>{testWeeklyFeedback}</span>}
               </div>
-              <button className="rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white disabled:opacity-50" disabled={!testPushoverUserId || sendingTestPushover} onClick={handleTestPushover} type="button">{sendingTestPushover ? "Sending..." : "Send"}</button>
-              {testPushoverFeedback && <span className={`text-sm font-semibold ${testPushoverFeedback.startsWith("Pushover test sent") ? "text-green-700" : "text-red-700"}`}>{testPushoverFeedback}</span>}
-            </div>
-            <div className="flex items-end gap-3 border-t border-slate-200 pt-3">
-              <div className="grid gap-1">
-                <label className="text-xs font-bold text-slate-700">Test Weekly Digest</label>
-                <select className="rounded-2xl border border-slate-300 px-3 py-2 text-sm" value={testWeeklyRecipient} onChange={(e) => setTestWeeklyRecipient(e.target.value)}>
-                  <option value="">Select user...</option>
-                  {users.filter((u) => u.email && u.receives_weekly_issues_digest).map((u) => (
-                    <option key={u.id} value={u.email!}>{u.username} ({u.email})</option>
-                  ))}
-                </select>
+              <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Pushover</p>
+              <div className="flex items-end gap-3">
+                <div className="grid gap-1">
+                  <label className="text-xs font-bold text-slate-700">Test Pushover</label>
+                  <select className="rounded-2xl border border-slate-300 px-3 py-2 text-sm" value={testPushoverUserId} onChange={(e) => setTestPushoverUserId(e.target.value)}>
+                    <option value="">Select user...</option>
+                    {users.filter((u) => u.pushover_alert_enabled && u.pushover_user_key).map((u) => (
+                      <option key={u.id} value={u.id}>{u.username}</option>
+                    ))}
+                  </select>
+                </div>
+                <button className="rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white disabled:opacity-50" disabled={!testPushoverUserId || sendingTestPushover} onClick={handleTestPushover} type="button">{sendingTestPushover ? "Sending..." : "Send"}</button>
+                {testPushoverFeedback && <span className={`text-sm font-semibold ${testPushoverFeedback.startsWith("Pushover test sent") ? "text-green-700" : "text-red-700"}`}>{testPushoverFeedback}</span>}
               </div>
-              <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white disabled:opacity-50" disabled={!testWeeklyRecipient || sendingTestWeekly} onClick={handleTestWeekly} type="button">{sendingTestWeekly ? "Sending..." : "Send"}</button>
-              {testWeeklyFeedback && <span className={`text-sm font-semibold ${testWeeklyFeedback.startsWith("Sent") ? "text-green-700" : "text-red-700"}`}>{testWeeklyFeedback}</span>}
             </div>
-          </div>
+          )}
         </div>
       </section>
 
