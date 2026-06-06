@@ -223,7 +223,7 @@ async function saveTags(tagsList: string[]) {
                 <>
                   <div className="flex flex-wrap items-center gap-2">
                     <h1 className="text-2xl font-black text-slate-950">{issue.title}</h1>
-                    <span className={`rounded-lg border px-2 py-0.5 text-xs font-bold ${status.color}`}>{status.label}</span>
+                    <span className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${status.color}`}>{status.label}</span>
                   </div>
                   <p className="mt-2 text-sm text-slate-500">
                     {issue.units?.name && <>{issue.units.name} · </>}

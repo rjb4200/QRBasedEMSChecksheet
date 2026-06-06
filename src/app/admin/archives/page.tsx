@@ -21,10 +21,10 @@ const checkStatusLabels = {
 };
 
 const checkStatusClasses = {
-  checked: "bg-green-100 text-green-800 ring-green-200",
-  incomplete: "bg-yellow-100 text-yellow-900 ring-yellow-200",
-  not_started: "bg-red-100 text-red-800 ring-red-200",
-  not_required: "bg-slate-200 text-slate-700 ring-slate-300",
+  checked: "bg-green-100 text-green-800 border-green-200",
+  incomplete: "bg-amber-100 text-amber-800 border-amber-200",
+  not_started: "bg-red-100 text-red-800 border-red-200",
+  not_required: "bg-slate-100 text-slate-700 border-slate-300",
 };
 
 export default async function ArchivesPage({ searchParams }: { searchParams: Promise<{ unitId?: string; date?: string; from?: string; to?: string }> }) {
@@ -67,7 +67,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
           </div>
           <div className="rounded-3xl bg-white p-4 shadow-sm">
             <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Incomplete</p>
-            <p className="mt-2 text-3xl font-black text-yellow-700">{summary.incomplete}</p>
+            <p className="mt-2 text-3xl font-black text-amber-700">{summary.incomplete}</p>
           </div>
           <div className="rounded-3xl bg-white p-4 shadow-sm">
             <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Not Started</p>
@@ -94,7 +94,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
                   <h2 className="mt-1 text-2xl font-black">{record.unitName}</h2>
                   <p className="mt-1 text-sm font-semibold capitalize text-slate-600">{record.unitStatus.replaceAll("_", " ")}{record.archived ? " | Archived" : ""}</p>
                 </div>
-                <span className={`rounded-full px-3 py-2 text-xs font-black ring-1 ${checkStatusClasses[record.checkStatus]}`}>{checkStatusLabels[record.checkStatus]}</span>
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold border ${checkStatusClasses[record.checkStatus]}`}>{checkStatusLabels[record.checkStatus]}</span>
               </div>
               <div className="mt-4 grid gap-3 text-sm md:grid-cols-3">
                 <div className="rounded-2xl bg-slate-100 p-3"><p className="text-xs font-black uppercase text-slate-500">Sections</p><p className="mt-1 font-black">{record.completedCompartments}/{record.totalCompartments}</p></div>

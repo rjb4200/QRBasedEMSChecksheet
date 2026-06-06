@@ -47,7 +47,7 @@ function formatOosTimestamp(value: string | null | undefined) {
 
 function StatusBadge({ children, className, ariaLabel }: { children: ReactNode; className: string; ariaLabel?: string }) {
   return (
-    <span aria-label={ariaLabel} className={`rounded-full px-3 py-1 text-xs font-black ${className}`}>
+    <span aria-label={ariaLabel} className={`rounded-full px-2.5 py-0.5 text-xs font-bold border ${className}`}>
       {children}
     </span>
   );
@@ -55,19 +55,19 @@ function StatusBadge({ children, className, ariaLabel }: { children: ReactNode; 
 
 function getPrimaryBadge(unit: FleetUnit) {
   if (unit.status === "out_of_service") {
-    return { label: unit.archived ? "Archived" : "Out of Service", className: "bg-slate-200 text-slate-700", ariaLabel: `${unit.name} is ${unit.archived ? "archived" : "out of service"}` };
+    return { label: unit.archived ? "Archived" : "Out of Service", className: "bg-slate-100 text-slate-700 border-slate-300", ariaLabel: `${unit.name} is ${unit.archived ? "archived" : "out of service"}` };
   }
 
   if (unit.total > 0 && unit.completed >= unit.total) {
     const label = formatCompletionTime(unit.completedAt);
-    return { label, className: "bg-green-600 text-white", ariaLabel: unit.completedAt ? `${unit.name} complete at ${label}` : `${unit.name} complete` };
+    return { label, className: "bg-green-100 text-green-800 border-green-200", ariaLabel: unit.completedAt ? `${unit.name} complete at ${label}` : `${unit.name} complete` };
   }
 
   if (unit.inProgress > 0 || unit.completed > 0) {
-    return { label: "In Progress", className: "bg-amber-300 text-slate-950", ariaLabel: `${unit.name} is in progress` };
+    return { label: "In Progress", className: "bg-amber-100 text-amber-800 border-amber-200", ariaLabel: `${unit.name} is in progress` };
   }
 
-  return { label: "Not Started", className: "bg-red-700 text-white", ariaLabel: `${unit.name} is not started` };
+  return { label: "Not Started", className: "bg-red-100 text-red-800 border-red-200", ariaLabel: `${unit.name} is not started` };
 }
 
 export function FleetMatrix({ units }: { units: FleetUnit[]; admin?: boolean }) {
@@ -103,10 +103,10 @@ export function FleetMatrix({ units }: { units: FleetUnit[]; admin?: boolean }) 
             </div>
             <div className="mt-4 flex flex-wrap gap-2" aria-label={`Operational status badges for ${unit.name}`}>
               <StatusBadge ariaLabel={primaryBadge.ariaLabel} className={primaryBadge.className}>{primaryBadge.label}</StatusBadge>
-              {unit.statusNote ? <StatusBadge ariaLabel={`${unit.name} status note: ${unit.statusNote}`} className="bg-slate-100 text-slate-700">{unit.statusNote}</StatusBadge> : null}
-              {unit.exceptionCount > 0 ? <StatusBadge ariaLabel={`${unit.name} has ${unit.exceptionCount} exceptions`} className="bg-red-100 text-red-800">Exceptions: {unit.exceptionCount}</StatusBadge> : null}
-              {unit.hasComments ? <StatusBadge ariaLabel={`${unit.name} has comments`} className="bg-slate-200 text-slate-700">Comments</StatusBadge> : null}
-              {unit.status === "in_service" && !unit.crewComplete ? <StatusBadge ariaLabel={`${unit.name} crew information is missing`} className="bg-amber-100 text-amber-900">Crew Missing</StatusBadge> : null}
+              {unit.statusNote ? <StatusBadge ariaLabel={`${unit.name} status note: ${unit.statusNote}`} className="bg-slate-100 text-slate-700 border-slate-300">{unit.statusNote}</StatusBadge> : null}
+              {unit.exceptionCount > 0 ? <StatusBadge ariaLabel={`${unit.name} has ${unit.exceptionCount} exceptions`} className="bg-red-100 text-red-800 border-red-200">Exceptions: {unit.exceptionCount}</StatusBadge> : null}
+              {unit.hasComments ? <StatusBadge ariaLabel={`${unit.name} has comments`} className="bg-slate-100 text-slate-700 border-slate-300">Comments</StatusBadge> : null}
+              {unit.status === "in_service" && !unit.crewComplete ? <StatusBadge ariaLabel={`${unit.name} crew information is missing`} className="bg-amber-100 text-amber-800 border-amber-200">Crew Missing</StatusBadge> : null}
             </div>
             <div className="mt-5 h-4 overflow-hidden rounded-full bg-slate-200">
               <div className={`h-full rounded-full ${progressColor}`} style={{ width: `${unit.percentage}%` }} />

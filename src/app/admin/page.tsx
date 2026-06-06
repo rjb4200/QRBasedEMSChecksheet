@@ -64,7 +64,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
               <details key={group.date} className="overflow-hidden rounded-2xl border border-slate-200" open={expandedDates.has(group.date)}>
                 <summary className="flex cursor-pointer items-center justify-between gap-4 bg-slate-50 px-4 py-3 font-black marker:text-red-700">
                   <span>{group.date}</span>
-                  <span className="rounded-full bg-red-700 px-3 py-1 text-sm text-white">{group.items.length}</span>
+                  <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-sm font-bold border border-red-200 text-red-800">{group.items.length}</span>
                 </summary>
                 {group.items.length === 0 ? <p className="border-t border-slate-200 p-4 text-sm font-semibold text-slate-500">No missing or below-par items submitted this day.</p> : (
                   <div className="divide-y divide-slate-100">

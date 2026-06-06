@@ -291,9 +291,9 @@ export default function AdminUsersPage() {
                     <div>
                       <p className="font-bold text-slate-950">{user.username}</p>
                       <p className="text-sm text-slate-600">{user.email || "No report email"}</p>
-                      <p className="text-xs font-bold uppercase tracking-[0.15em] text-slate-500">{user.receives_daily_report ? "Daily report enabled" : "Daily report disabled"}</p>
+                      <p className={`text-xs font-bold uppercase tracking-[0.15em] ${user.receives_daily_report ? "text-green-700" : "text-slate-500"}`}>{user.receives_daily_report ? "Daily report enabled" : "Daily report disabled"}</p>
                       {user.pushover_alert_enabled && user.pushover_user_key ? (
-                        <p className="text-xs font-bold uppercase tracking-[0.15em] text-orange-600">
+                        <p className="text-xs font-bold uppercase tracking-[0.15em] text-amber-700">
                           Pushover: {(user.pushover_missed_checkoff ? "M" : "")}{(user.pushover_missed_checkoff_fup ? "/F" : "") || "Enabled"}
                           {(user.pushover_shift_1 || user.pushover_shift_2 || user.pushover_shift_3) ? ` (${[user.pushover_shift_1 && "1st", user.pushover_shift_2 && "2nd", user.pushover_shift_3 && "3rd"].filter(Boolean).join(", ")})` : ""}
                         </p>

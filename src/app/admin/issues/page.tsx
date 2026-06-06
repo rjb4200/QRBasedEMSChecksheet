@@ -22,9 +22,9 @@ interface Unit {
 }
 
 const STATUS_CONFIG = {
-  open: { label: "Open", color: "text-red-700 bg-red-50 border-red-200" },
-  in_progress: { label: "In Progress", color: "text-amber-700 bg-amber-50 border-amber-200" },
-  closed: { label: "Closed", color: "text-green-700 bg-green-50 border-green-200" },
+  open: { label: "Open", color: "text-red-800 bg-red-100 border-red-200" },
+  in_progress: { label: "In Progress", color: "text-amber-800 bg-amber-100 border-amber-200" },
+  closed: { label: "Closed", color: "text-green-800 bg-green-100 border-green-200" },
 } as const;
 
 const TAG_COLORS = [
@@ -236,7 +236,7 @@ export default function IssuesPage() {
                         )}
                       </div>
                     </div>
-                    <span className={`rounded-lg border px-2 py-0.5 text-xs font-bold ${status.color}`}>{status.label}</span>
+                    <span className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${status.color}`}>{status.label}</span>
                     {issue.units?.name && (
                       <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 hidden sm:inline">{issue.units.name}</span>
                     )}

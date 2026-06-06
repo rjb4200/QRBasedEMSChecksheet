@@ -143,7 +143,7 @@ export function RecentComments() {
                           {formatRelativeDate(comment.createdAt)} | {comment.unitName} | {comment.sourceName}
                         </p>
                         {comment.crewNames ? (
-                          <p className="mt-2 inline-flex rounded-full bg-red-100 px-2 py-1 text-xs font-black text-red-800">Crew: {comment.crewNames}</p>
+                          <p className="mt-2 inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700">Crew: {comment.crewNames}</p>
                         ) : null}
                         <p className="mt-1 whitespace-pre-wrap text-sm font-semibold text-slate-700">{comment.comment}</p>
                       </div>

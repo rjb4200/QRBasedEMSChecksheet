@@ -70,9 +70,9 @@ export function RecentIssues() {
               return (
                 <Link key={issue.id} href={`/admin/issues/${issue.id}`} className="flex items-center gap-2 rounded-xl bg-slate-50 px-3 py-2 transition hover:bg-slate-100">
                   <span className="font-bold text-sm text-slate-950 truncate flex-1">{issue.title}</span>
-                  {issue.tags?.[0] && <span className={`rounded-md px-1.5 py-0.5 text-xs font-semibold hidden sm:inline ${tagColor(issue.tags[0])}`}>{issue.tags[0]}</span>}
-                  {issue.units?.name && <span className="rounded-md bg-slate-200 px-1.5 py-0.5 text-xs font-semibold text-slate-600 hidden sm:inline">{issue.units.name}</span>}
-                  <span className={`rounded-md border px-1.5 py-0.5 text-xs font-bold ${status.color}`}>{status.label}</span>
+                  {issue.tags?.[0] && <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold hidden sm:inline ${tagColor(issue.tags[0])}`}>{issue.tags[0]}</span>}
+                  {issue.units?.name && <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700 hidden sm:inline">{issue.units.name}</span>}
+                  <span className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${status.color}`}>{status.label}</span>
                 </Link>
               );
             })}

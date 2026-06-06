@@ -72,7 +72,7 @@ export default async function AdminKitsPage() {
                     <h2 className="mt-2 text-2xl font-black">{kit.name}</h2>
                     <p className="mt-1 text-sm text-slate-600">{kit.description || "No description"}</p>
                   </div>
-                  <span className={`rounded-full px-3 py-1 text-xs font-black ${kit.active ? "bg-green-100 text-green-800" : "bg-slate-200 text-slate-700"}`}>{kit.active ? "Active" : "Inactive"}</span>
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold border ${kit.active ? "bg-green-100 text-green-800 border-green-200" : "bg-slate-100 text-slate-700 border-slate-300"}`}>{kit.active ? "Active" : "Inactive"}</span>
                 </div>
                 <p className="mt-3 text-sm font-bold">{kit.kit_items?.length ?? 0} items</p>
                 <KitAssignmentEditor
