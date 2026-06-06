@@ -6,4 +6,4 @@
 - [x] 1.4 Submit to `POST /api/admin/issues`, collapse form on success, show error on failure
 - [x] 2.1 Run `npm run typecheck`
 - [x] 2.2 Run `npm run build`
-- [ ] 2.3 Manual test: escalate a comment to an issue, verify it appears on the Issues page
+- [x] 2.3 Manual test: escalate a comment to an issue, verify it appears on the Issues page

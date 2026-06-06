@@ -12,4 +12,4 @@
 - [x] 2.4 Keep create form, status tabs, filter bar, and sort dropdown functional
 - [x] 3.1 Run `npm run typecheck`
 - [x] 3.2 Run `npm run build`
-- [ ] 3.3 Manual test: create issue, click into detail, add notes, change status, navigate back
+- [x] 3.3 Manual test: create issue, click into detail, add notes, change status, navigate back

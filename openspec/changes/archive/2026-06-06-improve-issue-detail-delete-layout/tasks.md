@@ -8,4 +8,4 @@
 - [x] 2.3 Keep existing Edit title/description, tag editing, and notes functionality within their respective sections
 - [x] 3.1 Run `npm run typecheck`
 - [x] 3.2 Run `npm run build`
-- [ ] 3.3 Manual test: delete an issue, verify navigation and cascade delete of notes
+- [x] 3.3 Manual test: delete an issue, verify navigation and cascade delete of notes

@@ -12,4 +12,4 @@
 - [x] 6.1 Add `0 11 * * 5` cron entry to `vercel.json`
 - [x] 7.1 Run `npm run typecheck`
 - [x] 7.2 Run `npm run build`
-- [ ] 7.3 Manual test: send test weekly digest, verify content
+- [x] 7.3 Manual test: send test weekly digest, verify content
