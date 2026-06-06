@@ -45,9 +45,9 @@ function prettyJson(value: Record<string, unknown> | null) {
 }
 
 function resultClasses(result: string) {
-  if (result === "failure") return "bg-red-100 text-red-800 ring-red-200";
-  if (result === "warning") return "bg-yellow-100 text-yellow-900 ring-yellow-200";
-  return "bg-green-100 text-green-800 ring-green-200";
+  if (result === "failure") return "bg-red-100 text-red-800 border-red-200";
+  if (result === "warning") return "bg-amber-100 text-amber-800 border-amber-200";
+  return "bg-green-100 text-green-800 border-green-200";
 }
 
 function sanitizedSearch(value?: string) {
@@ -145,8 +145,8 @@ export default async function SystemLogPage({ searchParams }: { searchParams: Pr
             <details key={row.id} className={`rounded-3xl bg-white p-5 shadow-sm ${row.result === "failure" ? "ring-2 ring-red-200" : ""}`}>
                <summary className="cursor-pointer list-none">
                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                   <span className={`rounded-full px-3 py-1 text-xs font-black uppercase ring-1 ${resultClasses(row.result)}`}>{row.result}</span>
-                   <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black uppercase text-slate-600">{row.area}</span>
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold border ${resultClasses(row.result)}`}>{row.result}</span>
+                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700">{row.area}</span>
                    <span className="text-sm font-semibold text-slate-500">{formatTimestamp(row.created_at)}</span>
                    <span className="text-sm font-black text-slate-800">{row.action}</span>
                    <span className="text-sm text-slate-600">— {formatLogSummary(row)}</span>

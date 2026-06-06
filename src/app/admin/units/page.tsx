@@ -28,7 +28,11 @@ export default async function AdminUnitsPage() {
               <div key={unit.id} className={`flex flex-col justify-between gap-4 rounded-3xl p-5 shadow-sm sm:flex-row sm:items-center border-2 border-slate-200 ${isOos ? "bg-slate-50" : "bg-white"}`}>
                 <div>
                   <h2 className={`text-xl font-black ${isOos ? "text-slate-500" : ""}`}>{unit.name}</h2>
-                  <p className={`text-sm ${isOos ? "text-slate-400" : "text-slate-600"}`}>{unit.unit_kind} | {(unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0)} checks | {unit.status.replace("_", " ")}</p>
+                  <div className={`flex flex-wrap gap-1.5 ${isOos ? "opacity-60" : ""}`}>
+                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700">{unit.unit_kind}</span>
+                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700">{(unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0)} checks</span>
+                    <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold border border-slate-300 text-slate-700">{unit.status.replace("_", " ")}</span>
+                  </div>
                   {isOos && (unit.oos_at || unit.oos_by_name) ? (
                     <p className="mt-1 text-xs font-semibold text-slate-400">
                       Marked {unit.oos_at ? new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", month: "numeric", day: "numeric", year: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(unit.oos_at)) : ""}
