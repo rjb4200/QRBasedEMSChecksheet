@@ -43,6 +43,7 @@ export default async function ProviderAnalyticsPage({ searchParams }: { searchPa
           <p className="mt-2 text-slate-600">Time-on-page data is for manual review only.</p>
         </div>
         <form className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-4">
+          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700 md:col-span-4">Filter</p>
           <select className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={params.unitId ?? ""} name="unitId">
             <option value="">All units</option>
             {(units ?? []).map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}

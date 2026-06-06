@@ -46,7 +46,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
 
         <RecentComments />
 
-        <section className="rounded-3xl bg-white p-5 shadow-sm">
+        <section className="rounded-3xl bg-white p-4 shadow-sm">
           <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
             <div>
               <h2 className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Exceptions</h2>

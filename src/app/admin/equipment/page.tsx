@@ -138,7 +138,7 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
           <Link className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-950" href={`/admin/equipment?pageSize=${currentPageSizeParam}`}>Reset</Link>
         </form>
 
-        <form action={saveEquipment} className="grid gap-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[1fr_180px_160px_140px_auto]">
+        <form action={saveEquipment} className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-[1fr_180px_160px_140px_auto]">
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700 md:col-span-5">Add</p>
           <input className="rounded-2xl border border-slate-300 px-4 py-3" name="name" placeholder="Item name" required />
           <input className="rounded-2xl border border-slate-300 px-4 py-3" name="category" placeholder="Category" required />

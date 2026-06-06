@@ -149,10 +149,10 @@ export default function IssuesPage() {
         {error && <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-800">{error}</div>}
         {success && <div className="rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-bold text-green-800">{success}</div>}
 
-        <div className="rounded-3xl bg-white p-5 shadow-sm">
+        <div className="rounded-3xl bg-white p-4 shadow-sm">
           <button className="flex w-full items-center justify-between text-left" onClick={() => setFormExpanded((v) => !v)} type="button">
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Create Issue</p>
-            <span className={`inline-flex items-center gap-1 rounded-xl px-3 py-1 text-xs font-bold transition ${formExpanded ? "bg-red-100 text-red-700" : "bg-red-700 text-white hover:bg-red-800"}`}>
+            <span className={`inline-flex items-center gap-1 rounded-2xl px-3 py-1 text-xs font-bold transition ${formExpanded ? "bg-red-100 text-red-700" : "bg-red-700 text-white hover:bg-red-800"}`}>
               {formExpanded ? "Collapse" : "New Issue"}
               <svg className={`h-3 w-3 transition ${formExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </span>
@@ -160,23 +160,23 @@ export default function IssuesPage() {
           {formExpanded && (
             <form onSubmit={handleCreate} className="mt-4 grid gap-4">
               <label className="grid gap-1 text-sm font-bold text-slate-700">Title
-                <input className="rounded-xl border border-slate-300 px-4 py-3" placeholder="What is the issue?" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
+                <input className="rounded-2xl border border-slate-300 px-4 py-3" placeholder="What is the issue?" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} required />
               </label>
               <label className="grid gap-1 text-sm font-bold text-slate-700">Description
-                <textarea className="rounded-xl border border-slate-300 px-4 py-3" rows={3} placeholder="Add details..." value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
+                <textarea className="rounded-2xl border border-slate-300 px-4 py-3" rows={3} placeholder="Add details..." value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
               </label>
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-1 text-sm font-bold text-slate-700">Unit <span className="font-normal text-slate-500">(optional)</span>
-                  <select className="rounded-xl border border-slate-300 px-4 py-3" value={newUnitId} onChange={(e) => setNewUnitId(e.target.value)}>
+                  <select className="rounded-2xl border border-slate-300 px-4 py-3" value={newUnitId} onChange={(e) => setNewUnitId(e.target.value)}>
                     <option value="">No unit</option>
                     {units.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
                   </select>
                 </label>
                 <label className="grid gap-1 text-sm font-bold text-slate-700">Tags <span className="font-normal text-slate-500">(comma-separated)</span>
-                  <input className="rounded-xl border border-slate-300 px-4 py-3" placeholder="equipment, maintenance" value={newTags} onChange={(e) => setNewTags(e.target.value)} />
+                  <input className="rounded-2xl border border-slate-300 px-4 py-3" placeholder="equipment, maintenance" value={newTags} onChange={(e) => setNewTags(e.target.value)} />
                 </label>
               </div>
-              <div><button className="rounded-xl bg-red-700 px-5 py-3 font-bold text-white disabled:opacity-50" type="submit" disabled={isCreating || !newTitle.trim()}>{isCreating ? "Creating..." : "Create"}</button></div>
+              <div><button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white disabled:opacity-50" type="submit" disabled={isCreating || !newTitle.trim()}>{isCreating ? "Creating..." : "Create"}</button></div>
             </form>
           )}
         </div>
@@ -185,7 +185,7 @@ export default function IssuesPage() {
           {(["all", "active", "closed"] as const).map((f) => (
             <button
               key={f}
-              className={`rounded-xl px-4 py-2 text-sm font-bold transition ${filter === f ? "bg-slate-900 text-white" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}`}
+              className={`rounded-2xl px-4 py-2 text-sm font-bold transition ${filter === f ? "bg-slate-900 text-white" : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}`}
               onClick={() => setFilter(f)}
               type="button"
             >
@@ -194,16 +194,16 @@ export default function IssuesPage() {
             </button>
           ))}
           <div className="flex flex-1 flex-wrap items-center gap-2 ml-auto">
-            <input className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm w-40" placeholder="Search..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
-            <select className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" value={unitFilter} onChange={(e) => setUnitFilter(e.target.value)}>
+            <input className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm w-40" placeholder="Search..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
+            <select className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm" value={unitFilter} onChange={(e) => setUnitFilter(e.target.value)}>
               <option value="">All units</option>
               {units.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
             </select>
-            <select className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" value={tagFilter} onChange={(e) => setTagFilter(e.target.value)}>
+            <select className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm" value={tagFilter} onChange={(e) => setTagFilter(e.target.value)}>
               <option value="">All tags</option>
               {allTags.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
-            <select className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" value={sortOrder} onChange={(e) => setSortOrder(e.target.value as SortOrder)}>
+            <select className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm" value={sortOrder} onChange={(e) => setSortOrder(e.target.value as SortOrder)}>
               <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>
               <option value="updated">Recently updated</option>
@@ -215,7 +215,7 @@ export default function IssuesPage() {
         {sorted.length === 0 ? (
           <div className="rounded-3xl bg-white p-8 text-center"><p className="text-slate-500">No issues found</p></div>
         ) : (
-          <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm overflow-hidden">
             <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-black uppercase tracking-[0.15em] text-slate-500">
               <span>Title</span><span>Unit</span><span>Status</span><span>Created</span><span />
             </div>

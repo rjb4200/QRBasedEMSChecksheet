@@ -19,13 +19,13 @@ export default async function AdminUnitsPage() {
           <p className="mt-2 max-w-3xl text-slate-600">Create and manage apparatus units with compartments, equipment, and QR codes.</p>
         </div>
 
-        <div className="rounded-3xl bg-white p-5 shadow-sm">
+        <div className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
           <DestructiveActionsToggle>
             <div className="mt-4 grid gap-3">
             {(units ?? []).map((unit) => {
               const isOos = unit.status === "out_of_service";
               return (
-              <div key={unit.id} className={`flex flex-col justify-between gap-4 rounded-3xl p-5 shadow-sm sm:flex-row sm:items-center border border-slate-200 ${isOos ? "bg-slate-50" : "bg-white"}`}>
+              <div key={unit.id} className={`flex flex-col justify-between gap-4 rounded-3xl p-5 shadow-sm sm:flex-row sm:items-center border-2 border-slate-200 ${isOos ? "bg-slate-50" : "bg-white"}`}>
                 <div>
                   <h2 className={`text-xl font-black ${isOos ? "text-slate-500" : ""}`}>{unit.name}</h2>
                   <p className={`text-sm ${isOos ? "text-slate-400" : "text-slate-600"}`}>{unit.unit_kind} | {(unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0)} checks | {unit.status.replace("_", " ")}</p>

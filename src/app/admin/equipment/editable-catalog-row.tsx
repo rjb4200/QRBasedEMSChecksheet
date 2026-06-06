@@ -85,7 +85,7 @@ export function EditableCatalogRow({ item }: { item: CatalogItem }) {
 
   if (!isEditing) {
     return (
-      <div className="grid gap-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm lg:grid-cols-[1fr_160px_140px_120px_auto_auto]">
+      <div className="grid gap-3 rounded-3xl border-2 border-slate-200 bg-white p-4 shadow-sm lg:grid-cols-[1fr_160px_140px_120px_auto_auto]">
         <span className="flex items-center px-4 py-3 font-semibold">{item.name}</span>
         <span className="flex items-center px-4 py-3">{item.category}</span>
         <span className="flex items-center px-4 py-3">{item.input_type}</span>

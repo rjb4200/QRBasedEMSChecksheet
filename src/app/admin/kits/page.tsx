@@ -37,7 +37,7 @@ export default async function AdminKitsPage() {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
-          <form action={createKit} className="grid gap-3 rounded-3xl bg-white p-5 shadow-sm">
+          <form action={createKit} className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm">
             <h2 className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Create Kit</h2>
             <input className="rounded-2xl border border-slate-300 px-4 py-3" name="name" placeholder="Kit name" required />
             <textarea className="rounded-2xl border border-slate-300 px-4 py-3" name="description" placeholder="Description" rows={3} />
@@ -45,7 +45,7 @@ export default async function AdminKitsPage() {
             <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Create Kit</button>
           </form>
 
-          <form action={createKitFromCompartment} className="grid gap-3 rounded-3xl bg-white p-5 shadow-sm">
+          <form action={createKitFromCompartment} className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm">
             <h2 className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Create Kit From Compartment</h2>
             <select className="rounded-2xl border border-slate-300 px-4 py-3" name="sourceCompartmentId" required>
               <option value="">Select source compartment</option>
@@ -56,7 +56,7 @@ export default async function AdminKitsPage() {
             </select>
             <input className="rounded-2xl border border-slate-300 px-4 py-3" name="name" placeholder="New kit name" required />
             <input className="rounded-2xl border border-slate-300 px-4 py-3" name="sortOrder" placeholder="Sort order" type="number" />
-            <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" type="submit">Copy Compartment Into Kit</button>
+            <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Copy Compartment Into Kit</button>
           </form>
         </div>
 

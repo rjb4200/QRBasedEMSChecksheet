@@ -51,6 +51,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
         </div>
         <CompletionTrendChart groups={trendGroups} />
         <form action="/admin/archives" className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-4" method="get">
+          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700 md:col-span-4">Filter</p>
           <select className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={params.unitId ?? ""} name="unitId">
             <option value="">All units</option>
             {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
@@ -122,15 +123,17 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
           ))}
         </div>
         </div>
-        <form action="/admin/archives/export-package" className="flex flex-wrap items-center gap-3 rounded-3xl bg-white p-4 shadow-sm" method="get">
+        <form action="/admin/archives/export-package" className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm" method="get">
           <input type="hidden" name="unitId" value={params.unitId ?? ""} />
-          <span className="text-sm font-semibold text-slate-600">Export:</span>
+          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Export</p>
+          <div className="flex flex-wrap items-center gap-3">
           <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={selectedDate} name="from" type="date" />
           <span className="text-slate-400">to</span>
           <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={selectedDate} name="to" type="date" />
           <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" formAction="/admin/archives/export?mode=simple" formMethod="get" type="submit">Simple CSV</button>
           <button className="rounded-2xl border border-slate-300 px-5 py-3 font-bold text-slate-950" formAction="/admin/archives/export?mode=detailed" formMethod="get" type="submit">Detailed CSV</button>
           <button className="rounded-2xl bg-slate-800 px-5 py-3 font-bold text-white" type="submit">Full Package</button>
+          </div>
         </form>
         <ClearRecordsSection availability={deleteAvailability} defaultFrom={deleteRange.from} defaultTo={deleteRange.to} unitId={params.unitId ?? ""} />
       </section>
