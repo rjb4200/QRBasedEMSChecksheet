@@ -60,7 +60,8 @@ export default function IssueDetailPage() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const [editingTags, setEditingTags] = useState(false);
-  const [editingTagsText, setEditingTagsText] = useState("");
+  const [editingTagsList, setEditingTagsList] = useState<string[]>([]);
+  const [newTagInput, setNewTagInput] = useState("");
 
   const [editingDetails, setEditingDetails] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -126,7 +127,7 @@ export default function IssueDetailPage() {
   }
 
   async function handleSaveTags() {
-    const tags = editingTagsText ? editingTagsText.split(",").map((t) => t.trim()).filter(Boolean) : [];
+    const tags = editingTagsList.filter(Boolean);
     setError("");
     try {
       const res = await fetch(`/api/admin/issues/${issueId}`, {
@@ -237,17 +238,28 @@ export default function IssueDetailPage() {
 
           <div className="mt-4 border-t border-slate-100 pt-4">
             {editingTags ? (
-              <div className="flex items-center gap-2">
-                <input className="rounded-xl border border-slate-300 px-3 py-2 text-sm flex-1" placeholder="equipment, maintenance" value={editingTagsText} onChange={(e) => setEditingTagsText(e.target.value)} />
-                <button className="rounded-lg bg-red-700 px-3 py-1 text-xs font-bold text-white" onClick={handleSaveTags} type="button">Save</button>
-                <button className="text-xs text-slate-500" onClick={() => setEditingTags(false)} type="button">Cancel</button>
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  {editingTagsList.map((tag, i) => (
+                    <span key={i} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold bg-slate-100 text-slate-700">
+                      {tag}
+                      <button className="ml-0.5 text-slate-400 hover:text-red-700" onClick={() => setEditingTagsList((prev) => prev.filter((_, j) => j !== i))} type="button">×</button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <input className="rounded-xl border border-slate-300 px-3 py-2 text-sm flex-1" placeholder="Add a tag" value={newTagInput} onChange={(e) => setNewTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); const t = newTagInput.trim().toLowerCase(); if (t && !editingTagsList.includes(t)) { setEditingTagsList((prev) => [...prev, t]); setNewTagInput(""); } } }} />
+                  <button className="rounded-lg bg-slate-200 px-3 py-1 text-xs font-bold text-slate-700" onClick={() => { const t = newTagInput.trim().toLowerCase(); if (t && !editingTagsList.includes(t)) { setEditingTagsList((prev) => [...prev, t]); setNewTagInput(""); } }} type="button">Add</button>
+                  <button className="rounded-lg bg-red-700 px-3 py-1 text-xs font-bold text-white" onClick={handleSaveTags} type="button">Save</button>
+                  <button className="text-xs text-slate-500" onClick={() => setEditingTags(false)} type="button">Cancel</button>
+                </div>
               </div>
             ) : (
               <div className="flex flex-wrap items-center gap-2">
                 {issue.tags?.map((tag) => (
                   <span key={tag} className={`rounded-lg px-2 py-1 text-xs font-semibold ${tagColor(tag)}`}>{tag}</span>
                 ))}
-                <button className="text-xs font-semibold text-slate-400 hover:text-red-700" onClick={() => { setEditingTags(true); setEditingTagsText((issue.tags ?? []).join(", ")); }} type="button">
+                <button className="text-xs font-semibold text-slate-400 hover:text-red-700" onClick={() => { setEditingTags(true); setEditingTagsList(issue.tags ?? []); setNewTagInput(""); }} type="button">
                   {(issue.tags?.length ?? 0) > 0 ? "edit" : "Add tags"}
                 </button>
               </div>
@@ -260,22 +272,6 @@ export default function IssueDetailPage() {
               <p className="whitespace-pre-wrap text-sm text-slate-700">{issue.description}</p>
             </div>
           )}
-        </div>
-
-        <div className="rounded-3xl bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-3">
-            <p className="text-sm font-black uppercase tracking-[0.25em] text-red-700">Status</p>
-            <select
-              className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold"
-              value={issue.status}
-              disabled={updatingStatus}
-              onChange={(e) => handleStatusChange(e.target.value)}
-            >
-              <option value="open">Open</option>
-              <option value="in_progress">In Progress</option>
-              <option value="closed">Closed</option>
-            </select>
-          </div>
         </div>
 
         <div className="rounded-3xl bg-white p-6 shadow-sm">
@@ -303,6 +299,22 @@ export default function IssueDetailPage() {
               onChange={(e) => setNewNoteText(e.target.value)}
             />
             <button className="rounded-xl bg-red-700 px-5 py-2 text-sm font-bold text-white disabled:opacity-50 self-end" onClick={handleAddNote} disabled={addingNote || !newNoteText.trim()} type="button">{addingNote ? "..." : "Add"}</button>
+          </div>
+        </div>
+
+        <div className="rounded-3xl bg-white p-6 shadow-sm">
+          <div className="flex items-center gap-3">
+            <p className="text-sm font-black uppercase tracking-[0.25em] text-red-700">Status</p>
+            <select
+              className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold"
+              value={issue.status}
+              disabled={updatingStatus}
+              onChange={(e) => handleStatusChange(e.target.value)}
+            >
+              <option value="open">Open</option>
+              <option value="in_progress">In Progress</option>
+              <option value="closed">Closed</option>
+            </select>
           </div>
         </div>
       </section>
