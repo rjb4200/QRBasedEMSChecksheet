@@ -59,7 +59,6 @@ export default function IssueDetailPage() {
   const [addingNote, setAddingNote] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
-  const [editingTags, setEditingTags] = useState(false);
   const [editingTagsList, setEditingTagsList] = useState<string[]>([]);
   const [newTagInput, setNewTagInput] = useState("");
 
@@ -71,6 +70,7 @@ export default function IssueDetailPage() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => { fetchIssue(); fetchNotes(); }, [issueId]);
+  useEffect(() => { setEditingTagsList(issue?.tags ?? []); }, [issue?.tags]);
 
   async function fetchIssue() {
     try {
@@ -126,21 +126,33 @@ export default function IssueDetailPage() {
     } finally { setAddingNote(false); }
   }
 
-  async function handleSaveTags() {
-    const tags = editingTagsList.filter(Boolean);
-    setError("");
+async function saveTags(tagsList: string[]) {
     try {
       const res = await fetch(`/api/admin/issues/${issueId}`, {
         method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tags }),
+        body: JSON.stringify({ tags: tagsList }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       if (data.issue) setIssue(data.issue);
-      setEditingTags(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update tags");
     }
+  }
+
+  function addTag() {
+    const t = newTagInput.trim().toLowerCase();
+    if (!t || editingTagsList.includes(t)) return;
+    const updated = [...editingTagsList, t];
+    setEditingTagsList(updated);
+    setNewTagInput("");
+    saveTags(updated);
+  }
+
+  function removeTag(index: number) {
+    const updated = editingTagsList.filter((_, i) => i !== index);
+    setEditingTagsList(updated);
+    saveTags(updated);
   }
 
   async function handleSaveDetails() {
@@ -237,33 +249,18 @@ export default function IssueDetailPage() {
           </div>
 
           <div className="mt-4 border-t border-slate-100 pt-4">
-            {editingTags ? (
-              <div className="space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  {editingTagsList.map((tag, i) => (
-                    <span key={i} className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold bg-slate-100 text-slate-700">
-                      {tag}
-                      <button className="ml-0.5 text-slate-400 hover:text-red-700" onClick={() => setEditingTagsList((prev) => prev.filter((_, j) => j !== i))} type="button">×</button>
-                    </span>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2">
-                  <input className="rounded-xl border border-slate-300 px-3 py-2 text-sm flex-1" placeholder="Add a tag" value={newTagInput} onChange={(e) => setNewTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); const t = newTagInput.trim().toLowerCase(); if (t && !editingTagsList.includes(t)) { setEditingTagsList((prev) => [...prev, t]); setNewTagInput(""); } } }} />
-                  <button className="rounded-lg bg-slate-200 px-3 py-1 text-xs font-bold text-slate-700" onClick={() => { const t = newTagInput.trim().toLowerCase(); if (t && !editingTagsList.includes(t)) { setEditingTagsList((prev) => [...prev, t]); setNewTagInput(""); } }} type="button">Add</button>
-                  <button className="rounded-lg bg-red-700 px-3 py-1 text-xs font-bold text-white" onClick={handleSaveTags} type="button">Save</button>
-                  <button className="text-xs text-slate-500" onClick={() => setEditingTags(false)} type="button">Cancel</button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-wrap items-center gap-2">
-                {issue.tags?.map((tag) => (
-                  <span key={tag} className={`rounded-lg px-2 py-1 text-xs font-semibold ${tagColor(tag)}`}>{tag}</span>
-                ))}
-                <button className="text-xs font-semibold text-slate-400 hover:text-red-700" onClick={() => { setEditingTags(true); setEditingTagsList(issue.tags ?? []); setNewTagInput(""); }} type="button">
-                  {(issue.tags?.length ?? 0) > 0 ? "edit" : "Add tags"}
-                </button>
-              </div>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {editingTagsList.map((tag, i) => (
+                <span key={i} className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold ${tagColor(tag)}`}>
+                  {tag}
+                  <button className="ml-0.5 opacity-60 hover:opacity-100" onClick={() => removeTag(i)} type="button">×</button>
+                </span>
+              ))}
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+              <input className="rounded-xl border border-slate-300 px-3 py-2 text-sm w-40" placeholder="Add a tag" value={newTagInput} onChange={(e) => setNewTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }} />
+              <button className="rounded-lg bg-slate-200 px-3 py-1 text-xs font-bold text-slate-700" onClick={addTag} type="button">Add</button>
+            </div>
           </div>
 
           {!editingDetails && issue.description && (
