@@ -216,7 +216,7 @@ export default function IssuesPage() {
           <div className="rounded-3xl bg-white p-8 text-center"><p className="text-slate-500">No issues found</p></div>
         ) : (
           <div className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm overflow-hidden">
-            <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-black uppercase tracking-[0.15em] text-slate-500">
+            <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-[0.15em] text-slate-500">
               <span>Title</span><span>Unit</span><span>Status</span><span>Created</span><span />
             </div>
             {sorted.map((issue) => {
