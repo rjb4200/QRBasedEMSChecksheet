@@ -1,6 +1,7 @@
 import { AutoRefresh } from "@/components/auto-refresh";
 import { FleetMatrix } from "@/components/fleet-matrix";
 import { RecentComments } from "@/components/recent-comments";
+import { RecentIssues } from "@/components/recent-issues";
 import { StorageWarningBanner } from "@/components/storage-warning-banner";
 import { getCheckoffDiscrepanciesForRange, getDiscrepancyRange, groupDiscrepanciesByDate } from "@/lib/discrepancies";
 import { getFleetStatus } from "@/lib/fleet";
@@ -13,7 +14,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
   const discrepancyRange = getDiscrepancyRange(params);
   const [units, discrepancies] = await Promise.all([getFleetStatus(supabase), getCheckoffDiscrepanciesForRange(discrepancyRange.from, discrepancyRange.to)]);
   const discrepancyGroups = groupDiscrepanciesByDate(discrepancies, discrepancyRange);
-  const expandedDates = new Set(discrepancyGroups.slice(0, 3).map((group) => group.date));
+  const expandedDates = new Set<string>();
   const csvParams = new URLSearchParams({ from: discrepancyRange.from, to: discrepancyRange.to });
   const currentShift = getCurrentShift();
 
@@ -37,6 +38,8 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
             </div>
           </div>
         </div>
+
+        <RecentIssues />
 
         <StorageWarningBanner />
 

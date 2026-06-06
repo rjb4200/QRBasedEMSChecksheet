@@ -49,7 +49,7 @@ function addDays(date: Date, days: number) {
 export function getDefaultDiscrepancyRange() {
   const { shiftDate } = getCurrentShift();
   const to = new Date(`${shiftDate}T00:00:00.000Z`);
-  const from = addDays(to, -6);
+  const from = addDays(to, -3);
   return { from: toDateInputValue(from), to: shiftDate };
 }
 
