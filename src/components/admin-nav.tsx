@@ -9,6 +9,7 @@ const WFD_LOGO_SRC = "/images/WFD_Logo_1848.jpg";
 const TOP_LINKS = [
   { href: "/admin", label: "Fleet" },
   { href: "/admin/archives", label: "Records" },
+  { href: "/admin/issues", label: "Issues" },
   { href: "/admin/system-log", label: "System Log" },
 ] as const;
 
