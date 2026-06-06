@@ -12,4 +12,4 @@
 - [x] 4.1 Add "Issues" link to TOP_LINKS in `src/components/admin-nav.tsx`
 - [x] 5.1 Run `npm run typecheck`
 - [x] 5.2 Run `npm run build`
-- [ ] 5.3 Manual test: create an issue, change its status, verify persistence on reload
+- [x] 5.3 Manual test: create an issue, change its status, verify persistence on reload
