@@ -77,7 +77,7 @@ export function RecentComments() {
 
   function startEscalate(comment: RecentComment) {
     setEscalatingId(comment.id);
-    setEscTitle(`${comment.unitName} — ${comment.sourceName}`);
+    setEscTitle(comment.comment.length > 100 ? comment.comment.slice(0, 97) + "..." : comment.comment);
     setEscDescription(comment.comment);
     setEscUnitId(comment.unitId ?? "");
     setEscError("");

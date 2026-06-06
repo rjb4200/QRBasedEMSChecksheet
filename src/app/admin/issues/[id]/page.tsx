@@ -61,6 +61,11 @@ export default function IssueDetailPage() {
   const [editingTags, setEditingTags] = useState(false);
   const [editingTagsText, setEditingTagsText] = useState("");
 
+  const [editingDetails, setEditingDetails] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [savingDetails, setSavingDetails] = useState(false);
+
   useEffect(() => { fetchIssue(); fetchNotes(); }, [issueId]);
 
   async function fetchIssue() {
@@ -134,6 +139,22 @@ export default function IssueDetailPage() {
     }
   }
 
+  async function handleSaveDetails() {
+    setError(""); setSavingDetails(true);
+    try {
+      const res = await fetch(`/api/admin/issues/${issueId}`, {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: editTitle, description: editDescription }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      if (data.issue) setIssue(data.issue);
+      setEditingDetails(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save");
+    } finally { setSavingDetails(false); }
+  }
+
   function formatDate(dateStr: string) {
     return new Date(dateStr).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
   }
@@ -160,14 +181,28 @@ export default function IssueDetailPage() {
         <div className="rounded-3xl bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-black text-slate-950">{issue.title}</h1>
-                <span className={`rounded-lg border px-2 py-0.5 text-xs font-bold ${status.color}`}>{status.label}</span>
-              </div>
-              <p className="mt-2 text-sm text-slate-500">
-                {issue.units?.name && <>{issue.units.name} · </>}
-                {issue.created_by} · {formatDate(issue.created_at)}
-              </p>
+              {editingDetails ? (
+                <div className="grid gap-3">
+                  <input className="rounded-xl border border-slate-300 px-4 py-3 text-2xl font-black text-slate-950" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                  <textarea className="rounded-xl border border-slate-300 px-4 py-3 text-sm" rows={4} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+                  <div className="flex items-center gap-2">
+                    <button className="rounded-lg bg-red-700 px-3 py-1 text-xs font-bold text-white disabled:opacity-50" onClick={handleSaveDetails} disabled={savingDetails || !editTitle.trim()} type="button">{savingDetails ? "Saving..." : "Save"}</button>
+                    <button className="text-xs text-slate-500" onClick={() => setEditingDetails(false)} type="button">Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h1 className="text-2xl font-black text-slate-950">{issue.title}</h1>
+                    <button className="text-xs font-semibold text-slate-400 hover:text-red-700" onClick={() => { setEditingDetails(true); setEditTitle(issue.title); setEditDescription(issue.description ?? ""); }} type="button">Edit</button>
+                    <span className={`rounded-lg border px-2 py-0.5 text-xs font-bold ${status.color}`}>{status.label}</span>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-500">
+                    {issue.units?.name && <>{issue.units.name} · </>}
+                    {issue.created_by} · {formatDate(issue.created_at)}
+                  </p>
+                </>
+              )}
             </div>
             <select
               className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold"
@@ -200,7 +235,7 @@ export default function IssueDetailPage() {
             )}
           </div>
 
-          {issue.description && (
+          {!editingDetails && issue.description && (
             <div className="mt-4 border-t border-slate-100 pt-4">
               <p className="whitespace-pre-wrap text-sm text-slate-700">{issue.description}</p>
             </div>
