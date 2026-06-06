@@ -283,7 +283,7 @@ export default function IssuesPage() {
             </button>
           ))}
           <div className="flex flex-1 flex-wrap items-center gap-2 ml-auto">
-            <input className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm w-40" placeholder="Search..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
+            <input className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm w-44" placeholder="Search..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
             <select className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" value={unitFilter} onChange={(e) => setUnitFilter(e.target.value)}>
               <option value="">All units</option>
               {units.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
@@ -301,30 +301,31 @@ export default function IssuesPage() {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="rounded-3xl bg-white p-5 shadow-sm">
+          <div className="space-y-4">
           {sorted.length === 0 ? (
-            <div className="rounded-3xl bg-white p-8 text-center"><p className="text-slate-500">No issues found</p></div>
+            <div className="p-8 text-center"><p className="text-slate-500">No issues found</p></div>
           ) : (
             sorted.map((issue) => {
               const status = STATUS_CONFIG[issue.status];
               const issueNotes = notes[issue.id] ?? [];
               const showNotes = expandedNotes === issue.id;
               return (
-                <div key={issue.id} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div key={issue.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-bold text-slate-950">{issue.title}</h3>
+                      <h3 className="text-base font-bold text-slate-900">{issue.title}</h3>
+                      {issue.units?.name && (
+                        <span className="mt-1 inline-block text-xs font-semibold text-slate-500">{issue.units.name}</span>
+                      )}
+                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
                         <span className={`rounded-lg border px-2 py-0.5 text-xs font-bold ${status.color}`}>{status.label}</span>
-                        {issue.units?.name && (
-                          <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">{issue.units.name}</span>
-                        )}
                         {issue.tags?.map((tag) => (
                           <span key={tag} className={`rounded-lg px-2 py-0.5 text-xs font-semibold ${tagColor(tag)}`}>{tag}</span>
                         ))}
                       </div>
                       {issue.description && <p className="mt-2 text-sm text-slate-600">{issue.description}</p>}
-                      <p className="mt-2 text-xs text-slate-500">{issue.created_by} · {formatDate(issue.created_at)}</p>
+                      <p className="mt-2 text-xs text-slate-400">{issue.created_by} · {formatDate(issue.created_at)}</p>
                     </div>
                     <select
                       className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold"
@@ -382,6 +383,7 @@ export default function IssuesPage() {
               );
             })
           )}
+          </div>
         </div>
       </section>
     </main>
