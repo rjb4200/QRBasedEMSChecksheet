@@ -22,4 +22,4 @@
 - [x] 5.6 Apply sorting and filtering client-side, respecting the active status tab
 - [x] 6.1 Run `npm run typecheck`
 - [x] 6.2 Run `npm run build`
-- [ ] 6.3 Manual test: create issue with tags, add notes, verify filters and sort work
+- [x] 6.3 Manual test: create issue with tags, add notes, verify filters and sort work
