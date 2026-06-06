@@ -93,7 +93,7 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
   const carriedForwardData = carriedForwardItemData(currentItemData, recentCompletedData, check?.status);
 
   if (!ownedByOther && !readOnly && check?.status !== "completed") {
-    await supabase.from("compartment_checks").upsert({
+    const payload = {
       unit_id: unitId,
       compartment_id: compartmentId,
       unit_kit_id: null,
@@ -103,7 +103,12 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
       checked_by: null,
       item_data: initialItemData,
       last_activity_at: new Date().toISOString(),
-    }, { onConflict: "unit_id, compartment_id, shift_date, shift_period" });
+    };
+    if (check?.id) {
+      await supabase.from("compartment_checks").update(payload).eq("id", check.id);
+    } else {
+      await supabase.from("compartment_checks").insert(payload);
+    }
   }
 
   if (ownedByOther && !readOnly) {
