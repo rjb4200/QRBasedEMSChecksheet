@@ -39,7 +39,7 @@ export default function IssuesPage() {
   const [newUnitId, setNewUnitId] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
-  const [filter, setFilter] = useState<"all" | "open" | "in_progress" | "closed">("all");
+  const [filter, setFilter] = useState<"all" | "open" | "in_progress" | "closed">("open");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   useEffect(() => { fetchIssues(); fetchUnits(); }, []);
@@ -97,7 +97,7 @@ export default function IssuesPage() {
   }
 
   function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    return new Date(dateStr).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
   }
 
   const filtered = filter === "all" ? issues : issues.filter((i) => i.status === filter);
