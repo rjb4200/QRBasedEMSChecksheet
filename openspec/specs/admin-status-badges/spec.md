@@ -24,42 +24,40 @@ All admin status badges SHALL use the following unified style:
 
 #### Scenario: Slate badge for neutral states
 
-- **WHEN** a badge represents a neutral or informational state (OOS, Crew names, Unit labels, Archived, Inactive, Exceptions count)
+- **WHEN** a badge represents a neutral or informational state (OOS, Crew names, Unit labels, Archived, Inactive, Exceptions count, Shift indicators)
 - **THEN** the badge SHALL use `bg-slate-100 text-slate-700 border-slate-300`
 
-### Requirement: Status badges use amber color family, not yellow
+### Requirement: Blue badges for Pushover notification system
 
-All in-progress or warning state badges SHALL use the `amber` color family tokens. No badge SHALL use `yellow-*` tokens.
+The Pushover notification system SHALL use a blue color badge to match the Pushover brand identity.
 
-#### Scenario: Archives incomplete badge uses amber
+#### Scenario: Pushover badge uses blue
 
-- **WHEN** an archive record has a check status of "incomplete"
-- **THEN** the status badge SHALL use `bg-amber-100 text-amber-800 border-amber-200`
+- **WHEN** a badge represents the Pushover notification system (system indicator, not alert level)
+- **THEN** the badge SHALL use `bg-blue-100 text-blue-800 border-blue-200`
 
-### Requirement: Fleet Matrix StatusBadge component uses light fill style
+### Requirement: Only enabled features display tag badges
 
-The Fleet Matrix `StatusBadge` component SHALL replace its solid-fill color mappings with light-fill + border mappings matching the unified badge tokens.
+Disabled or inactive features SHALL NOT display a tag badge. Only actively enabled settings SHALL be represented with a tag badge. This prevents visual clutter from inactive states.
 
-#### Scenario: Fleet Matrix Not Started badge uses light style
-
-- **WHEN** a fleet unit has a check status of "not_started"
-- **THEN** the StatusBadge SHALL render with `bg-red-100 text-red-800 border-red-200`
-
-#### Scenario: Fleet Matrix Complete badge uses light style
-
-- **WHEN** a fleet unit has a check status of "complete"
-- **THEN** the StatusBadge SHALL render with `bg-green-100 text-green-800 border-green-200`
-
-### Requirement: Daily report status visually distinguishes enabled from disabled
-
-The Users page SHALL visually distinguish whether daily report emails are enabled or disabled for a user.
-
-#### Scenario: Daily report enabled shows green badge
-
-- **WHEN** a user has `receives_daily_report` set to true
-- **THEN** the status indicator SHALL use a green-colored badge or text
-
-#### Scenario: Daily report disabled shows neutral indicator
+#### Scenario: Disabled daily report shows no tag
 
 - **WHEN** a user has `receives_daily_report` set to false
-- **THEN** the status indicator SHALL use a slate-colored badge or text
+- **THEN** no "Daily Report" tag SHALL be displayed
+
+#### Scenario: Disabled Pushover shows no tags
+
+- **WHEN** a user has `pushover_alert_enabled` set to false or no `pushover_user_key`
+- **THEN** no Pushover-related tags SHALL be displayed
+
+#### Scenario: Enabled Pushover shows individual setting tags
+
+- **WHEN** a user has Pushover enabled with missed checkoff and 1st shift checkboxes checked
+- **THEN** the user card SHALL display a blue "Pushover" tag, an amber "Missed" tag, and a slate "1st Shift" tag
+
+### Requirement: Pushover missed checkoff uses amber, follow-up uses red
+
+Pushover alert settings SHALL use distinct badge colors based on severity:
+- Missed checkoff alerts SHALL use amber (`bg-amber-100 text-amber-800 border-amber-200`)
+- Follow-up alerts SHALL use red (`bg-red-100 text-red-800 border-red-200`)
+- Shift indicators SHALL use slate (`bg-slate-100 text-slate-700 border-slate-300`)

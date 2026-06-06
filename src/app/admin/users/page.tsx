@@ -221,61 +221,7 @@ export default function AdminUsersPage() {
         {success && <div className="rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-bold text-green-800">{success}</div>}
 
         <div className="rounded-3xl bg-white p-4 shadow-sm">
-          <button className="flex w-full items-center justify-between text-left" onClick={() => setUserManagementExpanded((v) => !v)} type="button">
-            <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">User Management</p>
-            <span className={`inline-flex items-center gap-1 rounded-2xl px-3 py-1 text-xs font-bold transition ${userManagementExpanded ? "bg-red-100 text-red-700" : "bg-red-700 text-white hover:bg-red-800"}`}>
-              {userManagementExpanded ? "Collapse" : "Add User"}
-              <svg className={`h-3 w-3 transition ${userManagementExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            </span>
-          </button>
-          {userManagementExpanded && (
-            <div className="mt-4">
-          <form onSubmit={handleAddUser} className="grid gap-4 rounded-2xl border border-slate-200 p-5 md:grid-cols-2">
-            <label className="grid gap-2 text-sm font-bold text-slate-700">Username
-              <input className="rounded-2xl border border-slate-300 px-4 py-3" placeholder="Enter username" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} required minLength={3} maxLength={50} pattern="^[a-zA-Z0-9_]+$" />
-            </label>
-            <label className="grid gap-2 text-sm font-bold text-slate-700">Password
-              <input className="rounded-2xl border border-slate-300 px-4 py-3" type="password" placeholder="Enter password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
-              {newPassword && (
-                <div className="mt-1 flex items-center gap-2"><div className="h-2 flex-1 rounded-full bg-slate-200"><div className={`h-2 rounded-full ${passwordStrength.color}`} style={{ width: `${(passwordStrength.score / 5) * 100}%` }} /></div><span className="text-xs font-bold text-slate-600">{passwordStrength.label}</span></div>
-              )}
-              <span className="text-xs text-slate-500">Min 8 chars, uppercase, lowercase, number, special char</span>
-            </label>
-            <label className="grid gap-2 text-sm font-bold text-slate-700">Email for Daily Reports
-              <input className="rounded-2xl border border-slate-300 px-4 py-3" type="email" placeholder="name@example.com" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
-            </label>
-                              <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700">
-              <input className="h-4 w-4 accent-red-700" type="checkbox" checked={newReceivesDailyReport} onChange={(e) => setNewReceivesDailyReport(e.target.checked)} /> Receives daily report email
-            </label><label className="flex items-center gap-3 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newReceivesWeeklyDigest} onChange={(e) => setNewReceivesWeeklyDigest(e.target.checked)} /> Weekly issues digest</label>
-            <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-white p-4">
-              <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700 mb-3">Pushover</p>
-              <div className="grid gap-3">
-                <div className={!newPushoverAlertEnabled ? "opacity-40 pointer-events-none" : ""}>
-                  <label className="grid gap-1 text-sm font-bold text-slate-700">User Key
-                    <input className="rounded-2xl border border-slate-300 px-3 py-2 text-sm" type="password" placeholder="30-char Pushover user key" value={newPushoverUserKey} onChange={(e) => setNewPushoverUserKey(e.target.value)} minLength={0} maxLength={40} />
-                  </label>
-                </div>
-                <label className="flex items-center gap-2 text-sm font-bold text-slate-700"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverAlertEnabled} onChange={(e) => setNewPushoverAlertEnabled(e.target.checked)} />Enable Pushover alerts</label>
-                <div className={!newPushoverAlertEnabled ? "grid gap-2 sm:grid-cols-2 opacity-40 pointer-events-none" : "grid gap-2 sm:grid-cols-2"}>
-                  <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverMissedCheckoff} onChange={(e) => setNewPushoverMissedCheckoff(e.target.checked)} />Missed checkoff</label>
-                  <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverMissedCheckoffFup} onChange={(e) => setNewPushoverMissedCheckoffFup(e.target.checked)} />Follow-up</label>
-                </div>
-                <div className={!newPushoverAlertEnabled ? "border-t border-slate-100 pt-2 opacity-40 pointer-events-none" : "border-t border-slate-100 pt-2"}>
-                  <p className="text-xs font-bold text-slate-500 mb-2">Receive alerts during:</p>
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverShift1} onChange={(e) => setNewPushoverShift1(e.target.checked)} />1st Shift</label>
-                    <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverShift2} onChange={(e) => setNewPushoverShift2(e.target.checked)} />2nd Shift</label>
-                    <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverShift3} onChange={(e) => setNewPushoverShift3(e.target.checked)} />3rd Shift</label>
-          </div>
-
-        </div>
-              </div>
-            </div>
-            <div className="flex items-end md:col-span-2"><button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white disabled:opacity-50" type="submit" disabled={isAddingUser || !newUsername || !newPassword}>{isAddingUser ? "Adding..." : "Add User"}</button></div>
-          </form>
-            </div>
-          )}
-          <div className="mt-6">
+          <div>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Existing Users</p>
               <div className="flex items-center gap-3">
@@ -376,6 +322,63 @@ export default function AdminUsersPage() {
               )}
             </div>
           </div>
+        </div>
+
+        <div className="rounded-3xl bg-white p-4 shadow-sm">
+          <button className="flex w-full items-center justify-between text-left" onClick={() => setUserManagementExpanded((v) => !v)} type="button">
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">User Management</p>
+            <span className={`inline-flex items-center gap-1 rounded-2xl px-3 py-1 text-xs font-bold transition ${userManagementExpanded ? "bg-red-100 text-red-700" : "bg-red-700 text-white hover:bg-red-800"}`}>
+              {userManagementExpanded ? "Collapse" : "Add User"}
+              <svg className={`h-3 w-3 transition ${userManagementExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </span>
+          </button>
+          {userManagementExpanded && (
+            <div className="mt-4">
+          <form onSubmit={handleAddUser} className="grid gap-4 rounded-2xl border border-slate-200 p-5 md:grid-cols-2">
+            <label className="grid gap-2 text-sm font-bold text-slate-700">Username
+              <input className="rounded-2xl border border-slate-300 px-4 py-3" placeholder="Enter username" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} required minLength={3} maxLength={50} pattern="^[a-zA-Z0-9_]+$" />
+            </label>
+            <label className="grid gap-2 text-sm font-bold text-slate-700">Password
+              <input className="rounded-2xl border border-slate-300 px-4 py-3" type="password" placeholder="Enter password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+              {newPassword && (
+                <div className="mt-1 flex items-center gap-2"><div className="h-2 flex-1 rounded-full bg-slate-200"><div className={`h-2 rounded-full ${passwordStrength.color}`} style={{ width: `${(passwordStrength.score / 5) * 100}%` }} /></div><span className="text-xs font-bold text-slate-600">{passwordStrength.label}</span></div>
+              )}
+              <span className="text-xs text-slate-500">Min 8 chars, uppercase, lowercase, number, special char</span>
+            </label>
+            <label className="grid gap-2 text-sm font-bold text-slate-700">Email for Daily Reports
+              <input className="rounded-2xl border border-slate-300 px-4 py-3" type="email" placeholder="name@example.com" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+            </label>
+                              <label className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700">
+              <input className="h-4 w-4 accent-red-700" type="checkbox" checked={newReceivesDailyReport} onChange={(e) => setNewReceivesDailyReport(e.target.checked)} /> Receives daily report email
+            </label><label className="flex items-center gap-3 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newReceivesWeeklyDigest} onChange={(e) => setNewReceivesWeeklyDigest(e.target.checked)} /> Weekly issues digest</label>
+            <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-white p-4">
+              <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700 mb-3">Pushover</p>
+              <div className="grid gap-3">
+                <div className={!newPushoverAlertEnabled ? "opacity-40 pointer-events-none" : ""}>
+                  <label className="grid gap-1 text-sm font-bold text-slate-700">User Key
+                    <input className="rounded-2xl border border-slate-300 px-3 py-2 text-sm" type="password" placeholder="30-char Pushover user key" value={newPushoverUserKey} onChange={(e) => setNewPushoverUserKey(e.target.value)} minLength={0} maxLength={40} />
+                  </label>
+                </div>
+                <label className="flex items-center gap-2 text-sm font-bold text-slate-700"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverAlertEnabled} onChange={(e) => setNewPushoverAlertEnabled(e.target.checked)} />Enable Pushover alerts</label>
+                <div className={!newPushoverAlertEnabled ? "grid gap-2 sm:grid-cols-2 opacity-40 pointer-events-none" : "grid gap-2 sm:grid-cols-2"}>
+                  <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverMissedCheckoff} onChange={(e) => setNewPushoverMissedCheckoff(e.target.checked)} />Missed checkoff</label>
+                  <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverMissedCheckoffFup} onChange={(e) => setNewPushoverMissedCheckoffFup(e.target.checked)} />Follow-up</label>
+                </div>
+                <div className={!newPushoverAlertEnabled ? "border-t border-slate-100 pt-2 opacity-40 pointer-events-none" : "border-t border-slate-100 pt-2"}>
+                  <p className="text-xs font-bold text-slate-500 mb-2">Receive alerts during:</p>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverShift1} onChange={(e) => setNewPushoverShift1(e.target.checked)} />1st Shift</label>
+                    <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverShift2} onChange={(e) => setNewPushoverShift2(e.target.checked)} />2nd Shift</label>
+                    <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverShift3} onChange={(e) => setNewPushoverShift3(e.target.checked)} />3rd Shift</label>
+          </div>
+
+        </div>
+              </div>
+            </div>
+            <div className="flex items-end md:col-span-2"><button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white disabled:opacity-50" type="submit" disabled={isAddingUser || !newUsername || !newPassword}>{isAddingUser ? "Adding..." : "Add User"}</button></div>
+          </form>
+            </div>
+          )}
         </div>
 
         <div className="rounded-3xl bg-white p-4 shadow-sm">
