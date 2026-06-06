@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
-interface IssueNote {
-  id: string;
-  text: string;
-  created_by: string;
-  created_at: string;
-}
+import Link from "next/link";
 
 interface Issue {
   id: string;
@@ -65,19 +59,10 @@ export default function IssuesPage() {
   const [isCreating, setIsCreating] = useState(false);
 
   const [filter, setFilter] = useState<"all" | "active" | "closed">("active");
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [searchText, setSearchText] = useState("");
   const [unitFilter, setUnitFilter] = useState("");
   const [tagFilter, setTagFilter] = useState("");
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
-
-  const [expandedNotes, setExpandedNotes] = useState<string | null>(null);
-  const [notes, setNotes] = useState<Record<string, IssueNote[]>>({});
-  const [newNoteText, setNewNoteText] = useState<Record<string, string>>({});
-  const [addingNote, setAddingNote] = useState<string | null>(null);
-
-  const [editingTags, setEditingTags] = useState<string | null>(null);
-  const [editingTagsText, setEditingTagsText] = useState("");
 
   useEffect(() => { fetchIssues(); fetchUnits(); }, []);
 
@@ -100,14 +85,6 @@ export default function IssuesPage() {
     } catch { /* optional */ }
   }
 
-  async function fetchNotes(issueId: string) {
-    try {
-      const res = await fetch(`/api/admin/issues/${issueId}/notes`);
-      const data = await res.json();
-      if (data.notes) setNotes((prev) => ({ ...prev, [issueId]: data.notes }));
-    } catch { /* optional */ }
-  }
-
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault(); setError(""); setIsCreating(true);
     try {
@@ -126,74 +103,12 @@ export default function IssuesPage() {
     } finally { setIsCreating(false); }
   }
 
-  async function handleStatusChange(issueId: string, newStatus: string) {
-    setError(""); setUpdatingId(issueId);
-    try {
-      const res = await fetch(`/api/admin/issues/${issueId}`, {
-        method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setSuccess("Status updated");
-      fetchIssues();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update status");
-    } finally { setUpdatingId(null); }
-  }
-
-  async function handleSaveTags(issueId: string) {
-    setError("");
-    const tags = editingTagsText ? editingTagsText.split(",").map((t) => t.trim()).filter(Boolean) : [];
-    try {
-      const res = await fetch(`/api/admin/issues/${issueId}`, {
-        method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tags }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setSuccess("Tags updated");
-      setEditingTags(null);
-      fetchIssues();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update tags");
-    }
-  }
-
-  async function handleAddNote(issueId: string) {
-    const text = newNoteText[issueId]?.trim();
-    if (!text) return;
-    setError(""); setAddingNote(issueId);
-    try {
-      const res = await fetch(`/api/admin/issues/${issueId}/notes`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setNewNoteText((prev) => ({ ...prev, [issueId]: "" }));
-      fetchNotes(issueId);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add note");
-    } finally { setAddingNote(null); }
-  }
-
-  function toggleNotes(issueId: string) {
-    if (expandedNotes === issueId) {
-      setExpandedNotes(null);
-    } else {
-      setExpandedNotes(issueId);
-      if (!notes[issueId]) fetchNotes(issueId);
-    }
-  }
-
   function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    return new Date(dateStr).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
   }
 
   const allTags = [...new Set(issues.flatMap((i) => i.tags ?? []))].sort();
 
-  // Apply filtering
   const filtered = issues
     .filter((i) => {
       if (filter === "active") return i.status !== "closed";
@@ -207,16 +122,9 @@ export default function IssuesPage() {
       }
       return true;
     })
-    .filter((i) => {
-      if (unitFilter) return i.unit_id === unitFilter;
-      return true;
-    })
-    .filter((i) => {
-      if (tagFilter) return i.tags?.includes(tagFilter);
-      return true;
-    });
+    .filter((i) => unitFilter ? i.unit_id === unitFilter : true)
+    .filter((i) => tagFilter ? i.tags?.includes(tagFilter) : true);
 
-  // Apply sorting
   const sorted = [...filtered].sort((a, b) => {
     if (sortOrder === "oldest") return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     if (sortOrder === "updated") return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
@@ -283,7 +191,7 @@ export default function IssuesPage() {
             </button>
           ))}
           <div className="flex flex-1 flex-wrap items-center gap-2 ml-auto">
-            <input className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm w-44" placeholder="Search..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
+            <input className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm w-40" placeholder="Search..." value={searchText} onChange={(e) => setSearchText(e.target.value)} />
             <select className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm" value={unitFilter} onChange={(e) => setUnitFilter(e.target.value)}>
               <option value="">All units</option>
               {units.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
@@ -301,90 +209,42 @@ export default function IssuesPage() {
           </div>
         </div>
 
-        <div className="rounded-3xl bg-white p-5 shadow-sm">
-          <div className="space-y-4">
-          {sorted.length === 0 ? (
-            <div className="p-8 text-center"><p className="text-slate-500">No issues found</p></div>
-          ) : (
-            sorted.map((issue) => {
+        {sorted.length === 0 ? (
+          <div className="rounded-3xl bg-white p-8 text-center"><p className="text-slate-500">No issues found</p></div>
+        ) : (
+          <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-black uppercase tracking-[0.15em] text-slate-500">
+              <span>Title</span><span>Unit</span><span>Status</span><span>Created</span><span />
+            </div>
+            {sorted.map((issue) => {
               const status = STATUS_CONFIG[issue.status];
-              const issueNotes = notes[issue.id] ?? [];
-              const showNotes = expandedNotes === issue.id;
+              const displayTags = (issue.tags ?? []).slice(0, 2);
               return (
-                <div key={issue.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
+                <Link key={issue.id} href={`/admin/issues/${issue.id}`} className="block border-b border-slate-100 px-5 py-4 transition hover:bg-slate-50 last:border-b-0">
+                  <div className="flex flex-wrap items-center gap-3">
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-bold text-slate-900">{issue.title}</h3>
-                      {issue.units?.name && (
-                        <span className="mt-1 inline-block text-xs font-semibold text-slate-500">{issue.units.name}</span>
-                      )}
-                      <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                        <span className={`rounded-lg border px-2 py-0.5 text-xs font-bold ${status.color}`}>{status.label}</span>
-                        {issue.tags?.map((tag) => (
-                          <span key={tag} className={`rounded-lg px-2 py-0.5 text-xs font-semibold ${tagColor(tag)}`}>{tag}</span>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-bold text-slate-950 hover:text-red-700 transition">{issue.title}</h3>
+                        {displayTags.map((tag) => (
+                          <span key={tag} className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${tagColor(tag)}`}>{tag}</span>
                         ))}
+                        {(issue.tags?.length ?? 0) > 2 && (
+                          <span className="text-xs text-slate-400">+{issue.tags!.length - 2}</span>
+                        )}
                       </div>
-                      {issue.description && <p className="mt-2 text-sm text-slate-600">{issue.description}</p>}
-                      <p className="mt-2 text-xs text-slate-400">{issue.created_by} · {formatDate(issue.created_at)}</p>
                     </div>
-                    <select
-                      className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold"
-                      value={issue.status}
-                      disabled={updatingId === issue.id}
-                      onChange={(e) => handleStatusChange(issue.id, e.target.value)}
-                    >
-                      <option value="open">Open</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="closed">Closed</option>
-                    </select>
-                  </div>
-
-                  <div className="mt-3 border-t border-slate-100 pt-3">
-                    {editingTags === issue.id ? (
-                      <div className="flex items-center gap-2">
-                        <input className="rounded-xl border border-slate-300 px-3 py-2 text-sm flex-1" placeholder="equipment, maintenance" value={editingTagsText} onChange={(e) => setEditingTagsText(e.target.value)} />
-                        <button className="rounded-lg bg-red-700 px-3 py-1 text-xs font-bold text-white" onClick={() => handleSaveTags(issue.id)} type="button">Save</button>
-                        <button className="text-xs text-slate-500" onClick={() => setEditingTags(null)} type="button">Cancel</button>
-                      </div>
-                    ) : (
-                      <button className="text-xs font-semibold text-slate-500 hover:text-red-700" onClick={() => { setEditingTags(issue.id); setEditingTagsText((issue.tags ?? []).join(", ")); }} type="button">
-                        {(issue.tags?.length ?? 0) > 0 ? `${issue.tags!.length} tags · edit` : "Add tags"}
-                      </button>
+                    <span className={`rounded-lg border px-2 py-0.5 text-xs font-bold ${status.color}`}>{status.label}</span>
+                    {issue.units?.name && (
+                      <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600 hidden sm:inline">{issue.units.name}</span>
                     )}
+                    <span className="text-xs text-slate-500 hidden sm:inline">{formatDate(issue.created_at)}</span>
+                    <span className="text-xs text-slate-400">→</span>
                   </div>
-
-                  <div className="mt-3 border-t border-slate-100 pt-3">
-                    <button className="text-xs font-semibold text-slate-500 hover:text-red-700" onClick={() => toggleNotes(issue.id)} type="button">
-                      {issueNotes.length > 0 ? `${issueNotes.length} note${issueNotes.length === 1 ? "" : "s"}` : "Add note"}
-                      <span className="ml-1">{showNotes ? "▲" : "▼"}</span>
-                    </button>
-                    {showNotes && (
-                      <div className="mt-3 space-y-3">
-                        {issueNotes.map((note) => (
-                          <div key={note.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-                            <p className="whitespace-pre-wrap text-sm text-slate-700">{note.text}</p>
-                            <p className="mt-1 text-xs text-slate-500">{note.created_by} · {formatDate(note.created_at)}</p>
-                          </div>
-                        ))}
-                        <div className="flex gap-2">
-                          <textarea
-                            className="flex-1 rounded-xl border border-slate-300 px-3 py-2 text-sm"
-                            rows={2}
-                            placeholder="Add a note..."
-                            value={newNoteText[issue.id] ?? ""}
-                            onChange={(e) => setNewNoteText((prev) => ({ ...prev, [issue.id]: e.target.value }))}
-                          />
-                          <button className="rounded-xl bg-red-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50 self-end" onClick={() => handleAddNote(issue.id)} disabled={addingNote === issue.id || !(newNoteText[issue.id]?.trim())} type="button">{addingNote === issue.id ? "..." : "Add"}</button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                </Link>
               );
-            })
-          )}
+            })}
           </div>
-        </div>
+        )}
       </section>
     </main>
   );
