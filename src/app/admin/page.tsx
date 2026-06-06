@@ -24,6 +24,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
       <section className="mx-auto max-w-7xl space-y-6">
         <div>
           <h1 className="text-4xl font-black">Admin Dashboard</h1>
+          <p className="mt-2 max-w-3xl text-slate-600">Fleet-wide readiness overview showing daily check status across all active units.</p>
         </div>
 
         <div className="rounded-3xl bg-white p-5 shadow-sm">

@@ -141,14 +141,17 @@ export default function IssuesPage() {
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
       <section className="mx-auto max-w-7xl space-y-6">
-        <div><h1 className="text-4xl font-black">Issues</h1></div>
+        <div>
+          <h1 className="text-4xl font-black">Issues</h1>
+          <p className="mt-2 max-w-3xl text-slate-600">Track maintenance issues, equipment problems, and action items across the fleet.</p>
+        </div>
 
         {error && <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-800">{error}</div>}
         {success && <div className="rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-bold text-green-800">{success}</div>}
 
         <div className="rounded-3xl bg-white p-5 shadow-sm">
           <button className="flex w-full items-center justify-between text-left" onClick={() => setFormExpanded((v) => !v)} type="button">
-            <p className="text-sm font-black uppercase tracking-[0.25em] text-red-700">Create Issue</p>
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Create Issue</p>
             <span className={`inline-flex items-center gap-1 rounded-xl px-3 py-1 text-xs font-bold transition ${formExpanded ? "bg-red-100 text-red-700" : "bg-red-700 text-white hover:bg-red-800"}`}>
               {formExpanded ? "Collapse" : "New Issue"}
               <svg className={`h-3 w-3 transition ${formExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>

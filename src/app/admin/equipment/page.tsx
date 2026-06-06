@@ -122,7 +122,7 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
         </div>
 
         <form className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm sm:grid-cols-[1fr_220px_auto_auto]">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 sm:col-span-4">Filter</p>
+          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700 sm:col-span-4">Filter</p>
           <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={params.q} name="q" placeholder="Search equipment" />
           <select className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={params.category} name="category">
             <option value="">All categories</option>
@@ -139,7 +139,7 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
         </form>
 
         <form action={saveEquipment} className="grid gap-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[1fr_180px_160px_140px_auto]">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 md:col-span-5">Add</p>
+          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700 md:col-span-5">Add</p>
           <input className="rounded-2xl border border-slate-300 px-4 py-3" name="name" placeholder="Item name" required />
           <input className="rounded-2xl border border-slate-300 px-4 py-3" name="category" placeholder="Category" required />
           <select className="rounded-2xl border border-slate-300 px-4 py-3" name="inputType">

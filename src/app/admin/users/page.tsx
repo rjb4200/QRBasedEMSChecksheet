@@ -211,14 +211,17 @@ export default function AdminUsersPage() {
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
       <section className="mx-auto max-w-7xl space-y-6">
-        <div><h1 className="text-4xl font-black">Admin Users</h1></div>
+        <div>
+          <h1 className="text-4xl font-black">Admin Users</h1>
+          <p className="mt-2 max-w-3xl text-slate-600">Manage admin accounts, report subscriptions, and Pushover alert settings.</p>
+        </div>
 
         {error && <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-800">{error}</div>}
         {success && <div className="rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-bold text-green-800">{success}</div>}
 
         <div className="rounded-3xl bg-white p-5 shadow-sm">
           <button className="flex w-full items-center justify-between text-left" onClick={() => setUserManagementExpanded((v) => !v)} type="button">
-            <p className="text-sm font-black uppercase tracking-[0.25em] text-red-700">User Management</p>
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">User Management</p>
             <span className={`inline-flex items-center gap-1 rounded-xl px-3 py-1 text-xs font-bold transition ${userManagementExpanded ? "bg-red-100 text-red-700" : "bg-red-700 text-white hover:bg-red-800"}`}>
               {userManagementExpanded ? "Collapse" : "Add User"}
               <svg className={`h-3 w-3 transition ${userManagementExpanded ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -244,7 +247,7 @@ export default function AdminUsersPage() {
               <input className="h-4 w-4 accent-red-700" type="checkbox" checked={newReceivesDailyReport} onChange={(e) => setNewReceivesDailyReport(e.target.checked)} /> Receives daily report email
             </label><label className="flex items-center gap-3 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newReceivesWeeklyDigest} onChange={(e) => setNewReceivesWeeklyDigest(e.target.checked)} /> Weekly issues digest</label>
             <div className="md:col-span-2 rounded-xl border border-slate-200 bg-white p-4">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 mb-3">Pushover</p>
+              <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700 mb-3">Pushover</p>
               <div className="grid gap-3">
                 <div className={!newPushoverAlertEnabled ? "opacity-40 pointer-events-none" : ""}>
                   <label className="grid gap-1 text-sm font-bold text-slate-700">User Key
@@ -300,14 +303,14 @@ export default function AdminUsersPage() {
                       {editingUserId === user.id ? (
                         <div className="w-full space-y-4">
                           <div className="flex items-center justify-between">
-                            <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700">Editing {user.username}</p>
+                            <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Editing {user.username}</p>
                             <div className="flex items-center gap-2">
                               <button className="rounded-2xl bg-red-700 p-3 text-white disabled:opacity-50" onClick={handleSaveAll} disabled={isSavingAll} title="Save" type="button"><IconSave /></button>
                               <button type="button" className="rounded-2xl border border-slate-300 p-3 text-slate-600" onClick={handleCloseEdit} title="Cancel"><IconCancel /></button>
                             </div>
                           </div>
                           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                            <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 mb-4">Email &amp; Password</p>
+                            <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700 mb-4">Email &amp; Password</p>
                             <div className="grid gap-4 sm:grid-cols-2">
                               <label className="grid gap-1 text-sm font-bold text-slate-700">New Password
                                 <input className="rounded-xl border border-slate-300 px-3 py-2" type="password" placeholder="Leave blank to keep current" value={newPasswordForEdit} onChange={(e) => setNewPasswordForEdit(e.target.value)} />
@@ -321,7 +324,7 @@ export default function AdminUsersPage() {
                             </label><label className="mt-2 flex items-center gap-3 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={receivesWeeklyDigestForEdit} onChange={(e) => setReceivesWeeklyDigestForEdit(e.target.checked)} />Weekly issues digest</label>
                           </div>
                           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                            <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 mb-4">Pushover</p>
+                            <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700 mb-4">Pushover</p>
                             <div className="grid gap-4 sm:grid-cols-2">
                               <div className={!pushoverAlertEnabledForEdit ? "opacity-40 pointer-events-none" : ""}>
                                 <label className="grid gap-1 text-sm font-bold text-slate-700">User Key

@@ -39,7 +39,7 @@ export default async function ProviderAnalyticsPage({ searchParams }: { searchPa
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
       <section className="mx-auto max-w-7xl space-y-6">
         <div>
-          <h1 className="mt-2 text-4xl font-black">Provider Analytics</h1>
+          <h1 className="text-4xl font-black">Provider Analytics</h1>
           <p className="mt-2 text-slate-600">Time-on-page data is for manual review only.</p>
         </div>
         <form className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-4">

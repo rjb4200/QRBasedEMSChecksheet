@@ -16,6 +16,7 @@ export default async function AdminUnitsPage() {
       <section className="mx-auto max-w-7xl space-y-6">
         <div>
           <h1 className="text-4xl font-black">Unit Management</h1>
+          <p className="mt-2 max-w-3xl text-slate-600">Create and manage apparatus units with compartments, equipment, and QR codes.</p>
         </div>
 
         <div className="rounded-3xl bg-white p-5 shadow-sm">
@@ -61,7 +62,7 @@ export default async function AdminUnitsPage() {
 
         <form action={createUnit} className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-[1fr_120px_240px_auto]">
           <div className="md:col-span-4">
-            <h2 className="text-xs font-black uppercase tracking-[0.2em] text-red-700">Create a New Unit</h2>
+            <h2 className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Create a New Unit</h2>
             <p className="mt-1 text-sm text-slate-600">Create a new unit from scratch or copy compartments, kits, and items from an existing unit to quickly build a new apparatus.</p>
           </div>
           <input className="rounded-2xl border border-slate-300 px-4 py-3" name="name" placeholder="Unit name (EC1, Medic 1)" required />
