@@ -76,6 +76,9 @@ export default function AdminUsersPage() {
   const [testPushoverUserId, setTestPushoverUserId] = useState("");
   const [sendingTestPushover, setSendingTestPushover] = useState(false);
   const [testPushoverFeedback, setTestPushoverFeedback] = useState("");
+  const [testWeeklyRecipient, setTestWeeklyRecipient] = useState("");
+  const [sendingTestWeekly, setSendingTestWeekly] = useState(false);
+  const [testWeeklyFeedback, setTestWeeklyFeedback] = useState("");
   const [userManagementExpanded, setUserManagementExpanded] = useState(false);
   const [newPushoverShift1, setNewPushoverShift1] = useState(false);
   const [newPushoverShift2, setNewPushoverShift2] = useState(false);
@@ -171,6 +174,21 @@ export default function AdminUsersPage() {
     } finally { setSendingTestPushover(false); }
   }
 
+  async function handleTestWeekly() {
+    if (!testWeeklyRecipient) return;
+    setSendingTestWeekly(true); setTestWeeklyFeedback("");
+    try {
+      const res = await fetch("/api/admin/test-weekly-report", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: testWeeklyRecipient }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setTestWeeklyFeedback(`Sent to ${testWeeklyRecipient}`);
+    } catch (err) {
+      setTestWeeklyFeedback(err instanceof Error ? err.message : "Failed");
+    } finally { setSendingTestWeekly(false); }
+  }
+
   async function handleSendTestEmail() {
     if (!testEmailRecipient) return;
     setSendingTestEmail(true); setTestEmailFeedback("");
@@ -244,8 +262,21 @@ export default function AdminUsersPage() {
                     <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverShift1} onChange={(e) => setNewPushoverShift1(e.target.checked)} />1st Shift</label>
                     <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverShift2} onChange={(e) => setNewPushoverShift2(e.target.checked)} />2nd Shift</label>
                     <label className="flex items-center gap-2 text-sm text-slate-600"><input className="h-4 w-4 accent-red-700" type="checkbox" checked={newPushoverShift3} onChange={(e) => setNewPushoverShift3(e.target.checked)} />3rd Shift</label>
-                  </div>
-                </div>
+          </div>
+          <div className="mt-4 flex items-end gap-3 border-t border-slate-200 pt-4">
+            <div className="grid gap-1">
+              <label className="text-xs font-bold text-slate-700">Test Weekly Digest</label>
+              <select className="rounded-xl border border-slate-300 px-3 py-2 text-sm" value={testWeeklyRecipient} onChange={(e) => setTestWeeklyRecipient(e.target.value)}>
+                <option value="">Select user...</option>
+                {users.filter((u) => u.email && u.receives_weekly_issues_digest).map((u) => (
+                  <option key={u.id} value={u.email!}>{u.username} ({u.email})</option>
+                ))}
+              </select>
+            </div>
+            <button className="rounded-xl bg-red-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" disabled={!testWeeklyRecipient || sendingTestWeekly} onClick={handleTestWeekly} type="button">{sendingTestWeekly ? "Sending..." : "Send"}</button>
+            {testWeeklyFeedback && <span className={`text-sm font-semibold ${testWeeklyFeedback.startsWith("Sent") ? "text-green-700" : "text-red-700"}`}>{testWeeklyFeedback}</span>}
+          </div>
+        </div>
               </div>
             </div>
             <div className="flex items-end md:col-span-2"><button className="rounded-xl bg-red-700 px-5 py-3 font-bold text-white disabled:opacity-50" type="submit" disabled={isAddingUser || !newUsername || !newPassword}>{isAddingUser ? "Adding..." : "Add User"}</button></div>
