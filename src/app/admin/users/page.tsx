@@ -375,45 +375,50 @@ export default function AdminUsersPage() {
               )}
             </div>
           </div>
+        </div>
 
-          <div className="mt-6 flex items-end gap-3 border-t border-slate-200 pt-6">
-            <div className="grid gap-1">
-              <label className="text-xs font-bold text-slate-700">Send Test Email</label>
-              <select className="rounded-2xl border border-slate-300 px-3 py-2 text-sm" value={testEmailRecipient} onChange={(e) => setTestEmailRecipient(e.target.value)}>
-                <option value="">Select user...</option>
-                {users.filter((u) => u.email && u.receives_daily_report).map((u) => (
-                  <option key={u.id} value={u.email!}>{u.username} ({u.email})</option>
-                ))}
-              </select>
+        <div className="rounded-3xl bg-white p-4 shadow-sm">
+          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Communication Tests</p>
+          <div className="mt-4 space-y-3">
+            <div className="flex items-end gap-3 border-t border-slate-200 pt-3">
+              <div className="grid gap-1">
+                <label className="text-xs font-bold text-slate-700">Send Test Email</label>
+                <select className="rounded-2xl border border-slate-300 px-3 py-2 text-sm" value={testEmailRecipient} onChange={(e) => setTestEmailRecipient(e.target.value)}>
+                  <option value="">Select user...</option>
+                  {users.filter((u) => u.email && u.receives_daily_report).map((u) => (
+                    <option key={u.id} value={u.email!}>{u.username} ({u.email})</option>
+                  ))}
+                </select>
+              </div>
+              <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white disabled:opacity-50" disabled={!testEmailRecipient || sendingTestEmail} onClick={handleSendTestEmail} type="button">{sendingTestEmail ? "Sending..." : "Send"}</button>
+              {testEmailFeedback && <span className={`text-sm font-semibold ${testEmailFeedback.startsWith("Sent") ? "text-green-700" : "text-red-700"}`}>{testEmailFeedback}</span>}
             </div>
-            <button className="rounded-2xl bg-red-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" disabled={!testEmailRecipient || sendingTestEmail} onClick={handleSendTestEmail} type="button">{sendingTestEmail ? "Sending..." : "Send"}</button>
-            {testEmailFeedback && <span className={`text-sm font-semibold ${testEmailFeedback.startsWith("Sent") ? "text-green-700" : "text-red-700"}`}>{testEmailFeedback}</span>}
-          </div>
-          <div className="mt-4 flex items-end gap-3 border-t border-slate-200 pt-4">
-            <div className="grid gap-1">
-              <label className="text-xs font-bold text-slate-700">Test Pushover</label>
-              <select className="rounded-2xl border border-slate-300 px-3 py-2 text-sm" value={testPushoverUserId} onChange={(e) => setTestPushoverUserId(e.target.value)}>
-                <option value="">Select user...</option>
-                {users.filter((u) => u.pushover_alert_enabled && u.pushover_user_key).map((u) => (
-                  <option key={u.id} value={u.id}>{u.username}</option>
-                ))}
-              </select>
+            <div className="flex items-end gap-3 border-t border-slate-200 pt-3">
+              <div className="grid gap-1">
+                <label className="text-xs font-bold text-slate-700">Test Pushover</label>
+                <select className="rounded-2xl border border-slate-300 px-3 py-2 text-sm" value={testPushoverUserId} onChange={(e) => setTestPushoverUserId(e.target.value)}>
+                  <option value="">Select user...</option>
+                  {users.filter((u) => u.pushover_alert_enabled && u.pushover_user_key).map((u) => (
+                    <option key={u.id} value={u.id}>{u.username}</option>
+                  ))}
+                </select>
+              </div>
+              <button className="rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white disabled:opacity-50" disabled={!testPushoverUserId || sendingTestPushover} onClick={handleTestPushover} type="button">{sendingTestPushover ? "Sending..." : "Send"}</button>
+              {testPushoverFeedback && <span className={`text-sm font-semibold ${testPushoverFeedback.startsWith("Pushover test sent") ? "text-green-700" : "text-red-700"}`}>{testPushoverFeedback}</span>}
             </div>
-            <button className="rounded-2xl bg-orange-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" disabled={!testPushoverUserId || sendingTestPushover} onClick={handleTestPushover} type="button">{sendingTestPushover ? "Sending..." : "Send"}</button>
-            {testPushoverFeedback && <span className={`text-sm font-semibold ${testPushoverFeedback === "Pushover test sent" ? "text-green-700" : "text-red-700"}`}>{testPushoverFeedback}</span>}
-          </div>
-          <div className="mt-4 flex items-end gap-3 border-t border-slate-200 pt-4">
-            <div className="grid gap-1">
-              <label className="text-xs font-bold text-slate-700">Test Weekly Digest</label>
-              <select className="rounded-2xl border border-slate-300 px-3 py-2 text-sm" value={testWeeklyRecipient} onChange={(e) => setTestWeeklyRecipient(e.target.value)}>
-                <option value="">Select user...</option>
-                {users.filter((u) => u.email && u.receives_weekly_issues_digest).map((u) => (
-                  <option key={u.id} value={u.email!}>{u.username} ({u.email})</option>
-                ))}
-              </select>
+            <div className="flex items-end gap-3 border-t border-slate-200 pt-3">
+              <div className="grid gap-1">
+                <label className="text-xs font-bold text-slate-700">Test Weekly Digest</label>
+                <select className="rounded-2xl border border-slate-300 px-3 py-2 text-sm" value={testWeeklyRecipient} onChange={(e) => setTestWeeklyRecipient(e.target.value)}>
+                  <option value="">Select user...</option>
+                  {users.filter((u) => u.email && u.receives_weekly_issues_digest).map((u) => (
+                    <option key={u.id} value={u.email!}>{u.username} ({u.email})</option>
+                  ))}
+                </select>
+              </div>
+              <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white disabled:opacity-50" disabled={!testWeeklyRecipient || sendingTestWeekly} onClick={handleTestWeekly} type="button">{sendingTestWeekly ? "Sending..." : "Send"}</button>
+              {testWeeklyFeedback && <span className={`text-sm font-semibold ${testWeeklyFeedback.startsWith("Sent") ? "text-green-700" : "text-red-700"}`}>{testWeeklyFeedback}</span>}
             </div>
-            <button className="rounded-2xl bg-red-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" disabled={!testWeeklyRecipient || sendingTestWeekly} onClick={handleTestWeekly} type="button">{sendingTestWeekly ? "Sending..." : "Send"}</button>
-            {testWeeklyFeedback && <span className={`text-sm font-semibold ${testWeeklyFeedback.startsWith("Sent") ? "text-green-700" : "text-red-700"}`}>{testWeeklyFeedback}</span>}
           </div>
         </div>
       </section>
