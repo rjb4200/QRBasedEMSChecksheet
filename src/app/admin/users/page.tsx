@@ -394,7 +394,7 @@ export default function AdminUsersPage() {
               <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Email</p>
               <div className="flex items-end gap-3">
                 <div className="grid gap-1">
-                  <label className="text-xs font-bold text-slate-700">Send Test Email</label>
+                  <label className="text-xs font-bold text-slate-700">Test Daily Email</label>
                   <select className="rounded-2xl border border-slate-300 px-3 py-2 text-sm" value={testEmailRecipient} onChange={(e) => setTestEmailRecipient(e.target.value)}>
                     <option value="">Select user...</option>
                     {users.filter((u) => u.email && u.receives_daily_report).map((u) => (
