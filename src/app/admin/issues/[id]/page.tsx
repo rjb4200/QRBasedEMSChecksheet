@@ -1,30 +1,9 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { SaveStatusMessage } from "@/components/save-feedback";
-import { Spinner } from "@/components/spinner";
-
-interface IssueNote {
-  id: string;
-  text: string;
-  created_by: string;
-  created_at: string;
-}
-
-interface Issue {
-  id: string;
-  title: string;
-  description: string | null;
-  unit_id: string | null;
-  tags: string[] | null;
-  status: "open" | "in_progress" | "closed";
-  created_by: string;
-  created_at: string;
-  updated_at: string;
-  units: { name: string } | null;
-}
+import { createAdminClient } from "@/lib/supabase/server-admin";
+import { SubmitButton } from "@/components/submit-button";
+import { DeleteConfirmButton } from "@/components/delete-confirm-button";
+import { IconSave } from "@/components/icons";
+import { updateIssue, deleteIssue, addIssueNote } from "../actions";
 
 const STATUS_CONFIG = {
   open: { label: "Open", color: "text-red-700 bg-red-50 border-red-200" },
@@ -47,225 +26,101 @@ function tagColor(tag: string) {
   return TAG_COLORS[Math.abs(hash) % TAG_COLORS.length];
 }
 
-export default function IssueDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const issueId = params.id as string;
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
 
-  const [issue, setIssue] = useState<Issue | null>(null);
-  const [notes, setNotes] = useState<IssueNote[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+interface Issue {
+  id: string;
+  title: string;
+  description: string | null;
+  unit_id: string | null;
+  tags: string[] | null;
+  status: "open" | "in_progress" | "closed";
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  units: { name: string } | null;
+}
 
-  const [newNoteText, setNewNoteText] = useState("");
-  const [addingNote, setAddingNote] = useState(false);
-  const [updatingStatus, setUpdatingStatus] = useState(false);
+interface Note {
+  id: string;
+  text: string;
+  created_by: string;
+  created_at: string;
+}
 
-  const [editingTagsList, setEditingTagsList] = useState<string[]>([]);
-  const [newTagInput, setNewTagInput] = useState("");
+interface Unit {
+  id: string;
+  name: string;
+}
 
-  const [editingDetails, setEditingDetails] = useState(false);
-  const [editTitle, setEditTitle] = useState("");
-  const [editDescription, setEditDescription] = useState("");
-  const [savingDetails, setSavingDetails] = useState(false);
+export default async function IssueDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = createAdminClient();
 
-  const [deleting, setDeleting] = useState(false);
+  const [{ data: issue }, { data: notes }, { data: units }] = await Promise.all([
+    supabase
+      .from("issues")
+      .select("id, title, description, unit_id, tags, status, created_by, created_at, updated_at, units(name)")
+      .eq("id", id)
+      .single<Issue>(),
+    supabase
+      .from("issue_notes")
+      .select("id, text, created_by, created_at")
+      .eq("issue_id", id)
+      .order("created_at", { ascending: true }),
+    supabase.from("units").select("id, name").order("name"),
+  ]);
 
-  useEffect(() => { fetchIssue(); fetchNotes(); }, [issueId]);
-  useEffect(() => { setEditingTagsList(issue?.tags ?? []); }, [issue?.tags]);
-
-  async function fetchIssue() {
-    try {
-      const res = await fetch("/api/admin/issues");
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      const found = (data.issues ?? []).find((i: Issue) => i.id === issueId);
-      if (found) setIssue(found);
-      else setError("Issue not found");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load issue");
-    } finally { setLoading(false); }
+  if (!issue) {
+    return (
+      <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
+        <div className="mx-auto max-w-4xl">
+          <p className="font-bold text-red-800">Issue not found</p>
+          <Link className="mt-4 inline-block text-sm font-bold text-red-700 underline" href="/admin/issues">← Back to Issues</Link>
+        </div>
+      </main>
+    );
   }
-
-  async function fetchNotes() {
-    try {
-      const res = await fetch(`/api/admin/issues/${issueId}/notes`);
-      const data = await res.json();
-      if (data.notes) setNotes(data.notes);
-    } catch { /* optional */ }
-  }
-
-  async function handleStatusChange(newStatus: string) {
-    setError(""); setUpdatingStatus(true);
-    try {
-      const res = await fetch(`/api/admin/issues/${issueId}`, {
-        method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      if (data.issue) setIssue(data.issue);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update status");
-    } finally { setUpdatingStatus(false); }
-  }
-
-  async function handleAddNote() {
-    const text = newNoteText.trim();
-    if (!text) return;
-    setError(""); setAddingNote(true);
-    try {
-      const res = await fetch(`/api/admin/issues/${issueId}/notes`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setNewNoteText("");
-      fetchNotes();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to add note");
-    } finally { setAddingNote(false); }
-  }
-
-async function saveTags(tagsList: string[]) {
-    try {
-      const res = await fetch(`/api/admin/issues/${issueId}`, {
-        method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tags: tagsList }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      if (data.issue) setIssue(data.issue);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update tags");
-    }
-  }
-
-  function addTag() {
-    const t = newTagInput.trim().toLowerCase();
-    if (!t || editingTagsList.includes(t)) return;
-    const updated = [...editingTagsList, t];
-    setEditingTagsList(updated);
-    setNewTagInput("");
-    saveTags(updated);
-  }
-
-  function removeTag(index: number) {
-    const updated = editingTagsList.filter((_, i) => i !== index);
-    setEditingTagsList(updated);
-    saveTags(updated);
-  }
-
-  async function handleSaveDetails() {
-    setError(""); setSavingDetails(true);
-    try {
-      const res = await fetch(`/api/admin/issues/${issueId}`, {
-        method: "PUT", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: editTitle, description: editDescription }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      if (data.issue) setIssue(data.issue);
-      setEditingDetails(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save");
-    } finally { setSavingDetails(false); }
-  }
-
-  async function handleDelete() {
-    setError(""); setDeleting(true);
-    try {
-      const res = await fetch(`/api/admin/issues/${issueId}`, { method: "DELETE" });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      router.push("/admin/issues");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete issue");
-      setDeleting(false);
-    }
-  }
-
-  function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
-  }
-
-  if (loading) {
-    return <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950"><div className="mx-auto max-w-4xl"><Spinner /></div></main>;
-  }
-
-  if (error && !issue) {
-    return <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950"><div className="mx-auto max-w-4xl"><SaveStatusMessage status="error" message={error} /><Link className="mt-4 inline-block text-sm font-bold text-red-700 underline" href="/admin/issues">← Back to Issues</Link></div></main>;
-  }
-
-  if (!issue) return null;
 
   const status = STATUS_CONFIG[issue.status];
+  const unitName = issue.units?.name ?? null;
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
       <section className="mx-auto max-w-4xl space-y-6">
         <Link className="text-sm font-bold text-red-700 underline" href="/admin/issues">← Back to Issues</Link>
 
-        <SaveStatusMessage status="error" message={error} />
-
         <div className="rounded-3xl bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
-              {editingDetails ? (
-                <div className="grid gap-3">
-                  <input className="rounded-xl border border-slate-300 px-4 py-3 text-2xl font-black text-slate-950" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
-                  <textarea className="rounded-xl border border-slate-300 px-4 py-3 text-sm" rows={4} value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
-                  <div className="flex items-center gap-2">
-                    <button className="rounded-lg bg-red-700 px-3 py-1 text-xs font-bold text-white disabled:opacity-50" onClick={handleSaveDetails} disabled={savingDetails || !editTitle.trim()} type="button">{savingDetails ? "Saving..." : "Save"}</button>
-                    <button className="text-xs text-slate-500" onClick={() => setEditingDetails(false)} type="button">Cancel</button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="text-2xl font-black text-slate-950">{issue.title}</h1>
-                    <span className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${status.color}`}>{status.label}</span>
-                  </div>
-                  <p className="mt-2 text-sm text-slate-500">
-                    {issue.units?.name && <>{issue.units.name} · </>}
-                    {issue.created_by} · {formatDate(issue.created_at)}
-                  </p>
-                </>
-              )}
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-2xl font-black text-slate-950">{issue.title}</h1>
+                <span className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${status.color}`}>{status.label}</span>
+              </div>
+              <p className="mt-2 text-sm text-slate-500">
+                {unitName && <>{unitName} · </>}
+                {issue.created_by} · {formatDate(issue.created_at)}
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              {!editingDetails && (
-                <button className="text-xs font-semibold text-slate-400 hover:text-red-700" onClick={() => { setEditingDetails(true); setEditTitle(issue.title); setEditDescription(issue.description ?? ""); }} type="button">Edit</button>
-              )}
-              {deleting ? (
-                <>
-                  <span className="text-xs font-bold text-red-700">Delete?</span>
-                  <button className="rounded-lg bg-red-700 px-2 py-0.5 text-xs font-bold text-white" onClick={handleDelete} type="button">Confirm</button>
-                  <button className="text-xs text-slate-500" onClick={() => setDeleting(false)} type="button">Cancel</button>
-                </>
-              ) : (
-                !editingDetails && <button className="text-xs font-semibold text-red-400 hover:text-red-700" onClick={() => setDeleting(true)} type="button">Delete</button>
-              )}
-            </div>
+            <DeleteConfirmButton
+              formAction={deleteIssue}
+              hiddenInputs={[{ name: "id", value: issue.id }]}
+            />
           </div>
 
-          <div className="mt-4 border-t border-slate-100 pt-4">
-            <div className="flex flex-wrap items-center gap-2">
-              {editingTagsList.map((tag, i) => (
-                <span key={i} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold border ${tagColor(tag)}`}>
-                  {tag}
-                  <button className="ml-0.5 opacity-60 hover:opacity-100" onClick={() => removeTag(i)} type="button">×</button>
-                </span>
-              ))}
+          {issue.tags && issue.tags.length > 0 && (
+            <div className="mt-4 border-t border-slate-100 pt-4">
+              <div className="flex flex-wrap items-center gap-2">
+                {issue.tags.map((tag, i) => (
+                  <span key={i} className={`rounded-full px-2.5 py-0.5 text-xs font-bold border ${tagColor(tag)}`}>{tag}</span>
+                ))}
+              </div>
             </div>
-            <div className="mt-2 flex items-center gap-2">
-              <input className="rounded-xl border border-slate-300 px-3 py-2 text-sm w-40" placeholder="Add a tag" value={newTagInput} onChange={(e) => setNewTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }} />
-              <button className="rounded-lg bg-slate-200 px-3 py-1 text-xs font-bold text-slate-700" onClick={addTag} type="button">Add</button>
-            </div>
-          </div>
+          )}
 
-          {!editingDetails && issue.description && (
+          {issue.description && (
             <div className="mt-4 border-t border-slate-100 pt-4">
               <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700 mb-2">Description</p>
               <p className="whitespace-pre-wrap text-sm text-slate-700">{issue.description}</p>
@@ -273,14 +128,50 @@ async function saveTags(tagsList: string[]) {
           )}
         </div>
 
+        <form action={updateIssue} className="rounded-3xl bg-white p-6 shadow-sm grid gap-4">
+          <p className="text-sm font-black uppercase tracking-[0.25em] text-red-700">Edit Issue</p>
+          <input name="id" type="hidden" value={issue.id} />
+          <label className="grid gap-1 text-sm font-bold text-slate-700">Title
+            <input className="rounded-2xl border border-slate-300 px-4 py-3" name="title" defaultValue={issue.title} required />
+          </label>
+          <label className="grid gap-1 text-sm font-bold text-slate-700">Description
+            <textarea className="rounded-2xl border border-slate-300 px-4 py-3" name="description" rows={3} defaultValue={issue.description ?? ""} />
+          </label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="grid gap-1 text-sm font-bold text-slate-700">Status
+              <select className="rounded-2xl border border-slate-300 px-4 py-3" name="status" defaultValue={issue.status}>
+                <option value="open">Open</option>
+                <option value="in_progress">In Progress</option>
+                <option value="closed">Closed</option>
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm font-bold text-slate-700">Unit
+              <select className="rounded-2xl border border-slate-300 px-4 py-3" name="unitId" defaultValue={issue.unit_id ?? ""}>
+                <option value="">No unit</option>
+                {(units ?? []).map((u: Unit) => (
+                  <option key={u.id} value={u.id}>{u.name}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <label className="grid gap-1 text-sm font-bold text-slate-700">Tags <span className="font-normal text-slate-500">(comma-separated)</span>
+            <input className="rounded-2xl border border-slate-300 px-4 py-3" name="tags" defaultValue={(issue.tags ?? []).join(", ")} placeholder="equipment, maintenance" />
+          </label>
+          <div>
+            <SubmitButton className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white disabled:opacity-50 inline-flex items-center gap-2" title="Save changes">
+              <IconSave /> Save Changes
+            </SubmitButton>
+          </div>
+        </form>
+
         <div className="rounded-3xl bg-white p-6 shadow-sm">
-          <p className="text-sm font-black uppercase tracking-[0.25em] text-red-700">Notes ({notes.length})</p>
+          <p className="text-sm font-black uppercase tracking-[0.25em] text-red-700">Notes ({(notes ?? []).length})</p>
 
           <div className="mt-4 space-y-4">
-            {notes.length === 0 ? (
+            {(notes ?? []).length === 0 ? (
               <p className="text-sm text-slate-500">No notes yet.</p>
             ) : (
-              notes.map((note) => (
+              (notes ?? []).map((note: Note) => (
                 <div key={note.id} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
                   <p className="text-xs font-bold text-slate-500">{note.created_by} · {formatDate(note.created_at)}</p>
                   <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700">{note.text}</p>
@@ -289,31 +180,26 @@ async function saveTags(tagsList: string[]) {
             )}
           </div>
 
-          <div className="mt-4 flex gap-2">
+          <form action={addIssueNote} className="mt-4 flex gap-2">
+            <input name="issueId" type="hidden" value={issue.id} />
             <textarea
               className="flex-1 rounded-xl border border-slate-300 px-4 py-3 text-sm"
               rows={2}
+              name="text"
               placeholder="Add a note..."
-              value={newNoteText}
-              onChange={(e) => setNewNoteText(e.target.value)}
+              required
             />
-            <button className="rounded-xl bg-red-700 px-5 py-2 text-sm font-bold text-white disabled:opacity-50 self-end" onClick={handleAddNote} disabled={addingNote || !newNoteText.trim()} type="button">{addingNote ? "..." : "Add"}</button>
-          </div>
+            <SubmitButton className="rounded-xl bg-red-700 px-5 py-2 text-sm font-bold text-white disabled:opacity-50 self-end" title="Add note">
+              Add
+            </SubmitButton>
+          </form>
         </div>
 
         <div className="rounded-3xl bg-white p-6 shadow-sm">
           <div className="flex items-center gap-3">
             <p className="text-sm font-black uppercase tracking-[0.25em] text-red-700">Status</p>
-            <select
-              className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold"
-              value={issue.status}
-              disabled={updatingStatus}
-              onChange={(e) => handleStatusChange(e.target.value)}
-            >
-              <option value="open">Open</option>
-              <option value="in_progress">In Progress</option>
-              <option value="closed">Closed</option>
-            </select>
+            <span className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${status.color}`}>{status.label}</span>
+            <span className="text-xs text-slate-500">Use the Edit Issue form above to change status</span>
           </div>
         </div>
       </section>
