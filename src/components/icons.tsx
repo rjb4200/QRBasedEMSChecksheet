@@ -68,3 +68,11 @@ export function IconPrint() {
     </svg>
   );
 }
+
+export function IconBack() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" />
+    </svg>
+  );
+}

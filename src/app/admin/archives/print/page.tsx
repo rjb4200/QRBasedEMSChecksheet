@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PrintButton } from "../../checksheets/print/print-button";
 import { getDailyUnitRecords, type DailyUnitCheckStatus } from "@/lib/archive-records";
+import { IconPrint, IconBack } from "@/components/icons";
 import { restockingListText } from "@/lib/restocking-list";
 import { getCurrentShift } from "@/lib/shifts";
 
@@ -36,8 +37,11 @@ export default async function PrintDailyRecordPage({ searchParams }: { searchPar
           <h1 className="text-2xl font-black">{date}</h1>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Link className="rounded-2xl border border-slate-300 px-5 py-3 font-bold" href={`/admin/archives?date=${date}`}>Back to Records</Link>
-          <PrintButton />
+          <Link className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 font-bold" href={`/admin/archives?date=${date}`}>
+            <IconBack />
+            Back to Records
+          </Link>
+          <PrintButton icon={<IconPrint />}>Print</PrintButton>
         </div>
       </div>
 
