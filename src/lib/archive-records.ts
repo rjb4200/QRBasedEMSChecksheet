@@ -681,17 +681,12 @@ export async function getTrendGroups() {
   const dates = eachDate(new Date(`${range.from}T00:00:00.000Z`), new Date(`${range.to}T00:00:00.000Z`)).reverse();
 
   const [{ data: ledgers }, { data: checks }, { data: crews }] = await Promise.all([
-    supabase.from("daily_unit_ledgers").select("shift_date, unit_id, unit_status, total_compartments").gte("shift_date", range.from).lte("shift_date", range.to).eq("shift_period", "daily"),
-    supabase.from("compartment_checks").select("shift_date, unit_id, status").gte("shift_date", range.from).lte("shift_date", range.to).eq("shift_period", "daily"),
-    supabase.from("daily_unit_crews").select("shift_date, unit_id, provider_names, locked").gte("shift_date", range.from).lte("shift_date", range.to).eq("shift_period", "daily"),
+    supabase.from("daily_unit_ledgers").select("shift_date, unit_id, unit_status, total_compartments").in("shift_date", dates).eq("shift_period", "daily"),
+    supabase.from("compartment_checks").select("shift_date, unit_id, status").in("shift_date", dates).eq("shift_period", "daily"),
+    supabase.from("daily_unit_crews").select("shift_date, unit_id, provider_names, locked").in("shift_date", dates).eq("shift_period", "daily"),
   ]);
 
-  // DEBUG: log today's raw counts to server console
-  const todayChecks = (checks ?? []).filter((c: any) => c.shift_date === currentShift.shiftDate);
-  const todayCompleted = todayChecks.filter((c: any) => c.status === "completed").length;
-  const todayCrews = (crews ?? []).filter((c: any) => c.shift_date === currentShift.shiftDate);
-  const todayCrewsLocked = todayCrews.filter((c: any) => c.locked && c.provider_names?.trim()).length;
-  console.log(`[TREND] Today(${currentShift.shiftDate}): ${todayChecks.length} checks (${todayCompleted} completed), ${todayCrews.length} crews (${todayCrewsLocked} locked). Range: ${range.from}-${range.to}. Ledger count: ${(ledgers ?? []).length}`);
+  console.log(`[TREND] Today(${currentShift.shiftDate}): ${(checks ?? []).length} checks. Dates: ${dates.length}. Ledgers: ${(ledgers ?? []).length}. Crews: ${(crews ?? []).length}`);
 
   return dates.map((date) => {
     let completedInServiceUnits = 0;
