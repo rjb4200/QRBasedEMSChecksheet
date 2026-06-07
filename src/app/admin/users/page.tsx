@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { IconCancel, IconEdit, IconSave, IconTrash } from "@/components/icons";
 import { SaveStatusMessage } from "@/components/save-feedback";
-import { Spinner } from "@/components/spinner";
 
 interface AdminUser {
   id: string;
@@ -35,6 +34,63 @@ function getPasswordStrength(password: string): { score: number; label: string; 
   if (score <= 1) return { score, label: "Weak", color: "bg-red-500" };
   if (score <= 3) return { score, label: "Medium", color: "bg-yellow-500" };
   return { score, label: "Strong", color: "bg-green-500" };
+}
+
+function AdminUsersSkeleton() {
+  return (
+    <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950 animate-pulse">
+      <section className="mx-auto max-w-7xl space-y-6">
+        <div>
+          <div className="h-10 w-52 rounded bg-slate-200" />
+          <div className="mt-2 h-5 w-full max-w-2xl rounded bg-slate-100" />
+        </div>
+
+        <div className="rounded-3xl bg-white p-4 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="h-4 w-40 rounded bg-slate-200" />
+            <div className="flex items-center gap-3">
+              <div className="h-4 w-28 rounded bg-slate-100" />
+              <div className="h-8 w-14 rounded-full bg-slate-200" />
+            </div>
+          </div>
+          <div className="mt-4 space-y-3">
+            {[...Array(3)].map((_, index) => (
+              <div key={index} className="flex flex-col gap-4 rounded-3xl border-2 border-slate-200 bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-2">
+                  <div className="h-5 w-40 rounded bg-slate-200" />
+                  <div className="h-4 w-56 rounded bg-slate-100" />
+                  <div className="flex flex-wrap gap-1.5">
+                    <div className="h-5 w-24 rounded-full bg-slate-100" />
+                    <div className="h-5 w-20 rounded-full bg-slate-100" />
+                    <div className="h-5 w-24 rounded-full bg-slate-100" />
+                  </div>
+                  <div className="h-4 w-32 rounded bg-slate-100" />
+                </div>
+                <div className="flex gap-2">
+                  <div className="h-11 w-11 rounded-2xl bg-slate-200" />
+                  <div className="h-11 w-11 rounded-2xl bg-slate-100" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          {[...Array(2)].map((_, index) => (
+            <div key={index} className="rounded-3xl bg-white p-5 shadow-sm">
+              <div className="h-4 w-40 rounded bg-slate-200" />
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="h-16 rounded-2xl bg-slate-100" />
+                <div className="h-16 rounded-2xl bg-slate-100" />
+                <div className="h-16 rounded-2xl bg-slate-100" />
+                <div className="h-16 rounded-2xl bg-slate-100" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
 }
 
 export default function AdminUsersPage() {
@@ -208,7 +264,7 @@ export default function AdminUsersPage() {
   }
 
   if (loading) {
-    return <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950"><div className="mx-auto max-w-7xl"><Spinner /></div></main>;
+    return <AdminUsersSkeleton />;
   }
 
   return (
