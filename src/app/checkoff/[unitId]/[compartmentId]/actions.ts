@@ -15,40 +15,18 @@ async function upsertTargetCheck(input: z.infer<typeof targetSchema> & { status:
   const authClient = await createClient();
   const { data: { user } } = await authClient.auth.getUser();
   const shift = getCurrentShift();
-  const targetColumn = input.targetType === "kit" ? "unit_kit_id" : "compartment_id";
-  const { data: existing, error: existingError } = await supabase
-    .from("compartment_checks")
-    .select("id, started_at, status")
-    .eq("unit_id", input.unitId)
-    .eq(targetColumn, input.targetId)
-    .eq("shift_date", shift.shiftDate)
-    .eq("shift_period", shift.shiftPeriod)
-    .maybeSingle();
-  if (existingError) throw new Error(existingError.message);
-
-  const now = new Date().toISOString();
-  const startedAt = existing?.started_at ?? now;
-  const status = existing?.status === "completed" && input.status === "in_progress" ? "completed" : input.status;
-  const submittedAt = input.status === "completed" ? now : null;
-  const timeToCompleteSeconds = submittedAt ? Math.max(0, Math.round((new Date(submittedAt).getTime() - new Date(startedAt).getTime()) / 1000)) : null;
-  const payload = {
-    unit_id: input.unitId,
-    compartment_id: input.targetType === "compartment" ? input.targetId : null,
-    unit_kit_id: input.targetType === "kit" ? input.targetId : null,
-    shift_date: shift.shiftDate,
-    shift_period: shift.shiftPeriod,
-    status,
-    ...(input.itemData ? { item_data: input.itemData } : {}),
-    ...(input.timeOnPage !== undefined ? { time_on_page: input.timeOnPage } : {}),
-    ...(input.status === "completed" ? { completed_at: submittedAt, submitted_at: submittedAt, time_to_complete_seconds: timeToCompleteSeconds } : {}),
-    ...(input.status === "completed" && user?.id ? { checked_by: user.id } : {}),
-    last_activity_at: now,
-  };
-
-  const result = existing
-    ? await supabase.from("compartment_checks").update(payload).eq("id", existing.id)
-    : await supabase.from("compartment_checks").insert({ ...payload, started_at: startedAt, ...(!user?.id ? { checked_by: null } : {}) });
-  if (result.error) throw new Error(result.error.message);
+  const { error } = await supabase.rpc("save_compartment_check_atomic", {
+    p_unit_id: input.unitId,
+    p_target_type: input.targetType,
+    p_target_id: input.targetId,
+    p_shift_date: shift.shiftDate,
+    p_shift_period: shift.shiftPeriod,
+    p_status: input.status,
+    p_item_data: input.itemData ?? null,
+    p_time_on_page: input.timeOnPage ?? null,
+    p_checked_by: input.status === "completed" ? user?.id ?? null : null,
+  });
+  if (error) throw new Error(error.message);
 
   if (input.status === "completed" && input.sectionComment !== undefined && input.sourceName) {
     const comment = input.sectionComment.trim();

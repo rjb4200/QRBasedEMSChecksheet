@@ -93,22 +93,18 @@ export default async function CheckoffPage({ params, searchParams }: { params: P
   const carriedForwardData = carriedForwardItemData(currentItemData, recentCompletedData, check?.status);
 
   if (!ownedByOther && !readOnly && check?.status !== "completed") {
-    const payload = {
-      unit_id: unitId,
-      compartment_id: compartmentId,
-      unit_kit_id: null,
-      shift_date: currentShift.shiftDate,
-      shift_period: currentShift.shiftPeriod,
-      status: "in_progress",
-      checked_by: null,
-      item_data: initialItemData,
-      last_activity_at: new Date().toISOString(),
-    };
-    if (check?.id) {
-      await supabase.from("compartment_checks").update(payload).eq("id", check.id);
-    } else {
-      await supabase.from("compartment_checks").insert(payload);
-    }
+    const { error: startCheckError } = await supabase.rpc("save_compartment_check_atomic", {
+      p_unit_id: unitId,
+      p_target_type: "compartment",
+      p_target_id: compartmentId,
+      p_shift_date: currentShift.shiftDate,
+      p_shift_period: currentShift.shiftPeriod,
+      p_status: "in_progress",
+      p_item_data: initialItemData,
+      p_time_on_page: null,
+      p_checked_by: null,
+    });
+    if (startCheckError) throw new Error(startCheckError.message);
   }
 
   if (ownedByOther && !readOnly) {

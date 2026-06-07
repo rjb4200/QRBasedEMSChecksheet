@@ -105,6 +105,8 @@ function ParLabel({ parLevel, needsAttention }: { parLevel: number | null; needs
 
 export function CheckoffForm({ unitId, compartmentId, targetType = "compartment", items, groups = [], initialData, previousData, carriedForwardData = {}, initialSectionComment = "", readOnly = false, shiftDate, shiftPeriod, sourceName }: Props) {
   const startTimeRef = useRef(Date.now());
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSubmittingRef = useRef(false);
   const [isPending, startTransition] = useTransition();
   const defaults = useMemo(() => Object.fromEntries(items.map((item) => {
     if (initialData[item.id] !== undefined) return [item.id, initialData[item.id]];
@@ -119,12 +121,19 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
 
   useEffect(() => {
     if (readOnly) return;
-    const timer = setTimeout(() => {
+    autoSaveTimerRef.current = setTimeout(() => {
+      autoSaveTimerRef.current = null;
+      if (isSubmittingRef.current) return;
       const seconds = Math.round((Date.now() - startTimeRef.current) / 1000);
       startTransition(() => void saveCheckData(unitId, compartmentId, values, seconds, targetType));
     }, 700);
 
-    return () => clearTimeout(timer);
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = null;
+      }
+    };
   }, [compartmentId, readOnly, targetType, unitId, values]);
 
   // Cache form setup data for future opens
@@ -259,6 +268,11 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
 
       {!readOnly ? (
         <button className="w-full rounded-3xl bg-green-700 px-5 py-5 text-xl font-black text-white disabled:opacity-60" disabled={isPending} onClick={() => {
+          if (autoSaveTimerRef.current) {
+            clearTimeout(autoSaveTimerRef.current);
+            autoSaveTimerRef.current = null;
+          }
+          isSubmittingRef.current = true;
           const seconds = Math.round((Date.now() - startTimeRef.current) / 1000);
           startTransition(() => {
             void prefetchUnitSummary(unitId, shiftDate, shiftPeriod);
