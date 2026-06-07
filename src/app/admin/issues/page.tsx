@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { SaveStatusMessage } from "@/components/save-feedback";
-import { Spinner } from "@/components/spinner";
 
 interface Issue {
   id: string;
@@ -137,7 +136,60 @@ export default function IssuesPage() {
   const counts = { all: issues.length, active: issues.filter((i) => i.status !== "closed").length, closed: issues.filter((i) => i.status === "closed").length };
 
   if (loading) {
-    return <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950"><div className="mx-auto max-w-7xl"><Spinner /></div></main>;
+    return (
+      <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950 animate-pulse">
+        <section className="mx-auto max-w-7xl space-y-6">
+          <div>
+            <div className="h-10 w-32 rounded bg-slate-200" />
+            <div className="mt-2 h-5 w-[30rem] rounded bg-slate-100" />
+          </div>
+
+          <div className="rounded-3xl bg-white p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="h-4 w-28 rounded bg-slate-200" />
+              <div className="h-8 w-24 rounded-2xl bg-slate-200" />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-9 w-24 rounded-2xl bg-slate-200" />
+            ))}
+            <div className="flex flex-1 flex-wrap items-center gap-2 ml-auto">
+              <div className="h-9 w-40 rounded-2xl bg-slate-100" />
+              <div className="h-9 w-32 rounded-2xl bg-slate-100" />
+              <div className="h-9 w-32 rounded-2xl bg-slate-100" />
+              <div className="h-9 w-36 rounded-2xl bg-slate-100" />
+            </div>
+          </div>
+
+          <div className="rounded-3xl bg-white p-5 shadow-sm space-y-0">
+            <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 border-b border-slate-100 px-5 py-3">
+              <div className="h-3 w-12 rounded bg-slate-200" />
+              <div className="h-3 w-12 rounded bg-slate-200" />
+              <div className="h-3 w-16 rounded bg-slate-200" />
+              <div className="h-3 w-16 rounded bg-slate-200" />
+              <div className="h-3 w-4 rounded bg-slate-200" />
+            </div>
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex flex-wrap items-center gap-3 border-b border-slate-100 px-5 py-4 last:border-b-0">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className="h-5 w-56 rounded bg-slate-200" />
+                    <div className="h-5 w-16 rounded-full bg-slate-100" />
+                    <div className="h-5 w-16 rounded-full bg-slate-100" />
+                  </div>
+                </div>
+                <div className="h-5 w-20 rounded-full bg-slate-200" />
+                <div className="h-4 w-16 rounded bg-slate-100 hidden sm:block" />
+                <div className="h-4 w-28 rounded bg-slate-100 hidden sm:block" />
+                <div className="h-4 w-4 rounded bg-slate-100" />
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+    );
   }
 
   return (
