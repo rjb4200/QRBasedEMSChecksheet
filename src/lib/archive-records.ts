@@ -686,6 +686,13 @@ export async function getTrendGroups() {
     supabase.from("daily_unit_crews").select("shift_date, unit_id, provider_names, locked").gte("shift_date", range.from).lte("shift_date", range.to).eq("shift_period", "daily"),
   ]);
 
+  // DEBUG: log today's raw counts to server console
+  const todayChecks = (checks ?? []).filter((c: any) => c.shift_date === currentShift.shiftDate);
+  const todayCompleted = todayChecks.filter((c: any) => c.status === "completed").length;
+  const todayCrews = (crews ?? []).filter((c: any) => c.shift_date === currentShift.shiftDate);
+  const todayCrewsLocked = todayCrews.filter((c: any) => c.locked && c.provider_names?.trim()).length;
+  console.log(`[TREND] Today(${currentShift.shiftDate}): ${todayChecks.length} checks (${todayCompleted} completed), ${todayCrews.length} crews (${todayCrewsLocked} locked). Range: ${range.from}-${range.to}. Ledger count: ${(ledgers ?? []).length}`);
+
   return dates.map((date) => {
     let completedInServiceUnits = 0;
     let totalInServiceUnits = 0;
