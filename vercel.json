@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/cron/refresh-ledgers",
+      "schedule": "* * * * *"
+    },
+    {
       "path": "/api/cron/daily-email-report",
       "schedule": "0 14 * * *"
     },

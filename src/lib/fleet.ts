@@ -1,5 +1,4 @@
 import { getCurrentShift } from "@/lib/shifts";
-import { refreshDailyUnitLedgers } from "@/lib/daily-unit-ledgers";
 type SupabaseClient = any;
 
 type UnitRow = {
@@ -63,6 +62,13 @@ type UnitKitRow = {
   kit_id: string;
 };
 
+type UnitCheckGroup = {
+  all: CheckRow[];
+  completed: CheckRow[];
+  inProgress: CheckRow[];
+  exceptionCount: number;
+};
+
 function isNonBlank(value: string | null | undefined) {
   return Boolean(value?.trim());
 }
@@ -108,7 +114,6 @@ function isFleetPanelVisibleUnit(unit: { archived: boolean; status: string }) {
 
 export async function getFleetStatus(supabase: SupabaseClient) {
   const shift = getCurrentShift();
-  await refreshDailyUnitLedgers(supabase, shift);
 
   const [{ data: units }, { data: ledgers }, { data: checks }, { data: crews }, { data: comments }, { data: compartmentItems }, { data: kitItems }, { data: unitKits }] = await Promise.all([
     supabase.from("units").select("id, name, unit_kind, status, oos_at, oos_by_name, unit_compartments(id), unit_kits(id)").is("deleted_at", null).order("name"),
@@ -139,6 +144,26 @@ export async function getFleetStatus(supabase: SupabaseClient) {
     kitItemMap.set(item.kit_id, [...(kitItemMap.get(item.kit_id) ?? []), item]);
   }
 
+  const unitCheckMap = new Map<string, UnitCheckGroup>();
+
+  for (const check of checkRows) {
+    let group = unitCheckMap.get(check.unit_id);
+    if (!group) {
+      group = { all: [], completed: [], inProgress: [], exceptionCount: 0 };
+      unitCheckMap.set(check.unit_id, group);
+    }
+    group.all.push(check);
+    if (check.status === "completed") {
+      group.completed.push(check);
+      const expectedItems = check.compartment_id
+        ? compartmentItemMap.get(check.compartment_id) ?? []
+        : kitItemMap.get(unitKitMap.get(check.unit_kit_id ?? "") ?? "") ?? [];
+      group.exceptionCount += countTargetExceptions(check.item_data, expectedItems);
+    } else if (check.status === "in_progress") {
+      group.inProgress.push(check);
+    }
+  }
+
   const liveUnitMap = new Map(unitRows.map((unit) => [unit.id, unit]));
   const ledgerUnitIds = new Set(ledgerRows.map((ledger) => ledger.unit_id));
   const unitSources = ledgerRows.length > 0
@@ -164,24 +189,18 @@ export async function getFleetStatus(supabase: SupabaseClient) {
     : unitRows.map((unit) => ({ ...unit, oosAt: unit.oos_at, oosByName: unit.oos_by_name, archived: false, statusNote: null, ledgerTotalCompartments: null }));
 
   return unitSources.filter(isFleetPanelVisibleUnit).map((unit) => {
-    const unitChecks = checkRows.filter((check) => check.unit_id === unit.id);
+    const group = unitCheckMap.get(unit.id) ?? { all: [] as CheckRow[], completed: [] as CheckRow[], inProgress: [] as CheckRow[], exceptionCount: 0 };
     const crew = crewMap.get(unit.id);
     const crewComplete = Boolean(crew?.locked && isNonBlank(crew.provider_names));
     const targetCount = unit.ledgerTotalCompartments ?? (unit.unit_compartments?.length ?? 0) + (unit.unit_kits?.length ?? 0);
     const total = targetCount + 1;
-    const completedChecks = unitChecks.filter((check) => check.status === "completed");
-    const completed = completedChecks.length + (crewComplete ? 1 : 0);
-    const hasStarted = unitChecks.length > 0 || isNonBlank(crew?.provider_names);
-    const inProgress = completed >= total ? 0 : hasStarted ? Math.max(unitChecks.filter((check) => check.status === "in_progress").length, 1) : 0;
+    const completed = group.completed.length + (crewComplete ? 1 : 0);
+    const hasStarted = group.all.length > 0 || isNonBlank(crew?.provider_names);
+    const inProgress = completed >= total ? 0 : hasStarted ? Math.max(group.inProgress.length, 1) : 0;
     const completedAt = completed >= total
-      ? latestIso([...completedChecks.map((check) => check.completed_at ?? check.updated_at), crewComplete ? crew?.updated_at : null])
+      ? latestIso([...group.completed.map((check: CheckRow) => check.completed_at ?? check.updated_at), crewComplete ? crew?.updated_at : null])
       : null;
-    const exceptionCount = completedChecks.reduce((count, check) => {
-      const expectedItems = check.compartment_id
-        ? compartmentItemMap.get(check.compartment_id) ?? []
-        : kitItemMap.get(unitKitMap.get(check.unit_kit_id ?? "") ?? "") ?? [];
-      return count + countTargetExceptions(check.item_data, expectedItems);
-    }, 0);
+    const exceptionCount = group.exceptionCount;
 
     return {
       ...unit,
