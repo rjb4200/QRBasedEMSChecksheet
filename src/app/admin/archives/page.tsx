@@ -67,28 +67,6 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
             Print Record
           </button>
         </form>
-        <section className="grid gap-3 md:grid-cols-5">
-          <div className="rounded-3xl bg-white p-4 shadow-sm">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Checked</p>
-            <p className="mt-2 text-3xl font-black text-green-700">{summary.checked}</p>
-          </div>
-          <div className="rounded-3xl bg-white p-4 shadow-sm">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Incomplete</p>
-            <p className="mt-2 text-3xl font-black text-amber-700">{summary.incomplete}</p>
-          </div>
-          <div className="rounded-3xl bg-white p-4 shadow-sm">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Not Started</p>
-            <p className="mt-2 text-3xl font-black text-red-700">{summary.not_started}</p>
-          </div>
-          <div className="rounded-3xl bg-white p-4 shadow-sm">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Not Required</p>
-            <p className="mt-2 text-3xl font-black text-slate-700">{summary.not_required}</p>
-          </div>
-          <div className="rounded-3xl bg-white p-4 shadow-sm">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Exceptions</p>
-            <p className="mt-2 text-3xl font-black text-slate-950">{totalExceptions}</p>
-          </div>
-        </section>
         <div className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
           <p className="mb-4 text-sm font-bold uppercase tracking-[0.25em] text-red-700">{selectedDate}</p>
           <div className="grid gap-4 lg:grid-cols-2">
@@ -130,6 +108,28 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
           ))}
         </div>
         </div>
+        <section className="grid gap-3 rounded-3xl border-2 border-slate-200 bg-white p-4 shadow-sm md:grid-cols-5">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Checked</p>
+            <p className="mt-2 text-3xl font-black text-green-700">{summary.checked}</p>
+          </div>
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Incomplete</p>
+            <p className="mt-2 text-3xl font-black text-amber-700">{summary.incomplete}</p>
+          </div>
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Not Started</p>
+            <p className="mt-2 text-3xl font-black text-red-700">{summary.not_started}</p>
+          </div>
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Not Required</p>
+            <p className="mt-2 text-3xl font-black text-slate-700">{summary.not_required}</p>
+          </div>
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Exceptions</p>
+            <p className="mt-2 text-3xl font-black text-slate-950">{totalExceptions}</p>
+          </div>
+        </section>
         <form action="/admin/archives/export-package" className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm" method="get">
           <input type="hidden" name="unitId" value={params.unitId ?? ""} />
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Export</p>
