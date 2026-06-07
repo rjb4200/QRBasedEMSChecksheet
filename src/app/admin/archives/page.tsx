@@ -64,7 +64,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
           </button>
           <button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-950" formAction="/admin/archives/print" formMethod="get" type="submit">
             <IconPrint />
-            Print Daily Record
+            Print Record
           </button>
         </form>
         <section className="grid gap-3 md:grid-cols-5">
