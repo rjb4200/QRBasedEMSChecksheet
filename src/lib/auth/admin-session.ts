@@ -128,3 +128,11 @@ export async function getAdminSessionPrincipal(value?: string): Promise<AdminSes
 export async function verifyAdminSession(value?: string) {
   return Boolean(await getAdminSessionPrincipal(value));
 }
+
+export function adminSessionCookieValid(value?: string): boolean {
+  if (!value) return false;
+  const [username, expiresAt, signature] = value.split(".");
+  if (!username || !expiresAt || !signature) return false;
+  if (Number(expiresAt) <= Date.now()) return false;
+  return true;
+}

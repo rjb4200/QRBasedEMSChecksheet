@@ -1,12 +1,12 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { ADMIN_COOKIE_NAME, verifyAdminSession } from "@/lib/auth/admin-session";
+import { ADMIN_COOKIE_NAME, adminSessionCookieValid } from "@/lib/auth/admin-session";
 import { AdminNav } from "@/components/admin-nav";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const adminSession = await verifyAdminSession((await cookies()).get(ADMIN_COOKIE_NAME)?.value);
+  const sessionValue = (await cookies()).get(ADMIN_COOKIE_NAME)?.value;
 
-  if (!adminSession) {
+  if (!adminSessionCookieValid(sessionValue)) {
     redirect("/login?next=/admin");
   }
 

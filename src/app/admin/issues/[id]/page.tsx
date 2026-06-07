@@ -1,9 +1,16 @@
+import { cache } from "react";
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { SubmitButton } from "@/components/submit-button";
 import { DeleteConfirmButton } from "@/components/delete-confirm-button";
 import { IconSave } from "@/components/icons";
 import { updateIssue, deleteIssue, addIssueNote } from "../actions";
+
+const getUnits = cache(async () => {
+  const supabase = createAdminClient();
+  const { data } = await supabase.from("units").select("id, name").order("name");
+  return data ?? [];
+});
 
 const STATUS_CONFIG = {
   open: { label: "Open", color: "text-red-700 bg-red-50 border-red-200" },
@@ -59,7 +66,7 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const supabase = createAdminClient();
 
-  const [{ data: issue }, { data: notes }, { data: units }] = await Promise.all([
+  const [{ data: issue }, { data: notes }, units] = await Promise.all([
     supabase
       .from("issues")
       .select("id, title, description, unit_id, tags, status, created_by, created_at, updated_at, units(name)")
@@ -70,7 +77,7 @@ export default async function IssueDetailPage({ params }: { params: Promise<{ id
       .select("id, text, created_by, created_at")
       .eq("issue_id", id)
       .order("created_at", { ascending: true }),
-    supabase.from("units").select("id, name").order("name"),
+    getUnits(),
   ]);
 
   if (!issue) {
