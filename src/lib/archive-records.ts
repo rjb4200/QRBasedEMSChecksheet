@@ -728,7 +728,7 @@ export async function getTrendGroups() {
       const pct = totalCompartments === 0 ? 0 : Math.round((completedCompartments / totalCompartments) * 10000) / 100;
 
       if (date === "2026-06-06") calcDebug.push(`${ledger.unit_id.slice(0,8)}:${completedChecks}chk+${unitCrew ? 1 : 0}crw/${ledger.total_compartments}+1=${pct}%`);
-      if (pct > 95) completedInServiceUnits += 1;
+      if (pct === 100) completedInServiceUnits += 1;
     }
 
     const dbg = perDateDebug.get(date);
