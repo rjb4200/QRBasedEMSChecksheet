@@ -92,31 +92,6 @@ export async function deleteEquipment(formData: FormData) {
     return { ok: false, message: "Equipment item not found." };
   }
 
-  if (kitUses && kitUses.length > 0) {
-    const kitNames = Array.from(
-      new Set(
-        kitUses
-          .map((use) => {
-            const kit = Array.isArray(use.kits) ? use.kits[0] : use.kits;
-            return kit?.name;
-          })
-          .filter(Boolean),
-      ),
-    );
-    const usageList = kitNames.length > 0 ? `\n\nUsed in kits:\n- ${kitNames.join("\n- ")}` : "";
-    throw new Error(`Cannot delete “${before?.name ?? "this equipment item"}” because it is still used in one or more kits. Remove it from those kits first, then try again.${usageList}`);
-  }
-
-  const { error: unitItemError } = await supabase.from("unit_compartment_items").delete().eq("equipment_id", id);
-
-  if (unitItemError) {
-    throw new Error(unitItemError.message);
-=======
-  if (!catalogItem) {
-    return { ok: false, message: "Equipment item not found." };
->>>>>>> e3198d2 (Add overstock feedback, fix equipment delete errors, sync specs)
-  }
-
   const [compRows, kitRows, templateRows] = await Promise.all([
     supabase.from("unit_compartment_items").select("equipment_id, unit_compartments!inner(name, units!inner(name))").eq("equipment_id", id),
     supabase.from("kit_items").select("equipment_id, kits!inner(name, unit_kits!inner(units!inner(name)))").eq("equipment_id", id),
