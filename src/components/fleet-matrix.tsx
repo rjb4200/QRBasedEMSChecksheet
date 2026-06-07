@@ -1,8 +1,5 @@
-"use client";
-
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
 
 type FleetUnit = {
   id: string;
@@ -73,22 +70,7 @@ function getPrimaryBadge(unit: FleetUnit) {
   return { label: "Not Started", className: "bg-red-100 text-red-800 border-red-200", ariaLabel: `${unit.name} is not started` };
 }
 
-export function FleetMatrix({ initialUnits }: { initialUnits: FleetUnit[]; admin?: boolean }) {
-  const [units, setUnits] = useState(initialUnits);
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch("/api/fleet-status");
-        if (res.ok) {
-          setUnits(await res.json());
-        }
-      } catch {
-        // Keep last known state on failure
-      }
-    }, 30_000);
-    return () => clearInterval(interval);
-  }, []);
+export function FleetMatrix({ units }: { units: FleetUnit[]; admin?: boolean }) {
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {units.map((unit) => {

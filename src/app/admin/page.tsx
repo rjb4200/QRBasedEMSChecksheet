@@ -1,3 +1,4 @@
+import { AutoRefresh } from "@/components/auto-refresh";
 import { FleetMatrix } from "@/components/fleet-matrix";
 import { RecentComments } from "@/components/recent-comments";
 import { RecentIssues } from "@/components/recent-issues";
@@ -19,6 +20,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
 
   return (
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
+      <AutoRefresh />
       <section className="mx-auto max-w-7xl space-y-6">
         <div>
           <h1 className="text-4xl font-black">Admin Dashboard</h1>
@@ -27,7 +29,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
 
         <div className="rounded-3xl bg-white p-5 shadow-sm">
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">Fleet Matrix</p>
-          <FleetMatrix admin initialUnits={units} />
+          <FleetMatrix admin units={units} />
 
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 p-4">
             <p className="font-bold text-slate-700">Daily check sheets for {currentShift.shiftDate}</p>
