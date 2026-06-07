@@ -18,7 +18,7 @@
 ## 3. Verification
 
 - [x] 3.1 Run TypeScript typecheck — no new errors introduced
-- [ ] 3.2 Verify admin fleet panel renders all units with correct completion percentages, status badges, and exception counts
-- [ ] 3.3 Verify supervisor fleet panel renders correctly (view-only)
-- [ ] 3.4 Verify exception counts match pre-change behavior for units with item exceptions
+- [x] 3.2 Verify admin fleet panel renders all units with correct completion percentages, status badges, and exception counts
+- [x] 3.3 Verify supervisor fleet panel renders correctly (view-only)
+- [x] 3.4 Verify exception counts match pre-change behavior for units with item exceptions
 - [x] 3.5 Confirm `refreshDailyUnitLedgers` is not called during fleet page loads (check server logs or add temporary console trace)
