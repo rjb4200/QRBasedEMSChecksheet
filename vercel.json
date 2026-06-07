@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/refresh-ledgers",
-      "schedule": "* * * * *"
+      "schedule": "10 6 * * *"
     },
     {
       "path": "/api/cron/daily-email-report",
