@@ -701,18 +701,29 @@ export async function getTrendGroups() {
     crewMap.set(key, Boolean(crew.locked && crew.provider_names?.trim()));
   }
 
-  // DEBUG: count raw rows per date
-  const perDateDebug = new Map<string, { checkTotal: number; checkCompleted: number; crewLocked: number }>();
-  for (const c of (checks ?? []) as { shift_date: string; status: string }[]) {
-    const d = perDateDebug.get(c.shift_date) ?? { checkTotal: 0, checkCompleted: 0, crewLocked: 0 };
+  // DEBUG: raw counts + map samples
+  const perDateDebug = new Map<string, { checkTotal: number; checkCompleted: number; crewLocked: number; checkKeys: string[]; crewKeys: string[] }>();
+  for (const c of (checks ?? []) as { unit_id: string; shift_date: string; status: string }[]) {
+    const d = perDateDebug.get(c.shift_date) ?? { checkTotal: 0, checkCompleted: 0, crewLocked: 0, checkKeys: [], crewKeys: [] };
     d.checkTotal += 1;
     if (c.status === "completed") d.checkCompleted += 1;
+    if (d.checkKeys.length < 2) d.checkKeys.push(`${c.unit_id.slice(0,8)}:${c.shift_date}`);
     perDateDebug.set(c.shift_date, d);
   }
-  for (const c of (crews ?? []) as { shift_date: string; locked: boolean | null; provider_names: string | null }[]) {
-    const d = perDateDebug.get(c.shift_date) ?? { checkTotal: 0, checkCompleted: 0, crewLocked: 0 };
-    if (c.locked && c.provider_names?.trim()) d.crewLocked += 1;
+  for (const c of (crews ?? []) as { unit_id: string; shift_date: string; provider_names: string | null; locked: boolean | null }[]) {
+    const d = perDateDebug.get(c.shift_date) ?? { checkTotal: 0, checkCompleted: 0, crewLocked: 0, checkKeys: [], crewKeys: [] };
+    if (c.locked && c.provider_names?.trim()) {
+      d.crewLocked += 1;
+    }
+    if (d.crewKeys.length < 2) d.crewKeys.push(`${c.unit_id.slice(0,8)}:${c.shift_date}`);
     perDateDebug.set(c.shift_date, d);
+  }
+  // Also log sample ledger keys for June 6 and June 7
+  const sampleLedgerKeys: string[] = [];
+  for (const l of (ledgers ?? []) as { shift_date: string; unit_id: string }[]) {
+    if ((l.shift_date === "2026-06-06" || l.shift_date === "2026-06-07") && sampleLedgerKeys.length < 4) {
+      sampleLedgerKeys.push(`${l.unit_id.slice(0,8)}:${l.shift_date}`);
+    }
   }
 
   return dates.map((date) => {
@@ -735,7 +746,7 @@ export async function getTrendGroups() {
     }
 
     const dbg = perDateDebug.get(date);
-    return { date, completedInServiceUnits, totalInServiceUnits, records: [], _debug: dbg ? `${dbg.checkTotal}c/${dbg.checkCompleted}ok ${dbg.crewLocked}crew` : "no data" } as any;
+    return { date, completedInServiceUnits, totalInServiceUnits, records: [], _debug: dbg ? `${dbg.checkTotal}c/${dbg.checkCompleted}ok ${dbg.crewLocked}crew keys:[${dbg.checkKeys}] crew:[${dbg.crewKeys}] ledger:[${date === "2026-06-06" || date === "2026-06-07" ? sampleLedgerKeys : []}]` : "no data" } as any;
   }) satisfies DailyRecordGroup[];
 }
 
