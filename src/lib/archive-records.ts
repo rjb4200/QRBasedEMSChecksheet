@@ -699,14 +699,12 @@ export async function getTrendGroups() {
       totalInServiceUnits += 1;
 
       const completedChecks = checksForDate.filter((c) => c.unit_id === ledger.unit_id && c.shift_date === date && c.status === "completed").length;
-      const allChecksForUnit = checksForDate.filter((c) => c.unit_id === ledger.unit_id && c.shift_date === date).length;
       const unitCrew = crewsForDate.find((c) => c.unit_id === ledger.unit_id && c.shift_date === date && c.locked && c.provider_names?.trim());
 
       const totalCompartments = ledger.total_compartments + 1;
       const completedCompartments = completedChecks + (unitCrew ? 1 : 0);
       const pct = totalCompartments === 0 ? 0 : Math.round((completedCompartments / totalCompartments) * 10000) / 100;
 
-      if (date === "2026-06-06") calcDebug.push(`${ledger.unit_id.slice(0,8)}:${allChecksForUnit}tot/${completedChecks}ok c${unitCrew ? 1 : 0}/${ledger.total_compartments}t=${pct}%`);
       if (pct > 85) completedInServiceUnits += 1;
     }
 
