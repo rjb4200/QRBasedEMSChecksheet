@@ -686,34 +686,12 @@ export async function getTrendGroups() {
     supabase.from("daily_unit_crews").select("shift_date, unit_id, provider_names, locked").gte("shift_date", range.from).lte("shift_date", range.to).eq("shift_period", "daily"),
   ]);
 
-  // DEBUG: count raw rows per date + sample map keys per date
-  const perDateDebug = new Map<string, { checkTotal: number; checkCompleted: number; crewLocked: number; checkKeys: string[]; crewKeys: string[]; ledgerKeys: string[] }>();
-  for (const c of (checks ?? []) as { unit_id: string; shift_date: string; status: string }[]) {
-    const d = perDateDebug.get(c.shift_date) ?? { checkTotal: 0, checkCompleted: 0, crewLocked: 0, checkKeys: [], crewKeys: [], ledgerKeys: [] };
-    d.checkTotal += 1;
-    if (c.status === "completed") d.checkCompleted += 1;
-    if (d.checkKeys.length < 3) d.checkKeys.push(`${c.unit_id.slice(0,8)}:${c.shift_date}`);
-    perDateDebug.set(c.shift_date, d);
-  }
-  for (const c of (crews ?? []) as { unit_id: string; shift_date: string; provider_names: string | null; locked: boolean | null }[]) {
-    const d = perDateDebug.get(c.shift_date) ?? { checkTotal: 0, checkCompleted: 0, crewLocked: 0, checkKeys: [], crewKeys: [], ledgerKeys: [] };
-    if (c.locked && c.provider_names?.trim()) d.crewLocked += 1;
-    if (d.crewKeys.length < 3) d.crewKeys.push(`${c.unit_id.slice(0,8)}:${c.shift_date}`);
-    perDateDebug.set(c.shift_date, d);
-  }
-  for (const l of (ledgers ?? []) as { unit_id: string; shift_date: string; unit_status: string }[]) {
-    const d = perDateDebug.get(l.shift_date) ?? { checkTotal: 0, checkCompleted: 0, crewLocked: 0, checkKeys: [], crewKeys: [], ledgerKeys: [] };
-    if (d.ledgerKeys.length < 4) d.ledgerKeys.push(`${l.unit_id.slice(0,8)}:${l.shift_date}(${l.unit_status === "in_service" ? "IS" : "OOS"})`);
-    perDateDebug.set(l.shift_date, d);
-  }
-
   return dates.map((date) => {
     let completedInServiceUnits = 0;
     let totalInServiceUnits = 0;
 
     const checksForDate = (checks ?? []) as { unit_id: string; shift_date: string; status: string }[];
     const crewsForDate = (crews ?? []) as { unit_id: string; shift_date: string; provider_names: string | null; locked: boolean | null }[];
-    const calcDebug: string[] = [];
 
     for (const ledger of (ledgers ?? []) as { shift_date: string; unit_id: string; unit_status: string; total_compartments: number }[]) {
       if (ledger.shift_date !== date || ledger.unit_status !== "in_service") continue;
@@ -729,11 +707,10 @@ export async function getTrendGroups() {
       const pct = totalCompartments === 0 ? 0 : Math.round((completedCompartments / totalCompartments) * 10000) / 100;
 
       if (date === "2026-06-06") calcDebug.push(`${ledger.unit_id.slice(0,8)}:${allChecksForUnit}tot/${completedChecks}ok c${unitCrew ? 1 : 0}/${ledger.total_compartments}t=${pct}%`);
-      if (pct === 100) completedInServiceUnits += 1;
+      if (pct > 85) completedInServiceUnits += 1;
     }
 
-    const dbg = perDateDebug.get(date);
-    return { date, completedInServiceUnits, totalInServiceUnits, records: [], _debug: dbg ? `${dbg.checkTotal}c/${dbg.checkCompleted}ok ${dbg.crewLocked}crew${calcDebug.length ? " | " + calcDebug.join(" ") : ""}` : "no data" } as any;
+    return { date, completedInServiceUnits, totalInServiceUnits, records: [] };
   }) satisfies DailyRecordGroup[];
 }
 
