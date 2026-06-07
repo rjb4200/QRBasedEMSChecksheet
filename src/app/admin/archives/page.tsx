@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { formatDuration, getDailyUnitRecords } from "@/lib/archive-records";
+import { formatDuration, getDailyUnitRecords, getTrendGroups } from "@/lib/archive-records";
 import { getDefaultRotationRange, getRotationDateAvailability } from "@/lib/data-rotation";
 import { getCurrentShift } from "@/lib/shifts";
 import ClearRecordsSection from "./clear-records-section";
@@ -30,9 +30,9 @@ const checkStatusClasses = {
 export default async function ArchivesPage({ searchParams }: { searchParams: Promise<{ unitId?: string; date?: string; from?: string; to?: string }> }) {
   const params = await searchParams;
   const selectedDate = params.date ?? params.from ?? getCurrentShift().shiftDate;
-  const [{ range, records, units }, { groups: trendGroups }, deleteAvailability] = await Promise.all([
+  const [{ range, records, units }, trendGroups, deleteAvailability] = await Promise.all([
     getDailyUnitRecords({ unitId: params.unitId, from: selectedDate, to: selectedDate }),
-    getDailyUnitRecords({}), // fleet-wide 14-day trend, unaffected by unit filter
+    getTrendGroups(),
     getRotationDateAvailability(params.unitId),
   ]);
   const deleteRange = getDefaultRotationRange(deleteAvailability, selectedDate);

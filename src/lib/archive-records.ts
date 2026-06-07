@@ -669,6 +669,61 @@ export function groupDailyUnitRecords(records: DailyUnitRecord[], dates?: string
   return Array.from(groups.values());
 }
 
+export async function getTrendGroups() {
+  const supabase = createAdminClient();
+  const range = getDefaultArchiveRange({});
+  const currentShift = getCurrentShift();
+
+  if (range.from <= currentShift.shiftDate && currentShift.shiftDate <= range.to) {
+    await refreshDailyUnitLedgers(supabase, currentShift);
+  }
+
+  const dates = eachDate(new Date(`${range.from}T00:00:00.000Z`), new Date(`${range.to}T00:00:00.000Z`)).reverse();
+
+  const [{ data: ledgers }, { data: checks }, { data: crews }] = await Promise.all([
+    supabase.from("daily_unit_ledgers").select("shift_date, unit_id, unit_status, total_compartments").gte("shift_date", range.from).lte("shift_date", range.to).eq("shift_period", "daily"),
+    supabase.from("compartment_checks").select("shift_date, unit_id, status").gte("shift_date", range.from).lte("shift_date", range.to).eq("shift_period", "daily"),
+    supabase.from("daily_unit_crews").select("shift_date, unit_id, provider_names, locked").gte("shift_date", range.from).lte("shift_date", range.to).eq("shift_period", "daily"),
+  ]);
+
+  const checkMap = new Map<string, { total: number; completed: number }>();
+  for (const check of (checks ?? []) as { unit_id: string; shift_date: string; status: string }[]) {
+    const key = `${check.unit_id}:${check.shift_date}`;
+    const entry = checkMap.get(key) ?? { total: 0, completed: 0 };
+    entry.total += 1;
+    if (check.status === "completed") entry.completed += 1;
+    checkMap.set(key, entry);
+  }
+
+  const crewMap = new Map<string, boolean>();
+  for (const crew of (crews ?? []) as { unit_id: string; shift_date: string; provider_names: string | null; locked: boolean | null }[]) {
+    const key = `${crew.unit_id}:${crew.shift_date}`;
+    crewMap.set(key, Boolean(crew.locked && crew.provider_names?.trim()));
+  }
+
+  return dates.map((date) => {
+    let completedInServiceUnits = 0;
+    let totalInServiceUnits = 0;
+
+    for (const ledger of (ledgers ?? []) as { shift_date: string; unit_id: string; unit_status: string; total_compartments: number }[]) {
+      if (ledger.shift_date !== date || ledger.unit_status !== "in_service") continue;
+
+      totalInServiceUnits += 1;
+
+      const checkCounts = checkMap.get(`${ledger.unit_id}:${date}`) ?? { total: 0, completed: 0 };
+      const crewLocked = crewMap.get(`${ledger.unit_id}:${date}`) ?? false;
+
+      const totalCompartments = ledger.total_compartments + 1;
+      const completedCompartments = checkCounts.completed + (crewLocked ? 1 : 0);
+      const pct = totalCompartments === 0 ? 0 : Math.round((completedCompartments / totalCompartments) * 10000) / 100;
+
+      if (pct > 95) completedInServiceUnits += 1;
+    }
+
+    return { date, completedInServiceUnits, totalInServiceUnits, records: [] };
+  }) satisfies DailyRecordGroup[];
+}
+
 export function archiveRecordToCsv(records: DailyUnitRecord[]) {
   const headers = [
     "Date",
