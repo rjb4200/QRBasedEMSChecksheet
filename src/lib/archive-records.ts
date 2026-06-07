@@ -701,6 +701,20 @@ export async function getTrendGroups() {
     crewMap.set(key, Boolean(crew.locked && crew.provider_names?.trim()));
   }
 
+  // DEBUG: count raw rows per date
+  const perDateDebug = new Map<string, { checkTotal: number; checkCompleted: number; crewLocked: number }>();
+  for (const c of (checks ?? []) as { shift_date: string; status: string }[]) {
+    const d = perDateDebug.get(c.shift_date) ?? { checkTotal: 0, checkCompleted: 0, crewLocked: 0 };
+    d.checkTotal += 1;
+    if (c.status === "completed") d.checkCompleted += 1;
+    perDateDebug.set(c.shift_date, d);
+  }
+  for (const c of (crews ?? []) as { shift_date: string; locked: boolean | null; provider_names: string | null }[]) {
+    const d = perDateDebug.get(c.shift_date) ?? { checkTotal: 0, checkCompleted: 0, crewLocked: 0 };
+    if (c.locked && c.provider_names?.trim()) d.crewLocked += 1;
+    perDateDebug.set(c.shift_date, d);
+  }
+
   return dates.map((date) => {
     let completedInServiceUnits = 0;
     let totalInServiceUnits = 0;
@@ -720,7 +734,8 @@ export async function getTrendGroups() {
       if (pct > 95) completedInServiceUnits += 1;
     }
 
-    return { date, completedInServiceUnits, totalInServiceUnits, records: [] };
+    const dbg = perDateDebug.get(date);
+    return { date, completedInServiceUnits, totalInServiceUnits, records: [], _debug: dbg ? `${dbg.checkTotal}c/${dbg.checkCompleted}ok ${dbg.crewLocked}crew` : "no data" } as any;
   }) satisfies DailyRecordGroup[];
 }
 

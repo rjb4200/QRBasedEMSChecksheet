@@ -52,7 +52,7 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
         </div>
         <CompletionTrendChart groups={trendGroups} />
         {/* DEBUG: remove after verifying */}
-        <pre className="rounded-3xl bg-slate-800 p-4 text-xs text-green-400 overflow-auto max-h-96">{JSON.stringify(trendGroups.map(g => ({date:g.date, completed:g.completedInServiceUnits, total:g.totalInServiceUnits})), null, 2)}</pre>
+        <pre className="rounded-3xl bg-slate-800 p-4 text-xs text-green-400 overflow-auto max-h-96">{JSON.stringify(trendGroups.map(g => ({date:g.date, completed:g.completedInServiceUnits, total:g.totalInServiceUnits, _debug:(g as any)._debug})), null, 2)}</pre>
         <form action="/admin/archives" className="grid gap-3 rounded-3xl bg-white p-4 shadow-sm md:grid-cols-4" method="get">
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700 md:col-span-4">Filter</p>
           <select className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={params.unitId ?? ""} name="unitId">
