@@ -5,6 +5,7 @@ import { EditableCatalogRow } from "./editable-catalog-row";
 import { DestructiveActionsToggle } from "./destructive-toggle";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { SaveButton } from "@/components/save-feedback";
+import { IconFilter } from "@/components/icons";
 
 const inputTypes = ["quantity", "checkbox", "condition"] as const;
 const pageSizeOptions = [25, 50, 100] as const;
@@ -130,9 +131,7 @@ export default async function EquipmentPage({ searchParams }: { searchParams: Pr
           </select>
           <input name="pageSize" type="hidden" value={currentPageSizeParam} />
           <button className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" title="Filter equipment catalog" aria-label="Filter equipment catalog" type="submit">
-            <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" strokeLinecap="round" />
-            </svg>
+            <IconFilter />
             Filter
           </button>
           <Link className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-950" href={`/admin/equipment?pageSize=${currentPageSizeParam}`}>Reset</Link>

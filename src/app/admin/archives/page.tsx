@@ -4,6 +4,7 @@ import { getDefaultRotationRange, getRotationDateAvailability } from "@/lib/data
 import { getCurrentShift } from "@/lib/shifts";
 import ClearRecordsSection from "./clear-records-section";
 import CompletionTrendChart from "@/components/completion-trend-chart";
+import { IconFilter, IconPrint } from "@/components/icons";
 
 function formatTimestamp(value: string | null) {
   return value ? new Date(value).toLocaleString("en-US", { timeZone: "America/New_York" }) : "Unavailable";
@@ -57,8 +58,14 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
             {units.map((unit) => <option key={unit.id} value={unit.id}>{unit.name}</option>)}
           </select>
           <input className="rounded-2xl border border-slate-300 px-4 py-3" defaultValue={selectedDate} name="date" type="date" />
-          <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">Filter</button>
-          <button className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-950" formAction="/admin/archives/print" formMethod="get" type="submit">Print Daily Record</button>
+          <button className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" type="submit">
+            <IconFilter />
+            Filter
+          </button>
+          <button className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-950" formAction="/admin/archives/print" formMethod="get" type="submit">
+            <IconPrint />
+            Print Daily Record
+          </button>
         </form>
         <section className="grid gap-3 md:grid-cols-5">
           <div className="rounded-3xl bg-white p-4 shadow-sm">
