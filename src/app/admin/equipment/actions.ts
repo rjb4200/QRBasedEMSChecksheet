@@ -86,15 +86,10 @@ export async function saveEquipment(formData: FormData) {
 export async function deleteEquipment(formData: FormData) {
   const id = z.string().uuid().parse(formData.get("id"));
   const supabase = await createAdminClient();
-  const { data: before } = await supabase.from("equipment_catalog").select("name, category, input_type, default_par_level").eq("id", id).maybeSingle();
+  const { data: catalogItem } = await supabase.from("equipment_catalog").select("name, category, input_type, default_par_level").eq("id", id).maybeSingle();
 
-  const { data: kitUses, error: kitUsesError } = await supabase
-    .from("kit_items")
-    .select("kits(name)")
-    .eq("equipment_id", id);
-
-  if (kitUsesError) {
-    throw new Error(kitUsesError.message);
+  if (!catalogItem) {
+    return { ok: false, message: "Equipment item not found." };
   }
 
   if (kitUses && kitUses.length > 0) {
@@ -116,18 +111,56 @@ export async function deleteEquipment(formData: FormData) {
 
   if (unitItemError) {
     throw new Error(unitItemError.message);
+=======
+  if (!catalogItem) {
+    return { ok: false, message: "Equipment item not found." };
+>>>>>>> e3198d2 (Add overstock feedback, fix equipment delete errors, sync specs)
   }
 
-  const { error: templateItemError } = await supabase.from("template_compartment_items").delete().eq("equipment_id", id);
+  const [compRows, kitRows, templateRows] = await Promise.all([
+    supabase.from("unit_compartment_items").select("equipment_id, unit_compartments!inner(name, units!inner(name))").eq("equipment_id", id),
+    supabase.from("kit_items").select("equipment_id, kits!inner(name, unit_kits!inner(units!inner(name)))").eq("equipment_id", id),
+    supabase.from("template_compartment_items").select("equipment_id, template_compartments!inner(name, templates!inner(name))").eq("equipment_id", id),
+  ]);
 
-  if (templateItemError) {
-    throw new Error(templateItemError.message);
+  const usages: string[] = [];
+
+  for (const row of (compRows.data ?? []) as any[]) {
+    const comp = Array.isArray(row.unit_compartments) ? row.unit_compartments[0] : row.unit_compartments;
+    const units = comp?.units ? (Array.isArray(comp.units) ? comp.units : [comp.units]) : [];
+    for (const unit of units) {
+      const label = `${comp?.name ?? "Unknown"} (${unit?.name ?? "Unknown"})`;
+      if (!usages.includes(label)) usages.push(label);
+    }
+  }
+
+  for (const row of (kitRows.data ?? []) as any[]) {
+    const kit = Array.isArray(row.kits) ? row.kits[0] : row.kits;
+    const kitName = kit?.name ?? "Unknown";
+    const unitKits = kit?.unit_kits ? (Array.isArray(kit.unit_kits) ? kit.unit_kits : [kit.unit_kits]) : [];
+    for (const uk of unitKits) {
+      const unit = Array.isArray(uk.units) ? uk.units[0] : uk.units;
+      const label = `${kitName} (Kit)${unit?.name ? ` — ${unit.name}` : ""}`;
+      if (!usages.includes(label)) usages.push(label);
+    }
+  }
+
+  for (const row of (templateRows.data ?? []) as any[]) {
+    const tc = Array.isArray(row.template_compartments) ? row.template_compartments[0] : row.template_compartments;
+    const t = tc?.templates ? (Array.isArray(tc.templates) ? tc.templates[0] : tc.templates) : null;
+    const label = `${tc?.name ?? "Unknown"} (Template: ${t?.name ?? "Unknown"})`;
+    if (!usages.includes(label)) usages.push(label);
+  }
+
+  if (usages.length > 0) {
+    const message = `Cannot delete "${catalogItem.name}" because it is still used in:\n\n${usages.map((u) => `- ${u}`).join("\n")}\n\nRemove it from those locations first, then try again.`;
+    return { ok: false, message };
   }
 
   const { error } = await supabase.from("equipment_catalog").delete().eq("id", id);
 
   if (error) {
-    throw new Error(error.message);
+    return { ok: false, message: `Failed to delete: ${error.message}` };
   }
 
   await logSystemEvent({
@@ -137,10 +170,12 @@ export async function deleteEquipment(formData: FormData) {
     action: "equipment.deleted",
     targetType: "equipment",
     targetId: id,
-    targetName: before?.name ?? null,
-    beforeData: before ?? null,
+    targetName: catalogItem.name,
+    beforeData: catalogItem,
   });
 
   revalidatePath("/admin/equipment");
   revalidatePath("/admin/units");
+
+  return { ok: true };
 }

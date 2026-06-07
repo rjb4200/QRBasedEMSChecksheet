@@ -56,6 +56,8 @@ export function EditableCatalogRow({ item }: { item: CatalogItem }) {
   const [editInputType, setEditInputType] = useState(item.input_type);
   const [editParLevel, setEditParLevel] = useState(item.default_par_level ?? "");
   const [showDelete, setShowDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const destroyEnabled = useDestroyEnabled();
 
   const isQuantityType = editInputType === "quantity";
@@ -81,6 +83,26 @@ export function EditableCatalogRow({ item }: { item: CatalogItem }) {
   function handleCancel() {
     setIsEditing(false);
     setShowDelete(false);
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      const formData = new FormData();
+      formData.set("id", item.id);
+      const result = await deleteEquipment(formData);
+      if (!result.ok) {
+        setDeleteError(result.message ?? "Failed to delete.");
+      } else {
+        setShowDelete(false);
+        setIsEditing(false);
+      }
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : "An unexpected error occurred.");
+    } finally {
+      setDeleting(false);
+    }
   }
 
   if (!isEditing) {
@@ -109,18 +131,17 @@ export function EditableCatalogRow({ item }: { item: CatalogItem }) {
           {destroyEnabled ? (
             <>
           {showDelete ? (
-            <form action={deleteEquipment} className="flex items-center gap-1">
-              <input name="id" type="hidden" value={item.id} />
-              <button className="rounded-xl border border-red-200 px-3 py-2 font-bold text-red-700 text-xs" title="Confirm delete" aria-label="Confirm delete equipment item" type="submit">Delete?</button>
-              <button className="rounded-xl border border-slate-300 px-2 py-2 text-slate-600" title="Cancel delete" aria-label="Cancel delete" type="button" onClick={() => setShowDelete(false)}><IconCancel /></button>
-            </form>
+            <div className="flex items-center gap-1">
+              <button className="rounded-xl border border-red-200 px-3 py-2 font-bold text-red-700 text-xs disabled:opacity-50" title="Confirm delete" aria-label="Confirm delete equipment item" type="button" disabled={deleting} onClick={handleDelete}>{deleting ? "Deleting..." : "Delete?"}</button>
+              <button className="rounded-xl border border-slate-300 px-2 py-2 text-slate-600" title="Cancel delete" aria-label="Cancel delete" type="button" onClick={() => { setShowDelete(false); setDeleteError(null); }} disabled={deleting}><IconCancel /></button>
+            </div>
           ) : (
             <button
               className="rounded-xl border border-red-200 bg-white px-3 py-2 text-red-700 hover:bg-red-50"
               title="Delete"
               aria-label="Delete equipment item"
               type="button"
-              onClick={() => setShowDelete(true)}
+              onClick={() => { setShowDelete(true); setDeleteError(null); }}
             >
               <IconTrash />
             </button>
@@ -128,6 +149,9 @@ export function EditableCatalogRow({ item }: { item: CatalogItem }) {
             </>
           ) : null}
         </div>
+        {deleteError ? (
+          <div className="col-span-full whitespace-pre-line rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">{deleteError}</div>
+        ) : null}
       </div>
     );
   }
@@ -187,16 +211,20 @@ export function EditableCatalogRow({ item }: { item: CatalogItem }) {
         </button>
         {destroyEnabled ? (
         <button
-          className="rounded-xl border border-red-200 bg-white px-3 py-2 text-red-700 hover:bg-red-50"
+          className="rounded-xl border border-red-200 bg-white px-3 py-2 text-red-700 hover:bg-red-50 disabled:opacity-50"
           title="Delete"
           aria-label="Delete equipment item"
           type="button"
-          onClick={() => { if (confirm("Delete this equipment item?")) { setIsEditing(false); } }}
+          disabled={deleting}
+          onClick={handleDelete}
         >
-          <IconTrash />
+          {deleting ? <Spinner /> : <IconTrash />}
         </button>
         ) : null}
       </div>
+      {deleteError ? (
+        <div className="col-span-full whitespace-pre-line rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">{deleteError}</div>
+      ) : null}
     </form>
   );
 }

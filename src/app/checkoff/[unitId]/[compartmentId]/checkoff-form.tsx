@@ -59,6 +59,36 @@ function carriedForwardNeedsAttention(item: CheckoffItem, value: unknown, isCarr
   return item.input_type === "quantity" && item.par_level !== null && typeof value === "number" && value < item.par_level;
 }
 
+type LiveFeedback = {
+  type: "normal" | "missing" | "understocked" | "overstocked" | "attention";
+  severity: "red" | "amber" | "text" | "none";
+  label: string | null;
+};
+
+function getLiveFeedback(item: CheckoffItem, value: unknown): LiveFeedback {
+  if (item.input_type === "checkbox") {
+    if (value === false) return { type: "missing", severity: "red", label: "Missing" };
+    return { type: "normal", severity: "none", label: null };
+  }
+
+  if (item.input_type === "condition") {
+    const status = typeof value === "object" && value !== null && "status" in value ? String(value.status) : null;
+    if (status && status !== "OK") return { type: "attention", severity: "amber", label: "Needs Check" };
+    return { type: "normal", severity: "none", label: null };
+  }
+
+  if (item.input_type === "quantity" && item.par_level !== null) {
+    const val = Number(value ?? 0);
+    const par = item.par_level;
+
+    if (val < par) return { type: "understocked", severity: "red", label: `Understocked: ${val - par}` };
+    if (val === par + 1) return { type: "overstocked", severity: "text", label: "Overstocked: +1" };
+    if (val > par) return { type: "overstocked", severity: "amber", label: `Overstocked: +${val - par}` };
+  }
+
+  return { type: "normal", severity: "none", label: null };
+}
+
 function WarningLabel({ children }: { children: string }) {
   return <span className="inline-flex items-center rounded-full border border-red-600 bg-red-50 px-2 py-0.5 text-xs font-black text-red-700">{children}</span>;
 }
@@ -129,21 +159,34 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
         const name = equipmentName(item) ?? "Unnamed item";
         const value = values[item.id];
         const prev = previousData[item.id] ?? "-";
-        const isCarriedForward = carriedForwardData[item.id] !== undefined && !touchedItemIds.has(item.id);
-        const needsAttention = carriedForwardNeedsAttention(item, value, isCarriedForward);
-        const isMissing = carriedForwardIsMissing(item, value, isCarriedForward);
         const itemMeta = `Prev: ${typeof prev === "object" ? JSON.stringify(prev) : String(prev)}`;
-        const warningLabel = isMissing ? "Missing" : "Needs Check";
+        const feedback = getLiveFeedback(item, value);
+
+        const cardBorder = feedback.severity === "red"
+          ? "border-red-300 bg-red-50 ring-1 ring-red-100"
+          : feedback.severity === "amber"
+          ? "border-amber-300 bg-amber-50 ring-1 ring-amber-100"
+          : "border-slate-200 bg-white";
+
+        const headingColor = feedback.severity === "red" ? "text-red-700" : "";
+        const showParLabel = item.input_type === "quantity" && item.par_level !== null && feedback.severity !== "none";
 
         return (
-          <div key={item.id} className={`rounded-3xl border bg-white p-4 shadow-sm ${isMissing || (needsAttention && item.input_type !== "quantity") ? "border-red-300 ring-1 ring-red-100" : "border-slate-200"}`}>
+          <div key={item.id} className={`rounded-3xl border p-4 shadow-sm ${cardBorder}`}>
             <div className={item.input_type === "quantity" ? "grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start" : "flex items-start justify-between gap-4"}>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className={`break-words text-lg font-black leading-snug ${needsAttention && item.input_type !== "quantity" ? "text-red-700" : ""}`}>{name}</h3>
-                  {item.input_type === "quantity" ? <ParLabel needsAttention={needsAttention} parLevel={item.par_level} /> : null}
-                  {needsAttention && item.input_type !== "quantity" ? <WarningLabel>{warningLabel}</WarningLabel> : null}
-                  {needsAttention && item.input_type === "quantity" ? <WarningLabel>{warningLabel}</WarningLabel> : null}
+                  <h3 className={`break-words text-lg font-black leading-snug ${headingColor}`}>{name}</h3>
+                  {showParLabel ? <ParLabel needsAttention={feedback.severity === "red"} parLevel={item.par_level} /> : null}
+                  {feedback.severity === "text" && feedback.label ? (
+                    <span className="text-xs font-bold text-amber-700">{feedback.label}</span>
+                  ) : null}
+                  {feedback.severity === "red" && feedback.label ? (
+                    <WarningLabel>{feedback.label}</WarningLabel>
+                  ) : null}
+                  {feedback.severity === "amber" && feedback.label ? (
+                    <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-black text-amber-700">{feedback.label}</span>
+                  ) : null}
                 </div>
                 <p className="mt-1 text-sm text-slate-600">{itemMeta}</p>
               </div>
