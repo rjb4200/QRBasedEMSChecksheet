@@ -686,21 +686,6 @@ export async function getTrendGroups() {
     supabase.from("daily_unit_crews").select("shift_date, unit_id, provider_names, locked").gte("shift_date", range.from).lte("shift_date", range.to).eq("shift_period", "daily"),
   ]);
 
-  const checkMap = new Map<string, { total: number; completed: number }>();
-  for (const check of (checks ?? []) as { unit_id: string; shift_date: string; status: string }[]) {
-    const key = `${check.unit_id}:${check.shift_date}`;
-    const entry = checkMap.get(key) ?? { total: 0, completed: 0 };
-    entry.total += 1;
-    if (check.status === "completed") entry.completed += 1;
-    checkMap.set(key, entry);
-  }
-
-  const crewMap = new Map<string, boolean>();
-  for (const crew of (crews ?? []) as { unit_id: string; shift_date: string; provider_names: string | null; locked: boolean | null }[]) {
-    const key = `${crew.unit_id}:${crew.shift_date}`;
-    crewMap.set(key, Boolean(crew.locked && crew.provider_names?.trim()));
-  }
-
   // DEBUG: count raw rows per date + sample map keys per date
   const perDateDebug = new Map<string, { checkTotal: number; checkCompleted: number; crewLocked: number; checkKeys: string[]; crewKeys: string[]; ledgerKeys: string[] }>();
   for (const c of (checks ?? []) as { unit_id: string; shift_date: string; status: string }[]) {
@@ -726,16 +711,19 @@ export async function getTrendGroups() {
     let completedInServiceUnits = 0;
     let totalInServiceUnits = 0;
 
+    const checksForDate = (checks ?? []) as { unit_id: string; shift_date: string; status: string }[];
+    const crewsForDate = (crews ?? []) as { unit_id: string; shift_date: string; provider_names: string | null; locked: boolean | null }[];
+
     for (const ledger of (ledgers ?? []) as { shift_date: string; unit_id: string; unit_status: string; total_compartments: number }[]) {
       if (ledger.shift_date !== date || ledger.unit_status !== "in_service") continue;
 
       totalInServiceUnits += 1;
 
-      const checkCounts = checkMap.get(`${ledger.unit_id}:${date}`) ?? { total: 0, completed: 0 };
-      const crewLocked = crewMap.get(`${ledger.unit_id}:${date}`) ?? false;
+      const completedChecks = checksForDate.filter((c) => c.unit_id === ledger.unit_id && c.shift_date === date && c.status === "completed").length;
+      const unitCrew = crewsForDate.find((c) => c.unit_id === ledger.unit_id && c.shift_date === date && c.locked && c.provider_names?.trim());
 
       const totalCompartments = ledger.total_compartments + 1;
-      const completedCompartments = checkCounts.completed + (crewLocked ? 1 : 0);
+      const completedCompartments = completedChecks + (unitCrew ? 1 : 0);
       const pct = totalCompartments === 0 ? 0 : Math.round((completedCompartments / totalCompartments) * 10000) / 100;
 
       if (pct > 95) completedInServiceUnits += 1;
