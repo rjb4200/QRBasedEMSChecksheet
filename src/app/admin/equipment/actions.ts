@@ -88,6 +88,30 @@ export async function deleteEquipment(formData: FormData) {
   const supabase = await createAdminClient();
   const { data: before } = await supabase.from("equipment_catalog").select("name, category, input_type, default_par_level").eq("id", id).maybeSingle();
 
+  const { data: kitUses, error: kitUsesError } = await supabase
+    .from("kit_items")
+    .select("kits(name)")
+    .eq("equipment_id", id);
+
+  if (kitUsesError) {
+    throw new Error(kitUsesError.message);
+  }
+
+  if (kitUses && kitUses.length > 0) {
+    const kitNames = Array.from(
+      new Set(
+        kitUses
+          .map((use) => {
+            const kit = Array.isArray(use.kits) ? use.kits[0] : use.kits;
+            return kit?.name;
+          })
+          .filter(Boolean),
+      ),
+    );
+    const usageList = kitNames.length > 0 ? `\n\nUsed in kits:\n- ${kitNames.join("\n- ")}` : "";
+    throw new Error(`Cannot delete “${before?.name ?? "this equipment item"}” because it is still used in one or more kits. Remove it from those kits first, then try again.${usageList}`);
+  }
+
   const { error: unitItemError } = await supabase.from("unit_compartment_items").delete().eq("equipment_id", id);
 
   if (unitItemError) {
