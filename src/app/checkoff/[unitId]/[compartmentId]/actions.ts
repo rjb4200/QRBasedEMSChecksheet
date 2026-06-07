@@ -18,7 +18,7 @@ async function upsertTargetCheck(input: z.infer<typeof targetSchema> & { status:
   const targetColumn = input.targetType === "kit" ? "unit_kit_id" : "compartment_id";
   const { data: existing, error: existingError } = await supabase
     .from("compartment_checks")
-    .select("id, started_at")
+    .select("id, started_at, status")
     .eq("unit_id", input.unitId)
     .eq(targetColumn, input.targetId)
     .eq("shift_date", shift.shiftDate)
@@ -28,6 +28,7 @@ async function upsertTargetCheck(input: z.infer<typeof targetSchema> & { status:
 
   const now = new Date().toISOString();
   const startedAt = existing?.started_at ?? now;
+  const status = existing?.status === "completed" && input.status === "in_progress" ? "completed" : input.status;
   const submittedAt = input.status === "completed" ? now : null;
   const timeToCompleteSeconds = submittedAt ? Math.max(0, Math.round((new Date(submittedAt).getTime() - new Date(startedAt).getTime()) / 1000)) : null;
   const payload = {
@@ -36,7 +37,7 @@ async function upsertTargetCheck(input: z.infer<typeof targetSchema> & { status:
     unit_kit_id: input.targetType === "kit" ? input.targetId : null,
     shift_date: shift.shiftDate,
     shift_period: shift.shiftPeriod,
-    status: input.status,
+    status,
     ...(input.itemData ? { item_data: input.itemData } : {}),
     ...(input.timeOnPage !== undefined ? { time_on_page: input.timeOnPage } : {}),
     ...(input.status === "completed" ? { completed_at: submittedAt, submitted_at: submittedAt, time_to_complete_seconds: timeToCompleteSeconds } : {}),

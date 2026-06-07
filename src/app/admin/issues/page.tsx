@@ -28,12 +28,12 @@ const STATUS_CONFIG = {
 } as const;
 
 const TAG_COLORS = [
-  "bg-red-100 text-red-700",
-  "bg-blue-100 text-blue-700",
-  "bg-green-100 text-green-700",
-  "bg-amber-100 text-amber-700",
-  "bg-purple-100 text-purple-700",
-  "bg-slate-100 text-slate-700",
+  "bg-red-100 text-red-800 border-red-200",
+  "bg-blue-100 text-blue-800 border-blue-200",
+  "bg-green-100 text-green-800 border-green-200",
+  "bg-amber-100 text-amber-800 border-amber-200",
+  "bg-purple-100 text-purple-800 border-purple-200",
+  "bg-slate-100 text-slate-700 border-slate-300",
 ];
 
 function tagColor(tag: string) {
@@ -229,7 +229,7 @@ export default function IssuesPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-bold text-slate-950 hover:text-red-700 transition">{issue.title}</h3>
                         {displayTags.map((tag) => (
-                          <span key={tag} className={`rounded-md px-1.5 py-0.5 text-xs font-semibold ${tagColor(tag)}`}>{tag}</span>
+                          <span key={tag} className={`rounded-full px-2.5 py-0.5 text-xs font-bold border ${tagColor(tag)}`}>{tag}</span>
                         ))}
                         {(issue.tags?.length ?? 0) > 2 && (
                           <span className="text-xs text-slate-400">+{issue.tags!.length - 2}</span>

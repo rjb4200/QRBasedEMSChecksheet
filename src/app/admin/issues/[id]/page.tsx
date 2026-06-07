@@ -31,12 +31,12 @@ const STATUS_CONFIG = {
 } as const;
 
 const TAG_COLORS = [
-  "bg-red-100 text-red-700",
-  "bg-blue-100 text-blue-700",
-  "bg-green-100 text-green-700",
-  "bg-amber-100 text-amber-700",
-  "bg-purple-100 text-purple-700",
-  "bg-slate-100 text-slate-700",
+  "bg-red-100 text-red-800 border-red-200",
+  "bg-blue-100 text-blue-800 border-blue-200",
+  "bg-green-100 text-green-800 border-green-200",
+  "bg-amber-100 text-amber-800 border-amber-200",
+  "bg-purple-100 text-purple-800 border-purple-200",
+  "bg-slate-100 text-slate-700 border-slate-300",
 ];
 
 function tagColor(tag: string) {
@@ -251,7 +251,7 @@ async function saveTags(tagsList: string[]) {
           <div className="mt-4 border-t border-slate-100 pt-4">
             <div className="flex flex-wrap items-center gap-2">
               {editingTagsList.map((tag, i) => (
-                <span key={i} className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold ${tagColor(tag)}`}>
+                <span key={i} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold border ${tagColor(tag)}`}>
                   {tag}
                   <button className="ml-0.5 opacity-60 hover:opacity-100" onClick={() => removeTag(i)} type="button">×</button>
                 </span>
