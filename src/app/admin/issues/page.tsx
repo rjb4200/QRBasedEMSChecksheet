@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { SaveStatusMessage } from "@/components/save-feedback";
+import { Spinner } from "@/components/spinner";
 
 interface Issue {
   id: string;
@@ -135,7 +137,7 @@ export default function IssuesPage() {
   const counts = { all: issues.length, active: issues.filter((i) => i.status !== "closed").length, closed: issues.filter((i) => i.status === "closed").length };
 
   if (loading) {
-    return <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950"><div className="mx-auto max-w-7xl"><p className="text-slate-600">Loading...</p></div></main>;
+    return <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950"><div className="mx-auto max-w-7xl"><Spinner /></div></main>;
   }
 
   return (
@@ -146,8 +148,8 @@ export default function IssuesPage() {
           <p className="mt-2 max-w-3xl text-slate-600">Track maintenance issues, equipment problems, and action items across the fleet.</p>
         </div>
 
-        {error && <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-800">{error}</div>}
-        {success && <div className="rounded-2xl border border-green-200 bg-green-50 p-4 text-sm font-bold text-green-800">{success}</div>}
+        <SaveStatusMessage status="error" message={error} />
+        <SaveStatusMessage status="success" message={success} />
 
         <div className="rounded-3xl bg-white p-4 shadow-sm">
           <button className="flex w-full items-center justify-between text-left" onClick={() => setFormExpanded((v) => !v)} type="button">

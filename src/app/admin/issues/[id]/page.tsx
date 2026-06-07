@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { SaveStatusMessage } from "@/components/save-feedback";
+import { Spinner } from "@/components/spinner";
 
 interface IssueNote {
   id: string;
@@ -189,11 +191,11 @@ async function saveTags(tagsList: string[]) {
   }
 
   if (loading) {
-    return <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950"><div className="mx-auto max-w-4xl"><p className="text-slate-600">Loading...</p></div></main>;
+    return <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950"><div className="mx-auto max-w-4xl"><Spinner /></div></main>;
   }
 
   if (error && !issue) {
-    return <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950"><div className="mx-auto max-w-4xl"><div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-800">{error}</div><Link className="mt-4 inline-block text-sm font-bold text-red-700 underline" href="/admin/issues">← Back to Issues</Link></div></main>;
+    return <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950"><div className="mx-auto max-w-4xl"><SaveStatusMessage status="error" message={error} /><Link className="mt-4 inline-block text-sm font-bold text-red-700 underline" href="/admin/issues">← Back to Issues</Link></div></main>;
   }
 
   if (!issue) return null;
@@ -205,7 +207,7 @@ async function saveTags(tagsList: string[]) {
       <section className="mx-auto max-w-4xl space-y-6">
         <Link className="text-sm font-bold text-red-700 underline" href="/admin/issues">← Back to Issues</Link>
 
-        {error && <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-800">{error}</div>}
+        <SaveStatusMessage status="error" message={error} />
 
         <div className="rounded-3xl bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">
