@@ -19,6 +19,6 @@
 ## 4. Verification
 
 - [x] 4.1 Run the production build
-- [ ] 4.2 Verify deleting an unused equipment item succeeds
-- [ ] 4.3 Verify deleting a kit-referenced item shows the blocking message with kit names
-- [ ] 4.4 Verify normal-mode and edit-mode delete behavior is identical
+- [x] 4.2 Verify deleting an unused equipment item succeeds
+- [x] 4.3 Verify deleting a kit-referenced item shows the blocking message with kit names
+- [x] 4.4 Verify normal-mode and edit-mode delete behavior is identical

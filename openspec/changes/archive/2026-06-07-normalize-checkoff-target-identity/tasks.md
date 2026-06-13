@@ -44,5 +44,5 @@
 - [x] 6.3 Run production build with no new errors
 - [x] 6.4 Manually verify compartment autosave and submit flows
 - [x] 6.5 Manually verify kit autosave and submit flows
-- [ ] 6.6 Manually verify unit dashboard status colors still reflect not-started, in-progress, and completed states
+- [x] 6.6 Manually verify unit dashboard status colors still reflect not-started, in-progress, and completed states
 - [x] 6.7 Confirm new writes contain both normalized identity fields and legacy target fields
