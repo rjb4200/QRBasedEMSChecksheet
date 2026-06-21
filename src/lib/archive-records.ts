@@ -669,51 +669,6 @@ export function groupDailyUnitRecords(records: DailyUnitRecord[], dates?: string
   return Array.from(groups.values());
 }
 
-export async function getTrendGroups() {
-  const supabase = createAdminClient();
-  const range = getDefaultArchiveRange({});
-  const currentShift = getCurrentShift();
-
-  if (range.from <= currentShift.shiftDate && currentShift.shiftDate <= range.to) {
-    await refreshDailyUnitLedgers(supabase, currentShift);
-  }
-
-  const dates = eachDate(new Date(`${range.from}T00:00:00.000Z`), new Date(`${range.to}T00:00:00.000Z`)).reverse();
-
-  const [{ data: ledgers }, { data: checks }, { data: crews }] = await Promise.all([
-    supabase.from("daily_unit_ledgers").select("shift_date, unit_id, unit_status, total_compartments").in("shift_date", dates).eq("shift_period", "daily"),
-    supabase.from("compartment_checks").select("shift_date, unit_id, status").in("shift_date", dates).eq("shift_period", "daily"),
-    supabase.from("daily_unit_crews").select("shift_date, unit_id, provider_names, locked").in("shift_date", dates).eq("shift_period", "daily"),
-  ]);
-
-  console.log(`[TREND] Today(${currentShift.shiftDate}): ${(checks ?? []).length} checks. Dates: ${dates.length}. Ledgers: ${(ledgers ?? []).length}. Crews: ${(crews ?? []).length}`);
-
-  return dates.map((date) => {
-    let completedInServiceUnits = 0;
-    let totalInServiceUnits = 0;
-
-    const checksForDate = (checks ?? []) as { unit_id: string; shift_date: string; status: string }[];
-    const crewsForDate = (crews ?? []) as { unit_id: string; shift_date: string; provider_names: string | null; locked: boolean | null }[];
-
-    for (const ledger of (ledgers ?? []) as { shift_date: string; unit_id: string; unit_status: string; total_compartments: number }[]) {
-      if (ledger.shift_date !== date || ledger.unit_status !== "in_service") continue;
-
-      totalInServiceUnits += 1;
-
-      const completedChecks = checksForDate.filter((c) => c.unit_id === ledger.unit_id && c.shift_date === date && c.status === "completed").length;
-      const unitCrew = crewsForDate.find((c) => c.unit_id === ledger.unit_id && c.shift_date === date && c.locked && c.provider_names?.trim());
-
-      const totalCompartments = ledger.total_compartments + 1;
-      const completedCompartments = completedChecks + (unitCrew ? 1 : 0);
-      const pct = totalCompartments === 0 ? 0 : Math.round((completedCompartments / totalCompartments) * 10000) / 100;
-
-      if (pct > 85) completedInServiceUnits += 1;
-    }
-
-    return { date, completedInServiceUnits, totalInServiceUnits, records: [] };
-  }) satisfies DailyRecordGroup[];
-}
-
 export function archiveRecordToCsv(records: DailyUnitRecord[]) {
   const headers = [
     "Date",

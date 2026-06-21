@@ -1,5 +1,5 @@
 import { Suspense, cache } from "react";
-import { formatDuration, getDailyUnitRecords, getTrendGroups, type DailyUnitRecord } from "@/lib/archive-records";
+import { formatDuration, getDailyUnitRecords, type DailyUnitRecord } from "@/lib/archive-records";
 import { getDefaultRotationRange, getRotationDateAvailability } from "@/lib/data-rotation";
 import { getCurrentShift } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
@@ -113,7 +113,7 @@ async function RecordsSummarySection({ unitId, selectedDate }: { unitId?: string
 }
 
 async function RecordsTrendSection() {
-  const trendGroups = await getTrendGroups();
+  const { groups: trendGroups } = await getDailyUnitRecords({});
   return <CompletionTrendChart groups={trendGroups} />;
 }
 
