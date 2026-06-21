@@ -6,13 +6,13 @@ Mobile-first EMS vehicle checkoff application for QR-based compartment and share
 
 - Public crew checkoff workflow at `/units` with no login required.
 - QR codes route directly to unit, compartment, and assigned-kit checkoff forms.
-- Admin dashboard for fleet status, records, units, equipment, kits, users, and QR printing.
+- Admin dashboard for Fleet status, Records/Archives, System Log, Issues, units, templates, equipment, kits, users, and QR printing from unit detail pages.
 - Unit layouts can be created from scratch or copied from existing units.
 - Shared kits provide reusable equipment layouts that can be assigned to multiple units.
 - Equipment catalog with reusable items, input types, categories, and par levels.
 - Full-sheet and individual QR code printing.
 - Fleet print packet at `/admin/checksheets/print` with a compact three-column checksheet layout.
-- Daily email reports through Resend with unchecked units, submitted exceptions, and Fleet-print-aligned PDF attachments.
+- Daily email reports through Resend with unchecked units, submitted exceptions, Fleet-print-aligned PDF attachments, and optional Pushover notification support.
 - Supabase-backed PostgreSQL database, Auth, Storage, and Row Level Security.
 - Username/password admin login with supervisor access support through Supabase Auth roles.
 - Daily checkoff state, crew names, daily unit comments, shift archive support, and completion status tracking.
@@ -55,6 +55,7 @@ Required variables:
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Variable | Public anon or publishable Supabase key. |
 | `NEXT_PUBLIC_APP_URL` | Variable | Deployed app URL; QR codes use this value. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Secret | Server-only key for admin actions and public checkoff writes. |
+| `ADMIN_SESSION_SECRET` | Secret | Long random secret used to sign the username/password admin session. |
 | `RESEND_API_KEY` | Secret | Server-only Resend API key for daily reports. |
 | `RESEND_FROM_EMAIL` | Variable | Verified sender address for daily reports. |
 | `DAILY_REPORT_TIMEZONE` | Variable | Timezone for the daily report, usually `America/New_York`. |
@@ -65,8 +66,14 @@ Optional variables:
 
 | Name | Cloudflare Type | Notes |
 | --- | --- | --- |
+| `ADMIN_USERNAME` | Variable | Optional admin credential placeholder from `.env.example`; current seeded admin-user workflows use stored `admin_users` records. |
+| `ADMIN_PASSWORD_HASH` | Secret | Optional admin credential placeholder from `.env.example`. Do not store the plaintext password. |
+| `PUSHOVER_APP_TOKEN` | Secret | Server-only Pushover application token for push notifications when Pushover is enabled. |
+| `TIMEZONE` | Variable | App-wide timezone used for date calculations, monthly checks, and shift logic. Defaults to `America/New_York`. |
 | `DAILY_REPORT_REPLY_TO` | Variable | Optional reply-to address for daily reports. |
 | `DAILY_REPORT_SUBJECT_PREFIX` | Variable | Optional subject prefix, such as `[Test]`. |
+
+Keep `.env.example` as the source of truth for the complete current variable list and placeholder format.
 
 ### Run Development Server
 
@@ -108,6 +115,9 @@ Key tables include:
 - `users`
 - `user_roles`
 - `daily_email_report_runs`
+- `issues`
+- `issue_notes`
+- `weekly_email_report_runs`
 
 Admin server actions use `SUPABASE_SERVICE_ROLE_KEY`, so keep that key server-only.
 
@@ -132,11 +142,14 @@ The QR page supports:
 - Printing all QR codes for a unit.
 - Printing an individual compartment or assigned-kit QR code.
 
+QR printing is currently part of unit administration rather than a separate top-level QR Codes area.
+
 ## Deployment Notes
 
 - Configure the same environment variables in your hosting provider.
 - `NEXT_PUBLIC_APP_URL` should match the deployed application URL so QR codes point to the correct host.
 - Keep Supabase service role keys out of client code and public repositories.
+- Keep `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD_HASH`, `ADMIN_SESSION_SECRET`, `RESEND_API_KEY`, `CRON_SECRET`, and `PUSHOVER_APP_TOKEN` as server-only secrets when configured.
 - Configure the scheduler to call `/api/cron/daily-email-report` daily at 1000 or hourly with `Authorization: Bearer {CRON_SECRET}`.
 
 ## Daily Email Reports
@@ -196,8 +209,8 @@ The scheduled caller must send `Authorization: Bearer {CRON_SECRET}`. If the pla
 
 Set these in Cloudflare Pages or Workers before deploying:
 
-- Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_APP_URL`, `RESEND_FROM_EMAIL`, `DAILY_REPORT_TIMEZONE`, `DAILY_REPORT_SEND_HOUR`
-- Secrets: `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `CRON_SECRET`
+- Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_APP_URL`, `RESEND_FROM_EMAIL`, `DAILY_REPORT_TIMEZONE`, `DAILY_REPORT_SEND_HOUR`, `TIMEZONE`, `DAILY_REPORT_REPLY_TO`, `DAILY_REPORT_SUBJECT_PREFIX`, `ADMIN_USERNAME` if used by your deployment workflow
+- Secrets: `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_PASSWORD_HASH`, `ADMIN_SESSION_SECRET`, `RESEND_API_KEY`, `CRON_SECRET`, `PUSHOVER_APP_TOKEN`
 
 For Cloudflare Pages, use **Settings > Environment variables** and add values for both **Production** and **Preview** as needed.
 
@@ -205,17 +218,32 @@ If using Wrangler, set the service role key as a secret:
 
 ```bash
 wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+wrangler secret put ADMIN_PASSWORD_HASH
+wrangler secret put ADMIN_SESSION_SECRET
 wrangler secret put RESEND_API_KEY
 wrangler secret put CRON_SECRET
+wrangler secret put PUSHOVER_APP_TOKEN
 ```
 
 Then configure the public variables in your Cloudflare project settings. Do not put `SUPABASE_SERVICE_ROLE_KEY` in `NEXT_PUBLIC_*` variables.
+
+## Admin Areas
+
+Current admin routes include:
+
+- `/admin` for Fleet readiness and admin navigation.
+- `/admin/archives` for Records / Daily Readiness history, exports, print views, and archive management.
+- `/admin/system-log` for operational activity logs.
+- `/admin/issues` for issue tracking, comments, tags, status updates, and related workflow review.
+- `/admin/units`, `/admin/kits`, `/admin/equipment`, and `/admin/templates` for configuration.
+- `/admin/checksheets/print` and `/admin/units/{unit-id}/qr` for print and QR workflows.
+- `/admin/users` for admin users, email report recipients, and notification preferences.
 
 ## Documentation
 
 - `USERGUIDE.md` explains the crew checkoff workflow.
 - `ADMINGUIDE.md` explains admin workflows and system management.
-- A future `DATABASEGUIDE.md` is planned to document schema, stored data, and database optimization/maintenance details.
+- `DATABASEGUIDE.md` documents schema, stored data, retention, and database maintenance details.
 
 ## License
 
