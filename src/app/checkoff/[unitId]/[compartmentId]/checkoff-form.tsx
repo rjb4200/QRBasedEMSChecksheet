@@ -36,34 +36,13 @@ function equipmentName(item: CheckoffItem) {
   return Array.isArray(item.equipment_catalog) ? item.equipment_catalog[0]?.name : item.equipment_catalog?.name;
 }
 
-function isMissingValue(value: unknown) {
-  return value === undefined || value === null || value === "";
-}
-
-function conditionStatus(value: unknown) {
-  return typeof value === "object" && value !== null && "status" in value ? String(value.status) : null;
-}
-
-function carriedForwardIsMissing(item: CheckoffItem, value: unknown, isCarriedForward: boolean) {
-  if (!isCarriedForward) return false;
-  if (item.input_type === "checkbox") return value === false || isMissingValue(value);
-  if (item.input_type === "condition") return isMissingValue(value) || conditionStatus(value) === null;
-  return isMissingValue(value);
-}
-
-function carriedForwardNeedsAttention(item: CheckoffItem, value: unknown, isCarriedForward: boolean) {
-  if (!isCarriedForward) return false;
-  if (item.input_type === "checkbox") return value === false || isMissingValue(value);
-  if (item.input_type === "condition") return isMissingValue(value) || conditionStatus(value) !== "OK";
-  if (isMissingValue(value)) return true;
-  return item.input_type === "quantity" && item.par_level !== null && typeof value === "number" && value < item.par_level;
-}
-
 type LiveFeedback = {
   type: "normal" | "missing" | "understocked" | "overstocked" | "attention";
   severity: "red" | "amber" | "text" | "none";
   label: string | null;
 };
+
+type SaveStatus = "saved" | "dirty" | "saving" | "failed" | "offline";
 
 function getLiveFeedback(item: CheckoffItem, value: unknown): LiveFeedback {
   if (item.input_type === "checkbox") {
@@ -93,6 +72,10 @@ function WarningLabel({ children }: { children: string }) {
   return <span className="inline-flex items-center rounded-full border border-red-600 bg-red-50 px-2 py-0.5 text-xs font-black text-red-700">{children}</span>;
 }
 
+function formatSaveTime(date: Date) {
+  return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
 function ParLabel({ parLevel, needsAttention }: { parLevel: number | null; needsAttention: boolean }) {
   if (parLevel === null) return null;
 
@@ -103,9 +86,10 @@ function ParLabel({ parLevel, needsAttention }: { parLevel: number | null; needs
   );
 }
 
-export function CheckoffForm({ unitId, compartmentId, targetType = "compartment", items, groups = [], initialData, previousData, carriedForwardData = {}, initialSectionComment = "", readOnly = false, shiftDate, shiftPeriod, sourceName }: Props) {
+export function CheckoffForm({ unitId, compartmentId, targetType = "compartment", items, groups = [], initialData, previousData, initialSectionComment = "", readOnly = false, shiftDate, shiftPeriod, sourceName }: Props) {
   const startTimeRef = useRef(Date.now());
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoSaveRequestRef = useRef(0);
   const isSubmittingRef = useRef(false);
   const [isPending, startTransition] = useTransition();
   const defaults = useMemo(() => Object.fromEntries(items.map((item) => {
@@ -116,16 +100,44 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
   })), [initialData, items]);
   const [values, setValues] = useState<Record<string, unknown>>(defaults);
   const [sectionComment, setSectionComment] = useState(initialSectionComment);
-  const [touchedItemIds, setTouchedItemIds] = useState<Set<string>>(() => new Set());
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>(readOnly ? "saved" : "dirty");
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(true);
   const restockingList = useMemo(() => buildRestockingList([{ id: compartmentId, name: sourceName, items, itemData: values }]), [compartmentId, items, sourceName, values]);
+
+  async function runAutoSave(nextValues: Record<string, unknown>) {
+    if (readOnly || isSubmittingRef.current) return;
+    if (!isOnline) {
+      autoSaveRequestRef.current += 1;
+      setSaveStatus("offline");
+      setSaveError("Device appears offline. Changes are not saved yet.");
+      return;
+    }
+
+    const requestId = autoSaveRequestRef.current + 1;
+    autoSaveRequestRef.current = requestId;
+    setSaveStatus("saving");
+    setSaveError(null);
+
+    try {
+      const seconds = Math.round((Date.now() - startTimeRef.current) / 1000);
+      await saveCheckData(unitId, compartmentId, nextValues, seconds, targetType);
+      if (autoSaveRequestRef.current !== requestId) return;
+      setLastSavedAt(new Date());
+      setSaveStatus("saved");
+    } catch (error) {
+      if (autoSaveRequestRef.current !== requestId) return;
+      setSaveStatus(typeof navigator !== "undefined" && !navigator.onLine ? "offline" : "failed");
+      setSaveError(error instanceof Error ? error.message : "Save failed. Retry before leaving this page.");
+    }
+  }
 
   useEffect(() => {
     if (readOnly) return;
     autoSaveTimerRef.current = setTimeout(() => {
       autoSaveTimerRef.current = null;
-      if (isSubmittingRef.current) return;
-      const seconds = Math.round((Date.now() - startTimeRef.current) / 1000);
-      startTransition(() => void saveCheckData(unitId, compartmentId, values, seconds, targetType));
+      void runAutoSave(values);
     }, 700);
 
     return () => {
@@ -134,7 +146,27 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
         autoSaveTimerRef.current = null;
       }
     };
-  }, [compartmentId, readOnly, targetType, unitId, values]);
+  }, [readOnly, values, isOnline]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const updateOnlineState = () => setIsOnline(window.navigator.onLine);
+    updateOnlineState();
+    window.addEventListener("online", updateOnlineState);
+    window.addEventListener("offline", updateOnlineState);
+    return () => {
+      window.removeEventListener("online", updateOnlineState);
+      window.removeEventListener("offline", updateOnlineState);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (readOnly || isOnline) return;
+    autoSaveRequestRef.current += 1;
+    setSaveStatus("offline");
+    setSaveError("Device appears offline. Changes are not saved yet.");
+  }, [isOnline, readOnly]);
 
   // Cache form setup data for future opens
   useEffect(() => {
@@ -158,11 +190,29 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
   }, [unitId, targetType, compartmentId, items, groups, sourceName]);
 
   function setItemValue(id: string, value: unknown) {
+    setSaveStatus(isOnline ? "dirty" : "offline");
+    setSaveError(isOnline ? null : "Device appears offline. Changes are not saved yet.");
     setValues((current) => ({ ...current, [id]: value }));
-    setTouchedItemIds((current) => new Set(current).add(id));
   }
 
   const sections = useMemo(() => groupItems(items, groups, { hideEmptyGroups: true }), [groups, items]);
+  const submitBlocked = saveStatus === "saving" || saveStatus === "failed" || saveStatus === "offline";
+  const saveStatusClass = saveStatus === "failed" || saveStatus === "offline"
+    ? "border-red-200 bg-red-50 text-red-900"
+    : saveStatus === "saving" || saveStatus === "dirty"
+    ? "border-amber-200 bg-amber-50 text-amber-900"
+    : "border-green-200 bg-green-50 text-green-900";
+  const saveStatusText = saveStatus === "offline"
+    ? "Offline - changes not saved"
+    : saveStatus === "failed"
+    ? "Save failed - retry before leaving"
+    : saveStatus === "saving"
+    ? "Saving changes..."
+    : saveStatus === "dirty"
+    ? "Unsaved changes"
+    : lastSavedAt
+    ? `Saved ${formatSaveTime(lastSavedAt)}`
+    : "Saved";
 
   function renderItem(item: CheckoffItem) {
         const name = equipmentName(item) ?? "Unnamed item";
@@ -251,6 +301,24 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
       ) : null}
 
       {!readOnly ? (
+        <div className={`rounded-3xl border p-4 shadow-sm ${saveStatusClass}`} role="status">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-black uppercase tracking-[0.18em]">Save Status</p>
+              <p className="mt-1 text-base font-black">{saveStatusText}</p>
+              {saveError ? <p className="mt-1 text-sm font-semibold">{saveError}</p> : null}
+              {saveStatus === "offline" ? <p className="mt-1 text-sm font-semibold">The form will retry after the device reconnects.</p> : null}
+            </div>
+            {saveStatus === "failed" ? (
+              <button className="rounded-2xl bg-red-700 px-4 py-3 text-sm font-black text-white" onClick={() => void runAutoSave(values)} type="button">
+                Retry Save
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      {!readOnly ? (
         <div className="rounded-3xl bg-white p-5 shadow-sm">
           <label className="text-sm font-bold uppercase tracking-[0.2em] text-red-700" htmlFor="section-comment">Section Comment</label>
           <p className="mt-2 text-sm text-slate-600">Optional notes for this {targetType === "kit" ? "kit" : "compartment"}. These show on the unit page separately from unit comments.</p>
@@ -267,7 +335,7 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
       ) : null}
 
       {!readOnly ? (
-        <button className="w-full rounded-3xl bg-green-700 px-5 py-5 text-xl font-black text-white disabled:opacity-60" disabled={isPending} onClick={() => {
+        <button className="w-full rounded-3xl bg-green-700 px-5 py-5 text-xl font-black text-white disabled:opacity-60" disabled={isPending || submitBlocked} onClick={() => {
           if (autoSaveTimerRef.current) {
             clearTimeout(autoSaveTimerRef.current);
             autoSaveTimerRef.current = null;
@@ -279,7 +347,7 @@ export function CheckoffForm({ unitId, compartmentId, targetType = "compartment"
             void submitCheckData(unitId, compartmentId, values, seconds, targetType, sectionComment, sourceName);
           });
         }} type="button">
-          {isPending ? "Saving..." : `Submit ${targetType === "kit" ? "Kit" : "Compartment"}`}
+          {isPending ? "Submitting..." : `Submit ${targetType === "kit" ? "Kit" : "Compartment"}`}
         </button>
       ) : null}
     </div>
