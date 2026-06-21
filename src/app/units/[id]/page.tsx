@@ -9,7 +9,6 @@ import { MonthlyCheckReminderBanner } from "@/components/monthly-check-banner";
 import { buildRestockingList, type ManualRestockItem } from "@/lib/restocking-list";
 import { RestockingListSection } from "@/components/restocking-list-section";
 import { CheckoffPrefetch } from "@/components/checkoff-prefetch";
-import { UnitSummaryCacheHint } from "@/components/unit-summary-cache-hint";
 
 const statusStyles = {
   grey: "border-slate-300 bg-slate-200 text-slate-800",
@@ -144,8 +143,6 @@ export default async function UnitDashboardPage({ params }: { params: Promise<{ 
         {shouldShowMonthlyCheckReminder(unit?.monthly_check_day ?? null) ? <MonthlyCheckReminderBanner /> : null}
 
         <ShiftResetWarning />
-
-        <UnitSummaryCacheHint shiftDate={currentShift.shiftDate} shiftPeriod={currentShift.shiftPeriod} unitId={id} />
 
         {restockingList.length > 0 || manualItems.length > 0 ? (
           <RestockingListSection
