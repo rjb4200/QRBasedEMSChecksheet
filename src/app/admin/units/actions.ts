@@ -234,6 +234,49 @@ export async function addUnitCompartment(formData: FormData) {
   revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
+export async function alphabetizeUnitTargets(formData: FormData) {
+  const parsed = z.object({ unitId: z.string().uuid() }).parse({ unitId: formData.get("unitId") });
+  const supabase = createAdminClient();
+  const [{ data: compartments, error: compartmentsError }, { data: unitKits, error: unitKitsError }] = await Promise.all([
+    supabase.from("unit_compartments").select("id, name").eq("unit_id", parsed.unitId),
+    supabase.from("unit_kits").select("id, kits(name)").eq("unit_id", parsed.unitId),
+  ]);
+  if (compartmentsError) throw new Error(compartmentsError.message);
+  if (unitKitsError) throw new Error(unitKitsError.message);
+
+  const targets = [
+    ...((compartments ?? []).map((compartment) => ({ id: compartment.id, name: compartment.name, type: "compartment" as const }))),
+    ...((unitKits ?? []).map((assignment) => {
+      const kit = Array.isArray(assignment.kits) ? assignment.kits[0] : assignment.kits;
+      return { id: assignment.id, name: kit?.name ?? "Shared kit", type: "kit" as const };
+    })),
+  ].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+
+  await Promise.all(targets.map(async (target, index) => {
+    const sortOrder = (index + 1) * 10;
+    const query = target.type === "compartment"
+      ? supabase.from("unit_compartments").update({ sort_order: sortOrder }).eq("id", target.id).eq("unit_id", parsed.unitId)
+      : supabase.from("unit_kits").update({ sort_order: sortOrder }).eq("id", target.id).eq("unit_id", parsed.unitId);
+    const { error } = await query;
+    if (error) throw new Error(error.message);
+  }));
+
+  await logSystemEvent({
+    ...(await getCurrentAdminLogActor()),
+    actorType: "admin",
+    area: "fleet",
+    action: "unit_targets.alphabetized",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    afterData: { target_count: targets.length },
+  });
+
+  revalidatePath(`/admin/units/${parsed.unitId}`);
+  revalidatePath(`/admin/units/${parsed.unitId}/qr`);
+  revalidatePath(`/units/${parsed.unitId}`);
+}
+
 export async function importUnitCompartment(formData: FormData) {
   const parsed = z.object({ unitId: z.string().uuid(), sourceCompartmentId: z.string().uuid(), name: z.string().optional(), sortOrder: z.coerce.number().default(0) }).parse({
     unitId: formData.get("unitId"),
