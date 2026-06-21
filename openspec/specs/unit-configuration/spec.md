@@ -1,4 +1,8 @@
-## ADDED Requirements
+## Purpose
+
+Unit configuration covers admin workflows for creating, editing, ordering, and retiring units and their unit-specific checkoff targets.
+
+## Requirements
 
 ### Requirement: Admin can create a new unit from scratch
 The admin interface SHALL allow creating a new unit with no pre-filled compartments or items.
@@ -178,3 +182,19 @@ The admin units list page SHALL use "Unit Management" as the page heading and di
 - **AND** each unit row SHALL have a `border-slate-200` border matching Fleet Panel cards
 - **AND** the "Units" red label and destructive toggle SHALL be positioned at the top of the panel
 - **AND** the "Create a New Unit" heading SHALL use red text
+
+### Requirement: Admin can alphabetize unit checkoff targets
+The unit builder SHALL provide a one-click action that rewrites the mixed ordering of a unit's compartments and assigned kits by visible target name using existing persisted `sort_order` fields.
+
+#### Scenario: Alphabetize mixed compartments and kits
+- **WHEN** an admin runs the alphabetize action for a unit
+- **THEN** the system SHALL sort that unit's compartments and assigned kits together by visible name in case-insensitive A-Z order
+- **AND** assigned kits SHALL NOT be grouped separately from compartments
+- **AND** the system SHALL persist the resulting order to `unit_compartments.sort_order` and `unit_kits.sort_order`
+- **AND** unit checkoff and admin unit builder displays SHALL continue to use the persisted sort order
+
+#### Scenario: Preserve target internals while alphabetizing
+- **WHEN** an admin runs the alphabetize action for a unit
+- **THEN** the system SHALL NOT change equipment item ordering inside compartments
+- **AND** the system SHALL NOT change kit item ordering inside assigned kits
+- **AND** the system SHALL NOT change QR location notes, section comments, checkoff statuses, or restocking item data
