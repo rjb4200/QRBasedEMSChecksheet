@@ -2,7 +2,7 @@
 
 This guide covers the day-to-day admin side of the QR-Based EMS Checksheet system.
 
-The admin panel is used to manage units, compartments, shared kits, equipment, QR codes, check records, users, and fleet readiness.
+The admin panel is used to manage fleet readiness, records/archives, issues, system logs, units, compartments, shared kits, equipment, QR codes, templates, users, reports, and notification preferences.
 
 The system is designed to keep the crew workflow simple while giving supervisors and admins better visibility into fleet status and accountability.
 
@@ -13,7 +13,7 @@ The system is designed to keep the crew workflow simple while giving supervisors
 Route:
 
 ```text
-/admin/fleet
+/admin
 ```
 
 The Fleet page is the operational overview for the system.
@@ -33,6 +33,76 @@ The Fleet page is intended to answer:
 ```text
 What still needs attention right now?
 ```
+
+The top navigation labels this page as **Fleet**. It is the default admin dashboard at `/admin`.
+
+### Records / Archives
+
+Route:
+
+```text
+/admin/archives
+```
+
+Records / Archives is the historical daily readiness area.
+
+Admins can:
+
+- review historical daily readiness records
+- inspect unit completion status by date
+- review archived check data, comments, and exceptions
+- print historical records
+- export records and archive packages
+- clear records through the protected archive workflow when intentionally needed
+
+The printable fleet packet for the current day is available at:
+
+```text
+/admin/checksheets/print
+```
+
+Use Records / Archives for historical review. Use the Fleet dashboard for current operational readiness.
+
+### Issues
+
+Route:
+
+```text
+/admin/issues
+```
+
+The Issues page tracks operational follow-up items that need supervisor review.
+
+Admins can:
+
+- create issues from operational observations
+- open issue detail pages
+- assign status and tags
+- add notes/comments to issue history
+- preserve addressed notes and context for auditability
+- filter and review active or historical issues
+
+The Fleet dashboard also shows recent open issues so supervisors can see active follow-up work while reviewing daily readiness.
+
+Weekly Issues Digest emails are generated from the Issues workflow and are sent to admin users who have weekly digest delivery enabled.
+
+### System Log
+
+Route:
+
+```text
+/admin/system-log
+```
+
+The System Log shows operationally significant events such as checkoff activity, admin actions, report sends, notification failures, and other system events.
+
+Use the log to answer:
+
+```text
+What happened, when, and from which workflow?
+```
+
+Do not use the System Log as a place to store secrets or sensitive credentials.
 
 ### Units
 
@@ -63,6 +133,18 @@ Units can contain:
 - monthly check reminder dates
 
 Archived units are preserved historically and can be restored later.
+
+### Templates
+
+Route:
+
+```text
+/admin/templates
+```
+
+Templates are reusable layout starting points for units and configuration work.
+
+Use templates when you want a consistent structure that can be copied into new or updated unit layouts.
 
 ### Kits
 
@@ -123,26 +205,23 @@ Equipment properties include:
 
 Try to avoid duplicate items with slightly different names.
 
-### Checksheets / Records
+### Print Checksheets
 
 Route:
 
 ```text
-/admin/checksheets
+/admin/checksheets/print
 ```
 
-This area contains completed check records.
+This area generates printable check sheets for operational use.
 
 Admins can:
 
-- review historical checks
-- filter by unit/date
-- print records
-- review comments
-- review exceptions
 - generate daily print packets
+- print current check sheets
+- use a compact layout designed for operational review
 
-The printable fleet packet is formatted for compact operational printing.
+Historical records are reviewed through Records / Archives at `/admin/archives`.
 
 ### Users
 
@@ -160,6 +239,9 @@ Admins can:
 - remove admin access
 - manage report recipients
 - enable/disable daily report emails
+- enable/disable weekly Issues Digest emails
+- configure Pushover user keys and alert preferences
+- test daily report, weekly digest, and Pushover delivery
 
 Only authorized personnel should have admin access.
 
@@ -176,7 +258,8 @@ Pushover sends push notifications to your phone, tablet, or desktop when importa
    - Paste your User Key
    - Toggle "On" to enable Pushover alerts
    - Check the alert types you want to receive
-5. Click outside the edit form (the save button saves all changes at once)
+   - Select the shifts that should trigger missed-checkoff alerts for you
+5. Save the user settings
 
 **Alert types:**
 
@@ -185,6 +268,14 @@ Pushover sends push notifications to your phone, tablet, or desktop when importa
 | Daily report summary | 1000 ET | Brief summary after the daily report email is sent |
 | Missed checkoff | 0930 ET | Initial alert for incomplete units |
 | Missed checkoff follow-up | 1300 ET | Follow-up if units are still incomplete |
+
+Missed-checkoff alerts can be filtered per admin by shift preference: 1st Shift, 2nd Shift, and 3rd Shift.
+
+#### Weekly Issues Digest
+
+Admin users can opt into the Weekly Issues Digest from `/admin/users`.
+
+The digest summarizes active issue-tracker items for the week and is separate from the daily readiness email. Use the test weekly report control on the Admin Users page to send a one-off test to a selected recipient.
 
 **Quiet hours:** Automated Pushover alerts are not sent outside 0800-2200 ET. Manual test sends from the Admin Users page always work regardless of time.
 
@@ -205,9 +296,10 @@ A normal admin/supervisor workflow usually looks like:
 1. Review the Fleet page.
 2. Identify incomplete units.
 3. Review exceptions/comments.
-4. Follow up on missing or below-par equipment.
-5. Print records if needed.
-6. Review daily email reports.
+4. Review recent open Issues on the Fleet dashboard or Issues page.
+5. Follow up on missing or below-par equipment.
+6. Print records or current check sheets if needed.
+7. Review daily email reports and weekly Issues Digest emails.
 
 ## Admin Lockout Recovery
 
@@ -430,15 +522,20 @@ No. Archive them so historical records stay intact.
 
 | Area | Route |
 | --- | --- |
-| Fleet | `/admin/fleet` |
+| Fleet | `/admin` |
+| Records / Archives | `/admin/archives` |
+| Issues | `/admin/issues` |
+| System Log | `/admin/system-log` |
 | Units | `/admin/units` |
 | Kits | `/admin/kits` |
 | Equipment | `/admin/equipment` |
-| Checksheets | `/admin/checksheets` |
+| Templates | `/admin/templates` |
+| Print Checksheets | `/admin/checksheets/print` |
+| Unit QR Codes | `/admin/units/{unit-id}/qr` |
 | Users | `/admin/users` |
 
 ---
 
-**Document Version:** 1.1  
-**Last Updated:** May 2026  
+**Document Version:** 1.2
+**Last Updated:** June 2026
 **For Support:** Contact the system administrator or supervising officer.
