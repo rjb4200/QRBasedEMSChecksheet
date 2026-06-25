@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { addUnitCompartment, addUnitItem, assignKitToUnit, cloneKitToUnitCompartment, createCompartmentGroup, deleteCompartmentGroup, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, removeKitFromUnit, toggleUnitStatus, updateCompartmentGroup, updateCompartmentQrLocationNote, updateUnitItemGroup, updateUnitKitQrLocationNote, updateUnitMonthlyCheckDay, uploadCompartmentPhoto } from "../actions";
+import { addUnitCompartment, addUnitItem, alphabetizeUnitTargets, assignKitToUnit, cloneKitToUnitCompartment, createCompartmentGroup, deleteCompartmentGroup, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, removeKitFromUnit, toggleUnitStatus, updateCompartmentGroup, updateCompartmentQrLocationNote, updateUnitItemGroup, updateUnitKitQrLocationNote, updateUnitMonthlyCheckDay, uploadCompartmentPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
-import { IconEdit, IconSave, IconTrash } from "@/components/icons";
+import { IconEdit, IconSave } from "@/components/icons";
 import { SubmitButton } from "@/components/submit-button";
 import { DeleteConfirmButton } from "@/components/delete-confirm-button";
 import { groupItems } from "@/lib/item-groups";
@@ -32,6 +32,10 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
           {unit ? (
             <div className="flex flex-wrap gap-2">
               <Link className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" href={`/admin/units/${unit.id}/qr`}>View / Print QR Codes</Link>
+              <form action={alphabetizeUnitTargets}>
+                <input name="unitId" type="hidden" value={unit.id} />
+                <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" type="submit">Sort Targets A-Z</button>
+              </form>
               <form action={toggleUnitStatus}>
                 <input name="id" type="hidden" value={unit.id} />
                 <input name="status" type="hidden" value={unit.status === "in_service" ? "out_of_service" : "in_service"} />
