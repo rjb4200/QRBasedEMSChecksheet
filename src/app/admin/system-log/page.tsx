@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/server-admin";
-import { IconCancel, IconFilter, IconReset } from "@/components/icons";
+import { IconFilter, IconReset } from "@/components/icons";
 import { formatLogSummary } from "@/lib/log-summary";
 import { getDatabaseUsage } from "@/lib/database-usage";
 

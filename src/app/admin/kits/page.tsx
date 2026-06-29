@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { copyKit, createKit, createKitFromCompartment, deleteKit } from "./actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
-import { IconEdit, IconTrash } from "@/components/icons";
+import { IconEdit } from "@/components/icons";
 import { DeleteConfirmButton } from "@/components/delete-confirm-button";
 import { KitAssignmentEditor } from "./kit-assignment-editor";
 

@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       // PDF is optional for test
     }
 
-    const result = await sendEmailWithAttachment({
+    await sendEmailWithAttachment({
       to: [email],
       subject: emailContent.subject,
       html: emailContent.html,

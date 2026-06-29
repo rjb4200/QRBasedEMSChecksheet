@@ -142,7 +142,7 @@ describe("generateExportPackage", () => {
 
   describe("ZIP structure", () => {
     it("contains manifest.json, CSVs, and PDFs for a single-day range", async () => {
-      const { archive, manifest } = await generateExportPackage({
+      const { archive } = await generateExportPackage({
         from: "2026-05-01",
         to: "2026-05-01",
       });
@@ -164,7 +164,7 @@ describe("generateExportPackage", () => {
 
   describe("manifest contents", () => {
     it("includes correct date range, unit listing, and record counts", async () => {
-      const { archive, manifest } = await generateExportPackage({
+      const { manifest } = await generateExportPackage({
         from: "2026-05-01",
         to: "2026-05-02",
       });
@@ -226,8 +226,6 @@ describe("generateExportPackage", () => {
 
   describe("read-only behavior", () => {
     it("does not call any mutation functions", async () => {
-      const mutations = ["from", "insert", "update", "delete", "upsert"];
-
       await generateExportPackage({
         from: "2026-05-01",
         to: "2026-05-01",

@@ -1,4 +1,4 @@
-import { getCheckoffDiscrepanciesForRange, type CheckoffDiscrepancy } from "@/lib/discrepancies";
+import { getCheckoffDiscrepanciesForRange } from "@/lib/discrepancies";
 import { getCurrentShift } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 
