@@ -49,8 +49,8 @@ export async function getWeeklyIssuesReport(): Promise<WeeklyIssuesReport> {
 
   const issueIds = (issues ?? []).map((i) => i.id);
 
-  let noteCounts: Record<string, number> = {};
-  let latestNotes: Record<string, { text: string; by: string } | null> = {};
+  const noteCounts: Record<string, number> = {};
+  const latestNotes: Record<string, { text: string; by: string } | null> = {};
 
   if (issueIds.length > 0) {
     const { data: notes, error: notesError } = await supabase

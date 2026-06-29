@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { addKitItem, createKitGroup, deleteKit, deleteKitGroup, deleteKitItem, updateKit, updateKitGroup, updateKitItem, uploadKitPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
-import { IconEdit, IconSave, IconTrash } from "@/components/icons";
+import { IconSave } from "@/components/icons";
 import { DeleteConfirmButton } from "@/components/delete-confirm-button";
 import { SubmitButton } from "@/components/submit-button";
 import { groupItems } from "@/lib/item-groups";

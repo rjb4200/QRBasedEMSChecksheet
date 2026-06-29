@@ -1,5 +1,5 @@
 declare module "archiver" {
-  import { Readable, Transform } from "node:stream";
+  import { Readable } from "node:stream";
 
   interface ZipArchiveOptions {
     zlib?: { level: number };

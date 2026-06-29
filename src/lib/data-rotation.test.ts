@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Readable } from "node:stream";
 
 const {
   createAdminClient,
@@ -255,7 +256,6 @@ describe("rotateRecords", () => {
   });
 
   function mockZipStream(content = "zip-data") {
-    const { Readable } = require("node:stream");
     const buffer = Buffer.from(content);
     return {
       archive: new Readable({
