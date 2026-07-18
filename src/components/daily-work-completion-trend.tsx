@@ -5,9 +5,9 @@ function formatDate(date: string) {
   return `${value.getMonth() + 1}/${value.getDate()}`;
 }
 
-export function formatWorkCompletionLabel(day: DailyCheckoffSummary) {
-  if (day.state === "unavailable") return "Unavailable";
-  return `${day.completedActions}/${day.requiredActions} actions`;
+export function getCompletionPercentage(day: DailyCheckoffSummary) {
+  if (day.state === "unavailable" || day.requiredActions === 0) return null;
+  return Math.round((day.completedActions / day.requiredActions) * 100);
 }
 
 export default function DailyWorkCompletionTrend({ days }: { days: DailyCheckoffSummary[] }) {
@@ -21,9 +21,23 @@ export default function DailyWorkCompletionTrend({ days }: { days: DailyCheckoff
           {orderedDays.map((day) => (
             <div key={day.date} className="rounded-2xl bg-slate-100 p-2 text-center">
               <p className="text-xs font-bold text-slate-600">{formatDate(day.date)}</p>
-              <p className="mt-2 text-2xl font-black text-slate-950">{day.requiredActions === 0 ? "-" : `${Math.round((day.completedActions / day.requiredActions) * 100)}%`}</p>
-              <p className="mt-1 text-[10px] font-semibold leading-tight text-slate-600">{formatWorkCompletionLabel(day)}</p>
-              {day.state !== "unavailable" ? <p className="mt-1 text-[10px] text-slate-500">{day.completedUnits}/{day.requiredUnits} units {day.state}</p> : null}
+              {(() => {
+                const percentage = getCompletionPercentage(day);
+                const unavailable = percentage === null;
+                return (
+                  <>
+                    <div
+                      aria-label={unavailable ? `${formatDate(day.date)} unavailable` : `${formatDate(day.date)} ${percentage}% complete`}
+                      className="mt-2 flex h-28 items-end overflow-hidden rounded-lg bg-slate-300"
+                      role="img"
+                    >
+                      {!unavailable ? <div className="w-full rounded-t-lg bg-emerald-500" style={{ height: `${percentage}%`, minHeight: percentage > 0 ? "0.25rem" : undefined }} /> : null}
+                    </div>
+                    <p className="mt-2 text-2xl font-black text-slate-950">{unavailable ? "-" : `${percentage}%`}</p>
+                    {unavailable ? <p className="mt-1 text-[10px] font-semibold text-slate-600">Unavailable</p> : null}
+                  </>
+                );
+              })()}
             </div>
           ))}
         </div>
