@@ -1,10 +1,9 @@
 import { Suspense, cache } from "react";
-import { formatDuration, getDailyUnitRecords, getTrendGroups, type DailyUnitRecord } from "@/lib/archive-records";
+import { formatDuration, getDailyUnitRecords, type DailyUnitRecord } from "@/lib/archive-records";
 import { getDefaultRotationRange, getRotationDateAvailability } from "@/lib/data-rotation";
 import { getCurrentShift } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import ClearRecordsSection from "./clear-records-section";
-import CompletionTrendChart from "@/components/completion-trend-chart";
 import { IconFilter, IconPrint } from "@/components/icons";
 
 type ArchivesSearchParams = { unitId?: string; date?: string; from?: string; to?: string };
@@ -112,11 +111,6 @@ async function RecordsSummarySection({ unitId, selectedDate }: { unitId?: string
   );
 }
 
-async function RecordsTrendSection() {
-  const trendGroups = await getTrendGroups();
-  return <CompletionTrendChart groups={trendGroups} />;
-}
-
 function RecordCard({ record }: { record: DailyUnitRecord }) {
   return (
     <article className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
@@ -218,23 +212,6 @@ function SummarySkeleton() {
   );
 }
 
-function TrendSkeleton() {
-  return (
-    <div className="rounded-3xl bg-white p-4 shadow-sm animate-pulse">
-      <div className="h-3 w-48 rounded bg-slate-200" />
-      <div className="mt-3 flex h-[150px] items-end gap-1">
-        {[...Array(14)].map((_, index) => (
-          <div key={index} className="flex flex-1 flex-col items-center justify-end gap-1">
-            <div className="w-full min-w-[18px] rounded-t bg-slate-200" style={{ height: `${20 + (index % 5) * 18}px` }} />
-            <div className="h-2 w-6 rounded bg-slate-100" />
-            <div className="h-2 w-5 rounded bg-slate-100" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function CardsSkeleton() {
   return (
     <div className="grid gap-4 lg:grid-cols-2 animate-pulse">
@@ -294,9 +271,6 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
       <section className="mx-auto max-w-7xl space-y-6">
         <RecordsHeader />
         <RecordsFilterSection params={params} selectedDate={selectedDate} />
-        <Suspense fallback={<TrendSkeleton />}>
-          <RecordsTrendSection />
-        </Suspense>
         <RecordsCardsSection selectedDate={selectedDate} unitId={params.unitId} />
         <Suspense fallback={<ToolsSkeleton />}>
           <RecordsToolsSection params={params} selectedDate={selectedDate} />

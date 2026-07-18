@@ -188,13 +188,13 @@ The Records page SHALL provide a "Clear Records" workflow that allows admins to 
 
 ## ADDED Requirements
 
-### Requirement: Records page layout includes trend chart and reorganized sections
-The Records page SHALL display a completion trend chart under the header and SHALL reorganize sections so that the "Showing N records" label appears below unit cards and the Clear Records section appears at the bottom of the page.
+### Requirement: Records page layout includes reorganized sections
+The Records page SHALL display the filter form, unit cards, record count, exports, and Clear Records section without the retired completion trend chart.
 
-#### Scenario: Trend chart placed under header and above filters
+#### Scenario: Records page excludes the retired trend chart
 - **WHEN** an admin views the Records page
-- **THEN** the "Last 14 Days Check Completion" chart SHALL appear after the page header and before the filter form
-- **AND** the filter form, Export Package form, and summary cards SHALL appear after the chart
+- **THEN** the page SHALL NOT display the `Last 14 Days Check Completion` chart
+- **AND** the filter form SHALL appear after the page header
 
 #### Scenario: "Showing N records" label appears below unit cards
 - **WHEN** the Records page displays unit records
@@ -204,8 +204,8 @@ The Records page SHALL display a completion trend chart under the header and SHA
 - **WHEN** an admin views the Records page
 - **THEN** the Clear Records section SHALL appear after the unit records and "Showing N records" label at the bottom of the page
 
-#### Scenario: Existing controls remain functional after reorder
-- **WHEN** the Records page layout is reorganized
+#### Scenario: Existing controls remain functional after chart removal
+- **WHEN** an admin views the Records page after the chart is removed
 - **THEN** the unit filter, date input, Print Daily Record, Simple CSV, Detailed CSV, and Export Package buttons SHALL all continue to function with their existing behavior
 
 ## ADDED Requirements

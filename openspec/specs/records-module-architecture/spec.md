@@ -32,14 +32,3 @@ The records modularization SHALL preserve existing Daily Readiness record behavi
 #### Scenario: Existing records tests pass after extraction
 - **WHEN** the records modules are split from `archive-records.ts`
 - **THEN** existing Daily Readiness records tests SHALL continue to pass without changing their expected business behavior
-
-### Requirement: Trend chart investigation is isolated
-The refactor SHALL allow the `Last 14 Days Check Completion` chart path to be investigated independently from records page card rendering and CSV/export behavior.
-
-#### Scenario: Trend bug is not safely isolated
-- **WHEN** the broken trend chart root cause is not isolated during the refactor
-- **THEN** the refactor SHALL preserve existing chart behavior and leave the chart fix as follow-up work
-
-#### Scenario: Trend bug is safely isolated
-- **WHEN** the broken trend chart root cause is isolated to records trend helper code and can be fixed without broad business-rule changes
-- **THEN** the fix SHALL be covered by focused tests and SHALL NOT change unrelated Records page, CSV/export, restocking, or print/PDF behavior
