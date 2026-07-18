@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/cron/initialize-daily-checkoff-summary",
+      "schedule": "0 10 * * *"
+    },
+    {
       "path": "/api/cron/daily-email-report",
       "schedule": "0 14 * * *"
     },

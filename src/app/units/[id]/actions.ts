@@ -26,6 +26,8 @@ export async function saveUnitCrew(unitId: string, providerNames: string) {
   });
   const shift = getCurrentShift();
   const supabase = createAdminClient();
+  const { error: summaryError } = await supabase.rpc("start_daily_checkoff_summary", { p_shift_date: shift.shiftDate, p_shift_period: shift.shiftPeriod });
+  if (summaryError) throw new Error(summaryError.message);
   const { error } = await supabase.from("daily_unit_crews").upsert({
     unit_id: parsed.unitId,
     shift_date: shift.shiftDate,
@@ -51,6 +53,8 @@ export async function unlockUnitCrew(unitId: string, providerNames: string) {
   const parsed = z.object({ unitId: z.string().uuid(), providerNames: z.string().max(1000) }).parse({ unitId, providerNames });
   const shift = getCurrentShift();
   const supabase = createAdminClient();
+  const { error: summaryError } = await supabase.rpc("start_daily_checkoff_summary", { p_shift_date: shift.shiftDate, p_shift_period: shift.shiftPeriod });
+  if (summaryError) throw new Error(summaryError.message);
   const { error } = await supabase.from("daily_unit_crews").upsert({
     unit_id: parsed.unitId,
     shift_date: shift.shiftDate,

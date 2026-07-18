@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { addUnitCompartment, addUnitItem, alphabetizeUnitTargets, assignKitToUnit, cloneKitToUnitCompartment, createCompartmentGroup, deleteCompartmentGroup, deleteUnitCompartment, deleteUnitItem, importUnitCompartment, removeKitFromUnit, toggleUnitStatus, updateCompartmentGroup, updateCompartmentQrLocationNote, updateUnitItemGroup, updateUnitKitQrLocationNote, updateUnitMonthlyCheckDay, uploadCompartmentPhoto } from "../actions";
+import { addUnitCompartment, addUnitItem, alphabetizeUnitTargets, assignKitToUnit, cloneKitToUnitCompartment, createCompartmentGroup, deleteCompartmentGroup, deleteUnitCompartment, deleteUnitItem, excuseCurrentDailyCheckoff, importUnitCompartment, removeKitFromUnit, toggleUnitStatus, updateCompartmentGroup, updateCompartmentQrLocationNote, updateUnitItemGroup, updateUnitKitQrLocationNote, updateUnitMonthlyCheckDay, uploadCompartmentPhoto } from "../actions";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { IconEdit, IconSave } from "@/components/icons";
 import { SubmitButton } from "@/components/submit-button";
@@ -40,6 +40,11 @@ export default async function UnitDetailPage({ params }: { params: Promise<{ id:
                 <input name="id" type="hidden" value={unit.id} />
                 <input name="status" type="hidden" value={unit.status === "in_service" ? "out_of_service" : "in_service"} />
                 <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" type="submit">Toggle Status</button>
+              </form>
+              <form action={excuseCurrentDailyCheckoff} className="flex flex-wrap items-center gap-2 rounded-2xl border border-amber-300 bg-amber-50 px-3 py-2">
+                <input name="unitId" type="hidden" value={unit.id} />
+                <input className="w-48 rounded-xl border border-amber-300 bg-white px-2 py-1 text-sm" minLength={3} name="reason" placeholder="Excusal reason" required />
+                <button className="rounded-xl bg-amber-700 px-3 py-1 text-sm font-bold text-white" type="submit">Excuse Today</button>
               </form>
               <form action={updateUnitMonthlyCheckDay} className="flex items-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-2">
                 <input name="id" type="hidden" value={unit.id} />
