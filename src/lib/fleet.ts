@@ -89,6 +89,11 @@ export type FleetUnit = {
 };
 
 let fleetStatusCache: { data: FleetUnit[]; shiftKey: string; expiresAt: number } | null = null;
+const unitNameCollator = new Intl.Collator("en", { numeric: true, sensitivity: "base" });
+
+export function invalidateFleetStatusCache() {
+  fleetStatusCache = null;
+}
 
 function isNonBlank(value: string | null | undefined) {
   return Boolean(value?.trim());
@@ -242,6 +247,13 @@ export async function getFleetStatus(supabase: SupabaseClient) {
       statusNote: unit.statusNote,
       percentage: total === 0 ? 0 : Math.round((completed / total) * 100),
     };
+  });
+
+  result.sort((a, b) => {
+    const nameOrder = unitNameCollator.compare(a.name, b.name);
+    if (nameOrder !== 0) return nameOrder;
+
+    return a.id.localeCompare(b.id);
   });
 
   fleetStatusCache = { data: result, shiftKey, expiresAt: Date.now() + 60_000 };

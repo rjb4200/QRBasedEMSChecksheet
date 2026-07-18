@@ -155,15 +155,28 @@ function RecordCard({ record }: { record: DailyUnitRecord }) {
   );
 }
 
-async function RecordsCardsSection({ unitId, selectedDate }: { unitId?: string; selectedDate: string }) {
+async function RecordsCardsGrid({ unitId, selectedDate }: { unitId?: string; selectedDate: string }) {
   const { records } = await getSelectedRecords(unitId, selectedDate);
 
   return (
+    <div className="grid gap-4 lg:grid-cols-2">
+      {records.length === 0 ? <div className="rounded-3xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm">No daily ledger records were found for this date.</div> : null}
+      {records.map((record) => <RecordCard key={`${record.date}-${record.unitId}`} record={record} />)}
+    </div>
+  );
+}
+
+function RecordsCardsSection({ unitId, selectedDate }: { unitId?: string; selectedDate: string }) {
+  return (
     <div className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
       <p className="mb-4 text-sm font-bold uppercase tracking-[0.25em] text-red-700">{selectedDate}</p>
-      <div className="grid gap-4 lg:grid-cols-2">
-        {records.length === 0 ? <div className="rounded-3xl border border-slate-200 bg-white p-6 text-slate-600 shadow-sm">No daily ledger records were found for this date.</div> : null}
-        {records.map((record) => <RecordCard key={`${record.date}-${record.unitId}`} record={record} />)}
+      <Suspense fallback={<SummarySkeleton />}>
+        <RecordsSummarySection selectedDate={selectedDate} unitId={unitId} />
+      </Suspense>
+      <div className="mt-4">
+        <Suspense fallback={<CardsSkeleton />}>
+          <RecordsCardsGrid selectedDate={selectedDate} unitId={unitId} />
+        </Suspense>
       </div>
     </div>
   );
@@ -224,31 +237,28 @@ function TrendSkeleton() {
 
 function CardsSkeleton() {
   return (
-    <div className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm animate-pulse">
-      <div className="mb-4 h-4 w-28 rounded bg-slate-200" />
-      <div className="grid gap-4 lg:grid-cols-2">
-        {[...Array(4)].map((_, index) => (
-          <div key={index} className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm space-y-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="space-y-2">
-                <div className="h-3 w-24 rounded bg-slate-200" />
-                <div className="h-7 w-32 rounded bg-slate-200" />
-                <div className="h-4 w-28 rounded bg-slate-100" />
-              </div>
-              <div className="h-5 w-20 rounded-full bg-slate-200" />
+    <div className="grid gap-4 lg:grid-cols-2 animate-pulse">
+      {[...Array(4)].map((_, index) => (
+        <div key={index} className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-2">
+              <div className="h-3 w-24 rounded bg-slate-200" />
+              <div className="h-7 w-32 rounded bg-slate-200" />
+              <div className="h-4 w-28 rounded bg-slate-100" />
             </div>
-            <div className="grid gap-3 md:grid-cols-3">
-              <div className="h-16 rounded-2xl bg-slate-100" />
-              <div className="h-16 rounded-2xl bg-slate-100" />
-              <div className="h-16 rounded-2xl bg-slate-100" />
-            </div>
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="h-10 rounded bg-slate-100" />
-              <div className="h-10 rounded bg-slate-100" />
-            </div>
+            <div className="h-5 w-20 rounded-full bg-slate-200" />
           </div>
-        ))}
-      </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="h-16 rounded-2xl bg-slate-100" />
+            <div className="h-16 rounded-2xl bg-slate-100" />
+            <div className="h-16 rounded-2xl bg-slate-100" />
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="h-10 rounded bg-slate-100" />
+            <div className="h-10 rounded bg-slate-100" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -284,15 +294,10 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
       <section className="mx-auto max-w-7xl space-y-6">
         <RecordsHeader />
         <RecordsFilterSection params={params} selectedDate={selectedDate} />
-        <Suspense fallback={<SummarySkeleton />}>
-          <RecordsSummarySection selectedDate={selectedDate} unitId={params.unitId} />
-        </Suspense>
         <Suspense fallback={<TrendSkeleton />}>
           <RecordsTrendSection />
         </Suspense>
-        <Suspense fallback={<CardsSkeleton />}>
-          <RecordsCardsSection selectedDate={selectedDate} unitId={params.unitId} />
-        </Suspense>
+        <RecordsCardsSection selectedDate={selectedDate} unitId={params.unitId} />
         <Suspense fallback={<ToolsSkeleton />}>
           <RecordsToolsSection params={params} selectedDate={selectedDate} />
         </Suspense>

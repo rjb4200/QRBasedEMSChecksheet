@@ -186,10 +186,17 @@ Never archive failed or incomplete work as completed.
 
 Before committing:
 
-- Review git diff
-- Confirm all changes relate to the selected issue
-- Remove unrelated modifications
-- Confirm current branch is the issue branch
+Review git diff
+Confirm all changes relate to the selected issue
+Remove unrelated modifications
+Confirm current branch is the issue branch
+Confirm tasks.md is fully complete
+Confirm OpenSpec validation passed
+Confirm the OpenSpec change was synced
+Confirm the OpenSpec change was archived
+Confirm the change no longer appears in active openspec/changes/
+
+Do not commit if the OpenSpec change is still unarchived.
 
 Commit message format:
 
