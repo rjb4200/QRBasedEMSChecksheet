@@ -1,17 +1,16 @@
-import type { DailyWorkCompletion } from "@/lib/records/daily-work-completion-trend";
+import type { DailyCheckoffSummary } from "@/lib/records/daily-checkoff-summary";
 
 function formatDate(date: string) {
   const value = new Date(`${date}T12:00:00`);
   return `${value.getMonth() + 1}/${value.getDate()}`;
 }
 
-export function formatWorkCompletionLabel(day: DailyWorkCompletion) {
+export function formatWorkCompletionLabel(day: DailyCheckoffSummary) {
   if (day.state === "unavailable") return "Unavailable";
-  if (day.state === "not_applicable") return "N/A";
-  return `${day.completedWork}/${day.requiredWork} actions`;
+  return `${day.completedActions}/${day.requiredActions} actions`;
 }
 
-export default function DailyWorkCompletionTrend({ days }: { days: DailyWorkCompletion[] }) {
+export default function DailyWorkCompletionTrend({ days }: { days: DailyCheckoffSummary[] }) {
   const orderedDays = [...days].reverse();
 
   return (
@@ -22,8 +21,9 @@ export default function DailyWorkCompletionTrend({ days }: { days: DailyWorkComp
           {orderedDays.map((day) => (
             <div key={day.date} className="rounded-2xl bg-slate-100 p-2 text-center">
               <p className="text-xs font-bold text-slate-600">{formatDate(day.date)}</p>
-              <p className="mt-2 text-2xl font-black text-slate-950">{day.percentage === null ? "-" : `${day.percentage}%`}</p>
+              <p className="mt-2 text-2xl font-black text-slate-950">{day.requiredActions === 0 ? "-" : `${Math.round((day.completedActions / day.requiredActions) * 100)}%`}</p>
               <p className="mt-1 text-[10px] font-semibold leading-tight text-slate-600">{formatWorkCompletionLabel(day)}</p>
+              {day.state !== "unavailable" ? <p className="mt-1 text-[10px] text-slate-500">{day.completedUnits}/{day.requiredUnits} units {day.state}</p> : null}
             </div>
           ))}
         </div>

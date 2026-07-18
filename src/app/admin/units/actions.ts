@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { refreshDailyUnitLedgers, upsertTodayUnitLedger } from "@/lib/daily-unit-ledgers";
 import { invalidateFleetStatusCache } from "@/lib/fleet";
+import { getCurrentShift } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { getCurrentAdminLogActor, logSystemEvent } from "@/lib/system-log";
 
@@ -140,6 +141,37 @@ export async function toggleUnitStatus(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/admin/units");
   revalidatePath(`/admin/units/${parsed.id}`);
+}
+
+export async function excuseCurrentDailyCheckoff(formData: FormData) {
+  const parsed = z.object({ unitId: z.string().uuid(), reason: z.string().trim().min(3).max(1000) }).parse({
+    unitId: formData.get("unitId"),
+    reason: formData.get("reason"),
+  });
+  const supabase = createAdminClient();
+  const shift = getCurrentShift();
+  const actor = await getCurrentAdminLogActor();
+  const { error } = await supabase.rpc("excuse_daily_checkoff_unit", {
+    p_shift_date: shift.shiftDate,
+    p_shift_period: shift.shiftPeriod,
+    p_unit_id: parsed.unitId,
+    p_reason: parsed.reason,
+    p_actor_id: actor.actorId,
+  });
+  if (error) throw new Error(error.message);
+
+  await logSystemEvent({
+    ...actor,
+    actorType: "admin",
+    area: "checkoff",
+    action: "daily_checkoff.excused",
+    targetType: "unit",
+    targetId: parsed.unitId,
+    targetName: await getUnitName(supabase, parsed.unitId),
+    metadata: { shift_date: shift.shiftDate, reason: parsed.reason },
+  });
+  revalidatePath("/admin/archives");
+  revalidatePath(`/admin/units/${parsed.unitId}`);
 }
 
 export async function updateUnitMonthlyCheckDay(formData: FormData) {
