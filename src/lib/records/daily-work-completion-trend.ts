@@ -2,6 +2,7 @@ import { refreshDailyUnitLedgers } from "@/lib/daily-unit-ledgers";
 import { getCurrentShift } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { addDays, eachDate } from "@/lib/records/date-range";
+import { unstable_noStore as noStore } from "next/cache";
 
 type TrendLedgerRow = { shift_date: string; unit_id: string; unit_status: string; total_compartments: number };
 type TrendCheckRow = { shift_date: string; unit_id: string; target_type?: string | null; target_id?: string | null; compartment_id: string | null; unit_kit_id: string | null; status: string };
@@ -60,6 +61,7 @@ export function buildDailyWorkCompletionTrend(params: { dates: string[]; ledgers
 }
 
 export async function getDailyWorkCompletionTrend() {
+  noStore();
   const supabase = createAdminClient();
   const currentShift = getCurrentShift();
   await refreshDailyUnitLedgers(supabase, currentShift);

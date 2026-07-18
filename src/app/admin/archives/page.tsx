@@ -8,6 +8,8 @@ import DailyWorkCompletionTrend from "@/components/daily-work-completion-trend";
 import { getDailyWorkCompletionTrend } from "@/lib/records/daily-work-completion-trend";
 import { IconFilter, IconPrint } from "@/components/icons";
 
+export const dynamic = "force-dynamic";
+
 type ArchivesSearchParams = { unitId?: string; date?: string; from?: string; to?: string };
 
 const getSelectedRecords = cache(async (unitId: string | undefined, selectedDate: string) => {

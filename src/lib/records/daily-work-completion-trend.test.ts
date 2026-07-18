@@ -63,6 +63,23 @@ describe("Daily Check Work Completion trend", () => {
     expect(result).toEqual([{ date, state: "available", completedWork: 2, requiredWork: 2, percentage: 100 }]);
   });
 
+  it("includes normalized targets completed after an earlier result", () => {
+    const date = "2026-07-03";
+    const input = {
+      dates: [date],
+      ledgers: [{ shift_date: date, unit_id: "unit-1", unit_status: "in_service", total_compartments: 1 }],
+      crews: [{ shift_date: date, unit_id: "unit-1", provider_names: "Crew", locked: true }],
+    };
+
+    expect(buildDailyWorkCompletionTrend({ ...input, checks: [] })).toEqual([
+      { date, state: "available", completedWork: 1, requiredWork: 2, percentage: 50 },
+    ]);
+    expect(buildDailyWorkCompletionTrend({
+      ...input,
+      checks: [{ shift_date: date, unit_id: "unit-1", target_type: "kit", target_id: "target-1", compartment_id: null, unit_kit_id: null, status: "completed" }],
+    })).toEqual([{ date, state: "available", completedWork: 2, requiredWork: 2, percentage: 100 }]);
+  });
+
   it("distinguishes unavailable, zero-completion, and not-applicable days", () => {
     const result = buildDailyWorkCompletionTrend({
       dates: ["2026-07-03", "2026-07-04", "2026-07-05"],
