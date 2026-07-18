@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { refreshDailyUnitLedgers, upsertTodayUnitLedger } from "@/lib/daily-unit-ledgers";
+import { invalidateFleetStatusCache } from "@/lib/fleet";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import { getCurrentAdminLogActor, logSystemEvent } from "@/lib/system-log";
 
@@ -124,6 +125,7 @@ export async function toggleUnitStatus(formData: FormData) {
   const { error } = await supabase.from("units").update({ status: parsed.status, oos_at: nextOosAt, oos_by_name: nextOosByName }).eq("id", parsed.id);
   if (error) throw new Error(error.message);
   await upsertTodayUnitLedger(supabase, parsed.id, { status: parsed.status, statusNote: parsed.status === "in_service" ? null : parsed.statusNote });
+  invalidateFleetStatusCache();
   await logSystemEvent({
     ...actor,
     actorType: "admin",
