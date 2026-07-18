@@ -1,8 +1,6 @@
 ## Purpose
 Define background prefetch and device caching of checkoff form setup data so the unit dashboard loads lighter and QR/NFC checkoff pages open faster.
-
 ## Requirements
-
 ### Requirement: Dashboard loads without nested equipment catalog names
 The unit dashboard initial query SHALL NOT include `equipment_catalog(name)` in nested `unit_compartment_items` or `kit_items` selects. Equipment catalog names SHALL be loaded via a separate flat query.
 
@@ -108,22 +106,6 @@ The system SHALL cache prefetched unit summaries in localStorage under a current
 - **WHEN** a user works on EC1
 - **THEN** the system SHALL NOT read or write EC2 unit summary cache entries for EC1 navigation
 
-### Requirement: Unit page may render cached summary before live refresh
-The unit page SHALL be allowed to show a valid cached summary for the matching unit/date/shift immediately, then refresh from the server and replace cached values with server values.
-
-#### Scenario: Matching cached summary exists
-- **WHEN** a user opens a unit page and a valid cached summary exists for the same unit/date/shift
-- **THEN** the page MAY show cached summary information immediately
-- **AND** the page SHALL refresh from the server and replace cached display with server data
-
-#### Scenario: No matching cached summary exists
-- **WHEN** a user opens a unit page without a valid matching cached summary
-- **THEN** the unit page SHALL load normally from the server
-
-#### Scenario: Server truth overrides cache
-- **WHEN** live server data differs from cached summary data
-- **THEN** the server data SHALL be shown as the official state
-
 ### Requirement: Live operational state remains server truth
 The system SHALL NOT treat cached data as official truth for live operational state.
 
@@ -149,3 +131,4 @@ Background prefetch SHALL be invisible, scoped, cancelable, and non-blocking for
 #### Scenario: Prefetch stops on navigation
 - **WHEN** the user navigates away during prefetch
 - **THEN** pending background requests SHALL be aborted where possible
+
