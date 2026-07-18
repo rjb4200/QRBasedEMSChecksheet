@@ -15,7 +15,7 @@ The Records page SHALL display a fleet-wide `Daily Check Work Completion` trend 
 - **AND** the displayed trend SHALL remain fleet-wide when an admin selects a unit filter
 
 ### Requirement: Trend measures completed required work
-For each date with daily ledger coverage, the trend SHALL calculate required work as the sum of each in-service ledger row's saved target count plus one required crew entry. The trend SHALL calculate completed work as completed unique check targets plus locked crew entries with nonblank provider names for those same in-service units.
+For each date with daily ledger coverage, the trend SHALL calculate required work as the sum of each in-service ledger row's saved target count plus one required crew entry. The trend SHALL calculate completed work as completed unique check targets plus locked crew entries with nonblank provider names for those same in-service units. The trend SHALL use fresh request-time ledger, check, and crew data and SHALL NOT display a cached early-day aggregate.
 
 #### Scenario: Day has partially completed required work
 - **WHEN** in-service ledger rows require 58 actions and crews complete 51 of those actions
@@ -25,6 +25,11 @@ For each date with daily ledger coverage, the trend SHALL calculate required wor
 #### Scenario: Crew lock contributes completed work
 - **WHEN** an in-service unit has a locked crew entry with nonblank provider names
 - **THEN** the trend SHALL count that crew entry as one completed action for that unit
+
+#### Scenario: Completed checks are added after an earlier page visit
+- **WHEN** completed check targets or locked crew entries are saved after an admin has previously viewed the Records page
+- **THEN** a subsequent Records page request SHALL include those completed actions in the trend
+- **AND** the trend SHALL NOT retain the earlier action count
 
 ### Requirement: Trend excludes work not required for the date
 The trend SHALL exclude a unit from both required and completed work when its daily ledger row for that date is not marked `in_service`.
