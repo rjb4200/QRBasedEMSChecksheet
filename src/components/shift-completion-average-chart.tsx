@@ -33,8 +33,8 @@ export default function ShiftCompletionAverageChart({ averages }: { averages: Sh
                 {average.shiftName.replace(" Shift", "")}
                 {leadingShifts.has(average.shiftName) ? <Crown /> : null}
               </p>
-              <div aria-label={getShiftAverageLabel(average)} className="relative mt-2 flex h-40 items-end overflow-hidden rounded-lg bg-slate-300" role="img">
-                {!unavailable ? <div className="w-full rounded-t-lg bg-emerald-500" style={{ height: `${average.percentage}%`, minHeight: average.percentage !== null && average.percentage > 0 ? "0.25rem" : undefined }} /> : null}
+              <div aria-label={getShiftAverageLabel(average)} className="relative mt-2 flex h-48 items-end overflow-hidden rounded-2xl bg-slate-300" role="img">
+                {!unavailable ? <div className="w-full rounded-t-2xl bg-emerald-500" style={{ height: `${average.percentage}%`, minHeight: average.percentage !== null && average.percentage > 0 ? "0.25rem" : undefined }} /> : null}
                 {!unavailable ? <span className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"><span className="rounded-full bg-white/90 px-2 py-1 text-sm font-black text-slate-950 shadow-sm">{average.percentage}%</span></span> : null}
               </div>
               {unavailable ? <p className="mt-2 text-xl font-black text-slate-950">-</p> : null}
