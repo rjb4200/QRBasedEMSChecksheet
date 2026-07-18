@@ -23,4 +23,4 @@
 - [x] 4.1 Backfill retained historical days as reconstructed summaries and validate their action totals against raw records.
 - [x] 4.2 Initialize the current day, compare summary totals with live checks and crews, and resolve discrepancies before cutover.
 - [x] 4.3 Run full tests, typecheck, lint, production build, and a linked-production database reconciliation.
-- [ ] 4.4 Retire the superseded raw-trend implementation and archive `fix-archives-work-completion-freshness` after the authoritative trend is verified.
+- [x] 4.4 Retire the superseded raw-trend implementation and archive `fix-archives-work-completion-freshness` after the authoritative trend is verified.

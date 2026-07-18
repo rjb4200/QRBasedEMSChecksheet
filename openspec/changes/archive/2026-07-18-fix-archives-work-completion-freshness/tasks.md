@@ -10,4 +10,4 @@
 
 ## 3. Production Verification
 
-- [ ] 3.1 Deploy the freshness fix and compare the Records page with linked production aggregates for 2026-07-17 and 2026-07-18.
+- [x] 3.1 Deploy the freshness fix and compare the Records page with linked production aggregates for 2026-07-17 and 2026-07-18.
