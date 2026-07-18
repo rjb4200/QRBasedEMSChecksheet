@@ -5,7 +5,8 @@ import { getCurrentShift } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import ClearRecordsSection from "./clear-records-section";
 import DailyWorkCompletionTrend from "@/components/daily-work-completion-trend";
-import { getDailyCheckoffSummaries } from "@/lib/records/daily-checkoff-summary";
+import ShiftCompletionAverageChart from "@/components/shift-completion-average-chart";
+import { getDailyCheckoffSummaries, getShiftCompletionAverages } from "@/lib/records/daily-checkoff-summary";
 import { IconFilter, IconPrint } from "@/components/icons";
 
 export const dynamic = "force-dynamic";
@@ -165,7 +166,8 @@ async function RecordsCardsGrid({ unitId, selectedDate }: { unitId?: string; sel
 }
 
 async function RecordsWorkCompletionTrendSection() {
-  return <DailyWorkCompletionTrend days={await getDailyCheckoffSummaries()} />;
+  const [days, averages] = await Promise.all([getDailyCheckoffSummaries(), getShiftCompletionAverages()]);
+  return <div className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(360px,1fr)]"><DailyWorkCompletionTrend days={days} /><ShiftCompletionAverageChart averages={averages} /></div>;
 }
 
 function RecordsCardsSection({ unitId, selectedDate }: { unitId?: string; selectedDate: string }) {

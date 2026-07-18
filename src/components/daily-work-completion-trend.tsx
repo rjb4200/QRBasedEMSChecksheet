@@ -17,7 +17,7 @@ export default function DailyWorkCompletionTrend({ days }: { days: DailyCheckoff
     <section className="rounded-3xl bg-white p-4 shadow-sm">
       <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700">Daily Check Work Completion</p>
       <div className="mt-3 overflow-x-auto">
-        <div className="grid min-w-[700px] grid-cols-[repeat(14,minmax(0,1fr))] gap-2">
+        <div className="grid min-w-[560px] grid-cols-[repeat(9,minmax(0,1fr))] gap-2">
           {orderedDays.map((day) => (
             <div key={day.date} className="rounded-2xl bg-slate-100 p-2 text-center">
               <p className="text-xs font-bold text-slate-600">{formatDate(day.date)}</p>
