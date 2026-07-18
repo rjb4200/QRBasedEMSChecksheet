@@ -39,7 +39,8 @@ describe("ShiftCompletionAverageChart", () => {
     }));
     expect(markup).toContain("30 Day Average");
     expect(markup).not.toContain("Last 30 operational days");
-    expect(markup).toContain("h-40");
+    expect(markup).toContain("h-48");
+    expect(markup).toContain("rounded-2xl");
     expect(markup).toContain(">80%</span>");
     expect(markup.match(/Highest completion/g)).toHaveLength(2);
   });

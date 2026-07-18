@@ -33,7 +33,7 @@ Rationale: the indicator is used in one location and does not warrant a new icon
 
 ### Overlay percentages on the bars
 
-Use `30 Day Average` as the only scope heading. Within each shift column, show its name and optional crown, then a taller vertical bar with its percentage centered in a high-contrast foreground badge. Keep unavailable text beneath the empty bar.
+Use `30 Day Average` as the only scope heading. Within each shift column, show its name and optional crown, then a `h-48` vertical bar with its percentage centered in a high-contrast foreground badge. Use `rounded-2xl` on the bar and its fill to visually echo the `rounded-3xl` card without making the narrow bars pill-shaped. Keep unavailable text beneath the empty bar.
 
 Rationale: the numeric comparison remains immediately associated with the bar while the taller bars improve proportional comparison without changing the mobile three-column layout.
 
@@ -41,4 +41,5 @@ Rationale: the numeric comparison remains immediately associated with the bar wh
 
 - [A tie crown is mistaken for a single winner] -> Crown every shift matching the maximum and avoid singular winner wording.
 - [An unavailable shift is treated as a 0% leader] -> Exclude null percentages before determining the maximum.
-- [Taller bars make the Records header take more space on small screens] -> Retain the existing three-column layout and use a moderate, fixed taller height.
+- [Taller bars make the Records header take more space on small screens] -> Retain the existing three-column layout and use a moderate, fixed `h-48` height.
+- [Large corner radii make low-completion bars resemble pills] -> Use `rounded-2xl` rather than the card's `rounded-3xl` radius.

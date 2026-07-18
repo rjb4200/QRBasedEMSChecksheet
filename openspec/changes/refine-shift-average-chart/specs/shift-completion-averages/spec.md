@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Records page displays rotating shift completion averages
-The Records page SHALL display a `30 Day Average` chart for 1st Shift, 2nd Shift, and 3rd Shift using the latest thirty operational dates. Each shift result SHALL equal the sum of completed actions divided by the sum of required actions for dates assigned to that shift, excluding dates with no required actions. The chart SHALL NOT display a separate operational-days subtitle. For each shift, the chart SHALL overlay the percentage on its vertical completion bar and use a taller visual area than the prior chart. The chart SHALL display a crown beside every available shift whose percentage equals the highest available percentage in the chart. The chart SHALL display no crown when all shifts are unavailable.
+The Records page SHALL display a `30 Day Average` chart for 1st Shift, 2nd Shift, and 3rd Shift using the latest thirty operational dates. Each shift result SHALL equal the sum of completed actions divided by the sum of required actions for dates assigned to that shift, excluding dates with no required actions. The chart SHALL NOT display a separate operational-days subtitle. For each shift, the chart SHALL overlay the percentage on its vertical completion bar, use a `h-48` visual area, and use a rounded treatment visually consistent with the containing card. The chart SHALL display a crown beside every available shift whose percentage equals the highest available percentage in the chart. The chart SHALL display no crown when all shifts are unavailable.
 
 #### Scenario: Shift has completed work over assigned dates
 - **WHEN** 1st Shift's assigned dates in the thirty-day window total 720 completed actions out of 900 required actions
