@@ -5,7 +5,7 @@ import { addDays, eachDate } from "@/lib/records/date-range";
 import { unstable_noStore as noStore } from "next/cache";
 
 type TrendLedgerRow = { shift_date: string; unit_id: string; unit_status: string; total_compartments: number };
-type TrendCheckRow = { shift_date: string; unit_id: string; target_type?: string | null; target_id?: string | null; compartment_id: string | null; unit_kit_id: string | null; status: string };
+type TrendCheckRow = { id?: string; shift_date: string; unit_id: string; target_type?: string | null; target_id?: string | null; compartment_id: string | null; unit_kit_id: string | null; status: string };
 type TrendCrewRow = { shift_date: string; unit_id: string; provider_names: string | null; locked: boolean | null };
 
 export type DailyWorkCompletion = {
@@ -40,7 +40,8 @@ export function buildDailyWorkCompletionTrend(params: { dates: string[]; ledgers
         .flatMap((check) => {
           const targetId = check.target_id ?? check.compartment_id ?? check.unit_kit_id;
           const targetType = check.target_type ?? (check.compartment_id ? "compartment" : check.unit_kit_id ? "kit" : null);
-          return targetId && targetType ? [`${check.unit_id}:${targetType}:${targetId}`] : [];
+          const identity = targetId && targetType ? `${check.unit_id}:${targetType}:${targetId}` : check.id;
+          return identity ? [identity] : [];
         }),
     );
     const completedCrews = new Set(
@@ -69,7 +70,7 @@ export async function getDailyWorkCompletionTrend() {
   const dates = eachDate(addDays(currentShiftDate, -13), currentShiftDate).reverse();
   const [{ data: ledgers, error: ledgersError }, { data: checks, error: checksError }, { data: crews, error: crewsError }] = await Promise.all([
     supabase.from("daily_unit_ledgers").select("shift_date, unit_id, unit_status, total_compartments").in("shift_date", dates).eq("shift_period", "daily"),
-    supabase.from("compartment_checks").select("shift_date, unit_id, target_type, target_id, compartment_id, unit_kit_id, status").in("shift_date", dates).eq("shift_period", "daily"),
+    supabase.from("compartment_checks").select("id, shift_date, unit_id, target_type, target_id, compartment_id, unit_kit_id, status").in("shift_date", dates).eq("shift_period", "daily"),
     supabase.from("daily_unit_crews").select("shift_date, unit_id, provider_names, locked").in("shift_date", dates).eq("shift_period", "daily"),
   ]);
 

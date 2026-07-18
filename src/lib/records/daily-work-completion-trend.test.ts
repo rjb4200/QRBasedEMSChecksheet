@@ -63,6 +63,18 @@ describe("Daily Check Work Completion trend", () => {
     expect(result).toEqual([{ date, state: "available", completedWork: 2, requiredWork: 2, percentage: 100 }]);
   });
 
+  it("counts completed rows by their immutable id when target identity is unavailable", () => {
+    const date = "2026-07-02";
+    const result = buildDailyWorkCompletionTrend({
+      dates: [date],
+      ledgers: [{ shift_date: date, unit_id: "unit-1", unit_status: "in_service", total_compartments: 1 }],
+      checks: [{ id: "check-1", shift_date: date, unit_id: "unit-1", target_type: null, target_id: null, compartment_id: null, unit_kit_id: null, status: "completed" }],
+      crews: [{ shift_date: date, unit_id: "unit-1", provider_names: "Crew", locked: true }],
+    });
+
+    expect(result).toEqual([{ date, state: "available", completedWork: 2, requiredWork: 2, percentage: 100 }]);
+  });
+
   it("includes normalized targets completed after an earlier result", () => {
     const date = "2026-07-03";
     const input = {
