@@ -4,6 +4,8 @@ import { getDefaultRotationRange, getRotationDateAvailability } from "@/lib/data
 import { getCurrentShift } from "@/lib/shifts";
 import { createAdminClient } from "@/lib/supabase/server-admin";
 import ClearRecordsSection from "./clear-records-section";
+import DailyWorkCompletionTrend from "@/components/daily-work-completion-trend";
+import { getDailyWorkCompletionTrend } from "@/lib/records/daily-work-completion-trend";
 import { IconFilter, IconPrint } from "@/components/icons";
 
 type ArchivesSearchParams = { unitId?: string; date?: string; from?: string; to?: string };
@@ -160,6 +162,10 @@ async function RecordsCardsGrid({ unitId, selectedDate }: { unitId?: string; sel
   );
 }
 
+async function RecordsWorkCompletionTrendSection() {
+  return <DailyWorkCompletionTrend days={await getDailyWorkCompletionTrend()} />;
+}
+
 function RecordsCardsSection({ unitId, selectedDate }: { unitId?: string; selectedDate: string }) {
   return (
     <div className="rounded-3xl border-2 border-slate-200 bg-white p-5 shadow-sm">
@@ -270,6 +276,9 @@ export default async function ArchivesPage({ searchParams }: { searchParams: Pro
     <main className="min-h-screen bg-slate-100 px-5 py-8 text-slate-950">
       <section className="mx-auto max-w-7xl space-y-6">
         <RecordsHeader />
+        <Suspense fallback={<div className="h-40 animate-pulse rounded-3xl bg-white shadow-sm" />}>
+          <RecordsWorkCompletionTrendSection />
+        </Suspense>
         <RecordsFilterSection params={params} selectedDate={selectedDate} />
         <RecordsCardsSection selectedDate={selectedDate} unitId={params.unitId} />
         <Suspense fallback={<ToolsSkeleton />}>
