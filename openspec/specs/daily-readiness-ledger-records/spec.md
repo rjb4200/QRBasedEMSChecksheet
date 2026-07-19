@@ -97,6 +97,17 @@ The Records page SHALL distinguish a complete ledger-backed daily record from a 
 - **THEN** the Records page SHALL build a best-effort record only from date-specific historical data
 - **AND** the page SHALL indicate that full daily ledger coverage is unavailable for that date
 
+### Requirement: Records identify authoritative completion status
+The Records page SHALL identify whether the selected date's completion result is live, finalized, or reconstructed and SHALL expose action-progress and fully complete-unit counts from the daily completion summary.
+
+#### Scenario: Selected date has a finalized summary
+- **WHEN** an administrator views a date with a finalized daily completion summary
+- **THEN** the Records page SHALL display finalized action-progress and fully complete-unit counts
+
+#### Scenario: Selected date has reconstructed history
+- **WHEN** an administrator views a date whose summary was reconstructed from pre-cutover raw records
+- **THEN** the Records page SHALL label the completion result as reconstructed
+
 ### Requirement: Check status timestamp shows time only
 The system SHALL display only the time portion of the submission timestamp under the Check Status column for checked units, omitting the date which is already present in the page header.
 

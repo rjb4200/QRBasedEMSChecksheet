@@ -9,14 +9,14 @@
 
 - [x] 2.1 Update atomic check saves and crew-lock writes to ensure the daily manifest exists and summary maintenance runs transactionally.
 - [x] 2.2 Add scheduled day initialization with write-path fallback and delayed-initialization monitoring.
-- [ ] 2.3 Add database integration tests for initial snapshots, duplicate initialization, completion changes, crew locks, and excusals.
+- [x] 2.3 Add database integration tests for initial snapshots, duplicate initialization, completion changes, crew locks, and excusals.
 
 ## 3. Records And Trend Cutover
 
 - [x] 3.1 Add a summary read model that returns action progress, unit readiness, and summary state without raw trend reconstruction.
 - [x] 3.2 Replace the Records trend with the authoritative summary and show action, unit, and summary-state breakdowns.
 - [x] 3.3 Label backfilled legacy dates as reconstructed and post-cutover dates as live or finalized.
-- [ ] 3.4 Add presentation and route tests proving the trend reads summaries rather than raw operational tables.
+- [x] 3.4 Add presentation and route tests proving the trend reads summaries rather than raw operational tables.
 
 ## 4. Migration And Validation
 

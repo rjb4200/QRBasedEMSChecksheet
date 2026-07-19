@@ -20,23 +20,28 @@ The Records page SHALL display a fleet-wide `Daily Check Work Completion` trend 
 - **AND** both charts SHALL remain usable without compressed labels or bars
 
 ### Requirement: Trend measures completed required work
-For each date with daily ledger coverage, the trend SHALL calculate required work as the sum of each in-service ledger row's saved target count plus one required crew entry. The trend SHALL calculate completed work as completed unique check targets plus locked crew entries with nonblank provider names for those same in-service units.
+The trend SHALL read required actions, completed actions, required units, fully complete units, and summary state from the authoritative daily completion summary. The trend SHALL NOT reconstruct completion by aggregating operational ledger, check, and crew tables during page rendering.
 
-#### Scenario: Day has partially completed required work
-- **WHEN** in-service ledger rows require 58 actions and crews complete 51 of those actions
-- **THEN** the daily result SHALL show 51 completed of 58 required actions
-- **AND** the daily completion percentage SHALL be 88%
+#### Scenario: Finalized day is displayed
+- **WHEN** an administrator views a finalized operational day
+- **THEN** the trend SHALL display its authoritative completed/required action count and percentage
+- **AND** the trend SHALL display its fully complete/required unit count
 
-#### Scenario: Crew lock contributes completed work
-- **WHEN** an in-service unit has a locked crew entry with nonblank provider names
-- **THEN** the trend SHALL count that crew entry as one completed action for that unit
+#### Scenario: Reconstructed legacy day is displayed
+- **WHEN** an administrator views a reconstructed pre-cutover day
+- **THEN** the trend SHALL display the reconstructed action count
+- **AND** the trend SHALL identify the result as reconstructed
+
+#### Scenario: Live day changes
+- **WHEN** a check or crew confirmation is saved for the live operational day
+- **THEN** a subsequent Records page request SHALL display the database-maintained updated summary
 
 ### Requirement: Trend excludes work not required for the date
-The trend SHALL exclude a unit from both required and completed work when its daily ledger row for that date is not marked `in_service`.
+The trend SHALL use the authoritative summary's required and completed action counts, which exclude actions that were not required for the date.
 
 #### Scenario: Unit was out of service for the date
-- **WHEN** a unit's daily ledger row is marked out of service
-- **THEN** its saved target count and its completed check or crew rows SHALL NOT contribute to that day's result
+- **WHEN** a unit was out of service when the operational day's required-action manifest was created
+- **THEN** its actions SHALL NOT contribute to that day's authoritative summary
 
 ### Requirement: Trend distinguishes unavailable, zero, and not-applicable days
 The trend SHALL distinguish unavailable ledger coverage from documented zero completion and from a day with no required work.
