@@ -33,9 +33,17 @@ Rationale: the indicator is used in one location and does not warrant a new icon
 
 ### Overlay percentages on the bars
 
-Use `30 Day Average` as the only scope heading. Within each shift column, show its name and optional crown, then a `h-48` vertical bar with its percentage centered in a high-contrast foreground badge. Use `rounded-2xl` on the bar and its fill to visually echo the `rounded-3xl` card without making the narrow bars pill-shaped. Keep unavailable text beneath the empty bar.
+Use `30 Day Average` as the only scope heading. Within each shift column, show its name and optional crown, then a `h-48` vertical bar. Use `rounded-2xl` on the bar and its fill to visually echo the `rounded-3xl` card without making the narrow bars pill-shaped. Keep unavailable text beneath the empty bar.
 
 Rationale: the numeric comparison remains immediately associated with the bar while the taller bars improve proportional comparison without changing the mobile three-column layout.
+
+### Percentage pill tracks the bar height with clamp stops
+
+The center of the percentage pill SHALL align with the top edge of the filled bar so the badge position reinforces the completion value. The pill SHALL be clamped between 8% and 92% of the `h-48` container to prevent clipping at extreme low or high values.
+
+Rationale: redundant encoding (position + number) makes the chart scannable at a glance. The clamp stops keep the pill fully within the container bounds regardless of bar height.
+
+Alternative considered: always centering the pill in the container. Rejected because the fixed position provides no positional encoding and requires the user to read both the bar height and the number separately.
 
 ## Risks / Trade-offs
 
