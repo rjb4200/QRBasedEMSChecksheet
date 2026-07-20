@@ -35,7 +35,7 @@ export default function ShiftCompletionAverageChart({ averages }: { averages: Sh
               </p>
               <div aria-label={getShiftAverageLabel(average)} className="relative mt-2 flex h-48 items-end overflow-hidden rounded-2xl bg-slate-300" role="img">
                 {!unavailable ? <div className="w-full rounded-t-2xl bg-emerald-500" style={{ height: `${average.percentage}%`, minHeight: average.percentage !== null && average.percentage > 0 ? "0.25rem" : undefined }} /> : null}
-                {!unavailable ? <span className="pointer-events-none absolute inset-x-0 z-10 flex justify-center" style={{ bottom: `clamp(8%, ${average.percentage}%, 92%)`, transform: "translateY(-50%)" }}><span className="rounded-full bg-white/90 px-2 py-1 text-sm font-black text-slate-950 shadow-sm">{average.percentage}%</span></span> : null}
+                {!unavailable ? <span className="pointer-events-none absolute inset-x-0 z-10 flex justify-center" style={{ bottom: `clamp(8%, ${average.percentage}%, 92%)`, transform: "translateY(50%)" }}><span className="rounded-full bg-white/90 px-2 py-1 text-sm font-black text-slate-950 shadow-sm">{average.percentage}%</span></span> : null}
               </div>
               {unavailable ? <p className="mt-2 text-xl font-black text-slate-950">-</p> : null}
               {unavailable ? <p className="mt-1 text-[10px] font-semibold text-slate-600">Unavailable</p> : null}
