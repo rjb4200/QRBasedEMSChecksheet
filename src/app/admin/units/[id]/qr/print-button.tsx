@@ -404,6 +404,30 @@ function safeFilenamePart(value: string) {
   return value.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "label";
 }
 
+function drawRoundedLabelFrame(context: CanvasRenderingContext2D) {
+  const inset = 18;
+  const radius = 42;
+  const width = PIXCUT_PNG_WIDTH - inset * 2;
+  const height = PIXCUT_PNG_HEIGHT - inset * 2;
+
+  context.beginPath();
+  context.moveTo(inset + radius, inset);
+  context.lineTo(inset + width - radius, inset);
+  context.quadraticCurveTo(inset + width, inset, inset + width, inset + radius);
+  context.lineTo(inset + width, inset + height - radius);
+  context.quadraticCurveTo(inset + width, inset + height, inset + width - radius, inset + height);
+  context.lineTo(inset + radius, inset + height);
+  context.quadraticCurveTo(inset, inset + height, inset, inset + height - radius);
+  context.lineTo(inset, inset + radius);
+  context.quadraticCurveTo(inset, inset, inset + radius, inset);
+  context.closePath();
+  context.fillStyle = "#ffffff";
+  context.fill();
+  context.strokeStyle = "#334155";
+  context.lineWidth = 3;
+  context.stroke();
+}
+
 async function downloadPixCutLabel(code: QrCode, unitName: string) {
   const qrImage = new Image();
   qrImage.src = code.dataUrl;
@@ -418,14 +442,14 @@ async function downloadPixCutLabel(code: QrCode, unitName: string) {
   const context = canvas.getContext("2d");
   if (!context) return;
 
-  context.fillStyle = "#ffffff";
-  context.fillRect(0, 0, canvas.width, canvas.height);
+  // The transparent margin gives the PixCut app a contour around the rounded label card.
+  drawRoundedLabelFrame(context);
 
   // Match the R011 template: create the portrait label artwork, then rotate it into the 3x2 label.
   context.save();
   context.translate(canvas.width / 2, canvas.height / 2);
   context.rotate(Math.PI / 2);
-  context.drawImage(qrImage, -288, -432, 576, 576);
+  context.drawImage(qrImage, -270, -414, 540, 540);
   context.fillStyle = "#020617";
   context.textAlign = "center";
   context.textBaseline = "middle";
