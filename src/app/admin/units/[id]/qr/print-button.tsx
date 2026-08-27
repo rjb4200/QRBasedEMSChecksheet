@@ -440,10 +440,12 @@ export function PixCutLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName
           <section className="pixcut-label-sheet" key={sheetIndex}>
             {sheet.map((code, labelIndex) => (
               <article className="pixcut-label" key={`${code.id}-${labelIndex}`}>
-                <img alt={`${unitName} ${code.name} QR code`} src={code.dataUrl} style={{ width: "1.62in", height: "1.62in", objectFit: "contain" }} />
-                <div style={{ textAlign: "center", lineHeight: "1.15", maxWidth: "0.9in", overflowWrap: "anywhere" }}>
-                  <h2 style={{ fontSize: "9pt", fontWeight: 900, margin: 0 }}>{unitName}</h2>
-                  <p style={{ fontSize: "8pt", fontWeight: 700, margin: "0.06in 0 0" }}>{code.name}</p>
+                <div className="pixcut-label-content">
+                  <img alt={`${unitName} ${code.name} QR code`} src={code.dataUrl} style={{ width: "1.62in", height: "1.62in", objectFit: "contain" }} />
+                  <div style={{ textAlign: "center", lineHeight: "1.15", maxWidth: "0.9in", overflowWrap: "anywhere" }}>
+                    <h2 style={{ fontSize: "9pt", fontWeight: 900, margin: 0 }}>{unitName}</h2>
+                    <p style={{ fontSize: "8pt", fontWeight: 700, margin: "0.06in 0 0" }}>{code.name}</p>
+                  </div>
                 </div>
               </article>
             ))}

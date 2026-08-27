@@ -42,14 +42,14 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
     <main className="min-h-screen bg-white px-6 py-8 text-slate-950 print:px-0 print:py-0">
       {isPixCut ? (
         <style>{`
-          @page { size: 4in 7in; margin: 0; }
+          @page { size: 7in 4in; margin: 0; }
 
           @media print {
             html,
             body {
               margin: 0;
               padding: 0;
-              width: 4in;
+              width: 7in;
             }
 
             main,
@@ -59,14 +59,14 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
             }
 
             .pixcut-label-sheet {
-              width: 4in;
-              height: 7in;
+              width: 7in;
+              height: 4in;
               box-sizing: border-box;
               display: flex;
-              flex-direction: column;
+              flex-direction: row;
               align-items: center;
               gap: 0.1in;
-              padding-top: 0.35in;
+              padding-left: 0.35in;
               break-after: page;
               page-break-after: always;
             }
@@ -77,17 +77,28 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
             }
 
             .pixcut-label {
+              width: 2in;
+              height: 3in;
+              box-sizing: border-box;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              overflow: hidden;
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+
+            .pixcut-label-content {
               width: 3in;
               height: 2in;
-              box-sizing: border-box;
               display: grid;
               grid-template-columns: 1.7in 1fr;
               align-items: center;
               column-gap: 0.08in;
               padding: 0.12in;
+              box-sizing: border-box;
+              transform: rotate(90deg);
               overflow: hidden;
-              break-inside: avoid;
-              page-break-inside: avoid;
             }
           }
         `}</style>
@@ -210,7 +221,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
             <h1 className="mt-2 text-4xl font-black">{unit?.name}</h1>
             <p className="mt-2 text-slate-600">
               {isPixCut
-                ? "Liene PixCut S1 layout: up to 3 horizontal 3×2 labels on one 4×7 sticker sheet. Choose Save as PDF in the print dialog, then import the PDF into the Liene app. Print at 100% scale with headers and footers off."
+                ? "Liene PixCut S1 layout: up to 3 rotated 3×2 labels across one 7×4 landscape sticker sheet. Choose Save as PDF in the print dialog, then import the PDF into the Liene app. Print at 100% scale with headers and footers off."
                 : isRotated
                 ? isR011Rotated
                   ? "R011 layout: 10 rotated 3×2 labels per sheet with selectable labels and optional duplicate physical copies. Print at 100% scale with headers/footers off."
