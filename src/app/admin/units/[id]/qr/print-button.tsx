@@ -420,13 +420,18 @@ async function downloadPixCutLabel(code: QrCode, unitName: string) {
 
   context.fillStyle = "#ffffff";
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(qrImage, 36, 12, 576, 576);
+
+  // Match the R011 template: create the portrait label artwork, then rotate it into the 3x2 label.
+  context.save();
+  context.translate(canvas.width / 2, canvas.height / 2);
+  context.rotate(Math.PI / 2);
+  context.drawImage(qrImage, -288, -432, 576, 576);
   context.fillStyle = "#020617";
   context.textAlign = "center";
   context.textBaseline = "middle";
-  context.font = "700 34px Arial";
-  context.fillText(unitName, 756, 250, 252);
-  context.font = "700 28px Arial";
+  context.font = "700 27px Arial";
+  context.fillText(unitName, 0, 230, 540);
+  context.font = "700 24px Arial";
   const words = code.name.split(/\s+/);
   const lines = words.reduce<string[]>((current, word) => {
     const lastLine = current.at(-1) ?? "";
@@ -439,7 +444,8 @@ async function downloadPixCutLabel(code: QrCode, unitName: string) {
     }
     return current;
   }, []);
-  lines.slice(0, 3).forEach((line, index) => context.fillText(line, 756, 305 + index * 36, 252));
+  lines.slice(0, 3).forEach((line, index) => context.fillText(line, 0, 275 + index * 31, 540));
+  context.restore();
 
   const download = document.createElement("a");
   download.href = canvas.toDataURL("image/png");
