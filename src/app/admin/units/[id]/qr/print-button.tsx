@@ -10,6 +10,9 @@ type QrCode = {
   dataUrl: string;
 };
 
+const PIXCUT_PNG_WIDTH = 900;
+const PIXCUT_PNG_HEIGHT = 600;
+
 const AVERY_94237_LABELS_PER_SHEET = 8;
 const R011_LABELS_PER_SHEET = 10;
 const SPARTAN_S004_LABELS_PER_SHEET = 6;
@@ -397,8 +400,58 @@ export function RotatedLabelGrid({
   );
 }
 
+function safeFilenamePart(value: string) {
+  return value.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "label";
+}
+
+async function downloadPixCutLabel(code: QrCode, unitName: string) {
+  const qrImage = new Image();
+  qrImage.src = code.dataUrl;
+  await new Promise<void>((resolve, reject) => {
+    qrImage.onload = () => resolve();
+    qrImage.onerror = () => reject(new Error("Unable to create the QR label image."));
+  });
+
+  const canvas = document.createElement("canvas");
+  canvas.width = PIXCUT_PNG_WIDTH;
+  canvas.height = PIXCUT_PNG_HEIGHT;
+  const context = canvas.getContext("2d");
+  if (!context) return;
+
+  context.fillStyle = "#ffffff";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(qrImage, 36, 12, 576, 576);
+  context.fillStyle = "#020617";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.font = "700 34px Arial";
+  context.fillText(unitName, 756, 250, 252);
+  context.font = "700 28px Arial";
+  const words = code.name.split(/\s+/);
+  const lines = words.reduce<string[]>((current, word) => {
+    const lastLine = current.at(-1) ?? "";
+    if (lastLine && context.measureText(`${lastLine} ${word}`).width > 240) {
+      current.push(word);
+    } else if (lastLine) {
+      current[current.length - 1] = `${lastLine} ${word}`;
+    } else {
+      current.push(word);
+    }
+    return current;
+  }, []);
+  lines.slice(0, 3).forEach((line, index) => context.fillText(line, 756, 305 + index * 36, 252));
+
+  const download = document.createElement("a");
+  download.href = canvas.toDataURL("image/png");
+  download.download = `${safeFilenamePart(unitName)}-${safeFilenamePart(code.name)}-qr-label.png`;
+  document.body.appendChild(download);
+  download.click();
+  download.remove();
+}
+
 export function PixCutLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
   const [expanded, setExpanded] = useState(true);
+  const [downloadError, setDownloadError] = useState(false);
   const selection = useLabelPrintSelection(codes, PIXCUT_LABELS_PER_SHEET);
   const sheets: QrCode[][] = [];
 
@@ -406,10 +459,27 @@ export function PixCutLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName
     sheets.push(selection.printLabels.slice(index, index + PIXCUT_LABELS_PER_SHEET));
   }
 
+  async function downloadSelected() {
+    try {
+      setDownloadError(false);
+      await Promise.all(selection.printLabels.map((code) => downloadPixCutLabel(code, unitName)));
+    } catch {
+      setDownloadError(true);
+    }
+  }
+
   return (
     <div className="space-y-4 print:space-y-0">
       <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <LabelPrintControls count={selection.printLabels.length} max={selection.maxPhysicalLabels} onDeselectAll={selection.deselectAll} onPrint={selection.printSelected} />
+        <button className="rounded-2xl bg-red-700 px-5 py-3 font-bold text-white" disabled={selection.printLabels.length === 0} onClick={() => void downloadSelected()} type="button">
+          Download Selected PNGs
+        </button>
+        <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={selection.deselectAll} type="button">
+          Deselect All
+        </button>
+        <p className={`rounded-2xl px-4 py-2 text-sm font-black ${selection.maxReached ? "bg-amber-100 text-amber-900" : "bg-slate-100 text-slate-700"}`}>
+          {selection.printLabels.length}/{PIXCUT_LABELS_PER_SHEET} individual PNG{selection.printLabels.length === 1 ? "" : "s"} selected
+        </p>
         <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={() => setExpanded(!expanded)} type="button">
           {expanded ? "Collapse All" : "Expand All"}
         </button>
@@ -417,6 +487,7 @@ export function PixCutLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName
 
       <EmptyPrintMessage show={selection.printAttemptedWithNone} />
       <SelectionLimitMessage labelName="Liene PixCut S1 4x7" max={selection.maxPhysicalLabels} show={selection.limitAttempted || selection.maxReached} />
+      {downloadError ? <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-800 print:hidden">Unable to create one or more PNG labels. Please try again.</p> : null}
 
       <div className={`${expanded ? "" : "hidden"} grid gap-3 md:grid-cols-2 print:hidden`}>
         {codes.map((code) => (
@@ -430,6 +501,9 @@ export function PixCutLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <p className="break-all text-xs text-slate-500">{code.url}</p>
                   <CopyUrlButton url={code.url} />
+                  <button className="rounded-2xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50" onClick={() => void downloadPixCutLabel(code, unitName).catch(() => setDownloadError(true))} type="button">
+                    Download PNG
+                  </button>
                 </div>
                 <LabelSelectionControls
                   checked={selection.selectedIds.has(code.id)}

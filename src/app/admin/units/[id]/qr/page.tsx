@@ -220,7 +220,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
             <h1 className="mt-2 text-4xl font-black">{unit?.name}</h1>
             <p className="mt-2 text-slate-600">
               {isPixCut
-                ? "Liene PixCut S1 layout: up to 3 R011-style rotated 3×2 labels on one 7×4 landscape sticker sheet. Choose Save as PDF in the print dialog, then import the PDF into the Liene app. Print at 100% scale with headers and footers off."
+                ? "Liene PixCut S1 layout: download each selected 3×2 label as a PNG, then import the individual PNG files into the Liene app for cutting."
                 : isRotated
                 ? isR011Rotated
                   ? "R011 layout: 10 rotated 3×2 labels per sheet with selectable labels and optional duplicate physical copies. Print at 100% scale with headers/footers off."
