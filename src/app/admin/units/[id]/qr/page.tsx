@@ -1,5 +1,5 @@
 import QRCode from "qrcode";
-import { QrCodeGrid, RotatedLabelGrid, getR011Position, R011_LABELS_PER_SHEET } from "./print-button";
+import { PixCutLabelGrid, QrCodeGrid, RotatedLabelGrid, getR011Position, R011_LABELS_PER_SHEET } from "./print-button";
 import { getAppOrigin } from "@/lib/app-url";
 import { getOrCreateQrTarget } from "@/lib/qr-targets";
 import { createAdminClient } from "@/lib/supabase/server-admin";
@@ -9,6 +9,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
   const { format } = await searchParams;
   const isAveryRotated = format === "3x2-rotated";
   const isR011Rotated = format === "r011-3x2-rotated";
+  const isPixCut = format === "pixcut-4x7";
   const isRotated = isAveryRotated || isR011Rotated;
   const supabase = createAdminClient();
   const { data: unit } = await supabase
@@ -39,7 +40,58 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
 
   return (
     <main className="min-h-screen bg-white px-6 py-8 text-slate-950 print:px-0 print:py-0">
-      {isRotated ? (
+      {isPixCut ? (
+        <style>{`
+          @page { size: 4in 7in; margin: 0; }
+
+          @media print {
+            html,
+            body {
+              margin: 0;
+              padding: 0;
+              width: 4in;
+            }
+
+            main,
+            section {
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+
+            .pixcut-label-sheet {
+              width: 4in;
+              height: 7in;
+              box-sizing: border-box;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 0.1in;
+              padding-top: 0.35in;
+              break-after: page;
+              page-break-after: always;
+            }
+
+            .pixcut-label-sheet:last-child {
+              break-after: auto;
+              page-break-after: auto;
+            }
+
+            .pixcut-label {
+              width: 3in;
+              height: 2in;
+              box-sizing: border-box;
+              display: grid;
+              grid-template-columns: 1.7in 1fr;
+              align-items: center;
+              column-gap: 0.08in;
+              padding: 0.12in;
+              overflow: hidden;
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+          }
+        `}</style>
+      ) : isRotated ? (
         <style>{`
           @page { size: letter; margin: 0; }
 
@@ -157,7 +209,9 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">QR Codes</p>
             <h1 className="mt-2 text-4xl font-black">{unit?.name}</h1>
             <p className="mt-2 text-slate-600">
-              {isRotated
+              {isPixCut
+                ? "Liene PixCut S1 layout: up to 3 horizontal 3×2 labels on one 4×7 sticker sheet. Choose Save as PDF in the print dialog, then import the PDF into the Liene app. Print at 100% scale with headers and footers off."
+                : isRotated
                 ? isR011Rotated
                   ? "R011 layout: 10 rotated 3×2 labels per sheet with selectable labels and optional duplicate physical copies. Print at 100% scale with headers/footers off."
                   : "Avery 94237 layout: 8 labels per sheet with selectable labels and optional duplicate physical copies. Print at 100% scale with headers/footers off."
@@ -167,7 +221,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
         </div>
 
         <div className="flex flex-wrap gap-2 print:hidden">
-          <a className={`rounded-2xl px-5 py-3 font-bold ${!isRotated ? "bg-red-700 text-white" : "border border-slate-300 text-slate-950"}`} href={`/admin/units/${id}/qr`}>
+          <a className={`rounded-2xl px-5 py-3 font-bold ${!isRotated && !isPixCut ? "bg-red-700 text-white" : "border border-slate-300 text-slate-950"}`} href={`/admin/units/${id}/qr`}>
             Spartan S004 3×3 Labels
           </a>
           <a className={`rounded-2xl px-5 py-3 font-bold ${isAveryRotated ? "bg-red-700 text-white" : "border border-slate-300 text-slate-950"}`} href={`/admin/units/${id}/qr?format=3x2-rotated`}>
@@ -175,6 +229,9 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
           </a>
           <a className={`rounded-2xl px-5 py-3 font-bold ${isR011Rotated ? "bg-red-700 text-white" : "border border-slate-300 text-slate-950"}`} href={`/admin/units/${id}/qr?format=r011-3x2-rotated`}>
             R011 3×2 Labels
+          </a>
+          <a className={`rounded-2xl px-5 py-3 font-bold ${isPixCut ? "bg-red-700 text-white" : "border border-slate-300 text-slate-950"}`} href={`/admin/units/${id}/qr?format=pixcut-4x7`}>
+            Liene PixCut S1 4×7
           </a>
         </div>
 
@@ -190,7 +247,9 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
           </ul>
         </div>
 
-        {isRotated ? (
+        {isPixCut ? (
+          <PixCutLabelGrid codes={codes} unitName={unit?.name ?? "Unit"} />
+        ) : isRotated ? (
           <RotatedLabelGrid
             codes={codes}
             unitName={unit?.name ?? "Unit"}

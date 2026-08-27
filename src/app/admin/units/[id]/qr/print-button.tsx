@@ -13,6 +13,7 @@ type QrCode = {
 const AVERY_94237_LABELS_PER_SHEET = 8;
 const R011_LABELS_PER_SHEET = 10;
 const SPARTAN_S004_LABELS_PER_SHEET = 6;
+const PIXCUT_LABELS_PER_SHEET = 3;
 
 function getAvery94237Position(index: number) {
   const row = Math.floor(index / 2);
@@ -378,6 +379,73 @@ export function RotatedLabelGrid({
                   </div>
                 </div>
               </div>
+            ))}
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function PixCutLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName: string }) {
+  const [expanded, setExpanded] = useState(true);
+  const selection = useLabelPrintSelection(codes, PIXCUT_LABELS_PER_SHEET);
+  const sheets: QrCode[][] = [];
+
+  for (let index = 0; index < selection.printLabels.length; index += PIXCUT_LABELS_PER_SHEET) {
+    sheets.push(selection.printLabels.slice(index, index + PIXCUT_LABELS_PER_SHEET));
+  }
+
+  return (
+    <div className="space-y-4 print:space-y-0">
+      <div className="flex flex-wrap items-center gap-2 print:hidden">
+        <LabelPrintControls count={selection.printLabels.length} max={selection.maxPhysicalLabels} onDeselectAll={selection.deselectAll} onPrint={selection.printSelected} />
+        <button className="rounded-2xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-950" onClick={() => setExpanded(!expanded)} type="button">
+          {expanded ? "Collapse All" : "Expand All"}
+        </button>
+      </div>
+
+      <EmptyPrintMessage show={selection.printAttemptedWithNone} />
+      <SelectionLimitMessage labelName="Liene PixCut S1 4x7" max={selection.maxPhysicalLabels} show={selection.limitAttempted || selection.maxReached} />
+
+      <div className={`${expanded ? "" : "hidden"} grid gap-3 md:grid-cols-2 print:hidden`}>
+        {codes.map((code) => (
+          <article key={code.id} className="rounded-3xl border border-slate-300 bg-white p-4 shadow-sm">
+            <div className="flex gap-4">
+              <img alt={`${unitName} ${code.name} QR code`} src={code.dataUrl} className="h-28 w-28 shrink-0 rounded-xl border border-slate-200 bg-white p-1" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-black uppercase tracking-[0.2em] text-red-700">{unitName}</p>
+                <h2 className="mt-1 text-xl font-black text-slate-950">{code.name}</h2>
+                <p className="mt-1 font-mono text-sm font-black text-red-700">Code: {code.code}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <p className="break-all text-xs text-slate-500">{code.url}</p>
+                  <CopyUrlButton url={code.url} />
+                </div>
+                <LabelSelectionControls
+                  checked={selection.selectedIds.has(code.id)}
+                  disabledSecondCopy={!selection.canAddSecondCopy(code)}
+                  disabledSelected={!selection.canSelect(code)}
+                  onToggleSecondCopy={() => selection.toggleSecondCopy(code.id)}
+                  onToggleSelected={() => selection.toggleSelected(code.id)}
+                  secondCopyChecked={selection.secondCopyIds.has(code.id)}
+                />
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="hidden print:block print:m-0 print:p-0">
+        {sheets.map((sheet, sheetIndex) => (
+          <section className="pixcut-label-sheet" key={sheetIndex}>
+            {sheet.map((code, labelIndex) => (
+              <article className="pixcut-label" key={`${code.id}-${labelIndex}`}>
+                <img alt={`${unitName} ${code.name} QR code`} src={code.dataUrl} style={{ width: "1.62in", height: "1.62in", objectFit: "contain" }} />
+                <div style={{ textAlign: "center", lineHeight: "1.15", maxWidth: "0.9in", overflowWrap: "anywhere" }}>
+                  <h2 style={{ fontSize: "9pt", fontWeight: 900, margin: 0 }}>{unitName}</h2>
+                  <p style={{ fontSize: "8pt", fontWeight: 700, margin: "0.06in 0 0" }}>{code.name}</p>
+                </div>
+              </article>
             ))}
           </section>
         ))}
