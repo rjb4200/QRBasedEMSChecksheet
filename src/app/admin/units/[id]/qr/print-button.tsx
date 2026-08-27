@@ -405,21 +405,23 @@ function safeFilenamePart(value: string) {
 }
 
 function drawRoundedLabelFrame(context: CanvasRenderingContext2D) {
-  const inset = 18;
+  // Match the rotated R011 artwork's bounds instead of forcing a full 3x2 card.
+  const left = 84;
+  const top = 12;
   const radius = 42;
-  const width = PIXCUT_PNG_WIDTH - inset * 2;
-  const height = PIXCUT_PNG_HEIGHT - inset * 2;
+  const width = 798;
+  const height = 576;
 
   context.beginPath();
-  context.moveTo(inset + radius, inset);
-  context.lineTo(inset + width - radius, inset);
-  context.quadraticCurveTo(inset + width, inset, inset + width, inset + radius);
-  context.lineTo(inset + width, inset + height - radius);
-  context.quadraticCurveTo(inset + width, inset + height, inset + width - radius, inset + height);
-  context.lineTo(inset + radius, inset + height);
-  context.quadraticCurveTo(inset, inset + height, inset, inset + height - radius);
-  context.lineTo(inset, inset + radius);
-  context.quadraticCurveTo(inset, inset, inset + radius, inset);
+  context.moveTo(left + radius, top);
+  context.lineTo(left + width - radius, top);
+  context.quadraticCurveTo(left + width, top, left + width, top + radius);
+  context.lineTo(left + width, top + height - radius);
+  context.quadraticCurveTo(left + width, top + height, left + width - radius, top + height);
+  context.lineTo(left + radius, top + height);
+  context.quadraticCurveTo(left, top + height, left, top + height - radius);
+  context.lineTo(left, top + radius);
+  context.quadraticCurveTo(left, top, left + radius, top);
   context.closePath();
   context.fillStyle = "#ffffff";
   context.fill();
