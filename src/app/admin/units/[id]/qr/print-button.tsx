@@ -15,6 +15,16 @@ const R011_LABELS_PER_SHEET = 10;
 const SPARTAN_S004_LABELS_PER_SHEET = 6;
 const PIXCUT_LABELS_PER_SHEET = 3;
 
+function getPixCutPosition(index: number) {
+  const positions = [
+    { top: "0in", left: "0.5in" },
+    { top: "0in", left: "3.5in" },
+    { top: "2in", left: "0.5in" },
+  ];
+
+  return positions[index];
+}
+
 function getAvery94237Position(index: number) {
   const row = Math.floor(index / 2);
   const column = index % 2;
@@ -439,12 +449,12 @@ export function PixCutLabelGrid({ codes, unitName }: { codes: QrCode[]; unitName
         {sheets.map((sheet, sheetIndex) => (
           <section className="pixcut-label-sheet" key={sheetIndex}>
             {sheet.map((code, labelIndex) => (
-              <article className="pixcut-label" key={`${code.id}-${labelIndex}`}>
+              <article className="pixcut-label" key={`${code.id}-${labelIndex}`} style={getPixCutPosition(labelIndex)}>
                 <div className="pixcut-label-content">
-                  <img alt={`${unitName} ${code.name} QR code`} src={code.dataUrl} style={{ width: "1.62in", height: "1.62in", objectFit: "contain" }} />
-                  <div style={{ textAlign: "center", lineHeight: "1.15", maxWidth: "0.9in", overflowWrap: "anywhere" }}>
-                    <h2 style={{ fontSize: "9pt", fontWeight: 900, margin: 0 }}>{unitName}</h2>
-                    <p style={{ fontSize: "8pt", fontWeight: 700, margin: "0.06in 0 0" }}>{code.name}</p>
+                  <img alt={`${unitName} ${code.name} QR code`} src={code.dataUrl} style={{ width: "1.92in", height: "1.92in", objectFit: "contain" }} />
+                  <div style={{ textAlign: "center", lineHeight: "1.1", maxWidth: "1.92in" }}>
+                    <p style={{ fontSize: "9pt", fontWeight: 700, margin: 0, overflowWrap: "anywhere" }}>{code.name}</p>
+                    <p style={{ fontSize: "6pt", margin: "1px 0 0", overflowWrap: "anywhere" }}>{unitName}</p>
                   </div>
                 </div>
               </article>

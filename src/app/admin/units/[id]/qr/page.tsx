@@ -62,11 +62,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
               width: 7in;
               height: 4in;
               box-sizing: border-box;
-              display: flex;
-              flex-direction: row;
-              align-items: center;
-              gap: 0.1in;
-              padding-left: 0.35in;
+              position: relative;
               break-after: page;
               page-break-after: always;
             }
@@ -77,27 +73,30 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
             }
 
             .pixcut-label {
-              width: 2in;
-              height: 3in;
+              width: 3in;
+              height: 2in;
               box-sizing: border-box;
-              display: flex;
-              align-items: center;
-              justify-content: center;
+              position: absolute;
               overflow: hidden;
               break-inside: avoid;
               page-break-inside: avoid;
             }
 
             .pixcut-label-content {
-              width: 3in;
-              height: 2in;
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              width: 1.92in;
+              height: 2.88in;
               display: grid;
-              grid-template-columns: 1.7in 1fr;
+              grid-template-rows: 1fr auto;
               align-items: center;
-              column-gap: 0.08in;
+              justify-items: center;
+              gap: 0.08in;
               padding: 0.12in;
               box-sizing: border-box;
-              transform: rotate(90deg);
+              transform: translate(-50%, -50%) rotate(90deg);
+              transform-origin: center center;
               overflow: hidden;
             }
           }
@@ -221,7 +220,7 @@ export default async function UnitQrPage({ params, searchParams }: { params: Pro
             <h1 className="mt-2 text-4xl font-black">{unit?.name}</h1>
             <p className="mt-2 text-slate-600">
               {isPixCut
-                ? "Liene PixCut S1 layout: up to 3 rotated 3×2 labels across one 7×4 landscape sticker sheet. Choose Save as PDF in the print dialog, then import the PDF into the Liene app. Print at 100% scale with headers and footers off."
+                ? "Liene PixCut S1 layout: up to 3 R011-style rotated 3×2 labels on one 7×4 landscape sticker sheet. Choose Save as PDF in the print dialog, then import the PDF into the Liene app. Print at 100% scale with headers and footers off."
                 : isRotated
                 ? isR011Rotated
                   ? "R011 layout: 10 rotated 3×2 labels per sheet with selectable labels and optional duplicate physical copies. Print at 100% scale with headers/footers off."
